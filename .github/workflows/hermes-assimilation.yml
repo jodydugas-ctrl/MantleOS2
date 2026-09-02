@@ -1,0 +1,39 @@
+name: Hermes assimilation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-delta:
+    name: Pinned Hermes delta
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - name: Resolve certified commit
+        id: lock
+        shell: python
+        run: |
+          import json
+          import os
+          commit = json.load(open("examples/hermes/upstream.lock.json", encoding="utf-8"))["commit"]
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"commit={commit}\n")
+      - name: Construct candidate NEST
+        run: mantle assimilate github.com/nousresearch/hermes-agent --ref "${{ steps.lock.outputs.commit }}" --destination .assimilation-work/hermes-agent
+      - name: Verify delta and host boundary
+        run: python scripts/verify_hermes_delta.py .assimilation-work/hermes-agent --expected-commit "${{ steps.lock.outputs.commit }}"
+      - name: Prove host Python remains syntactically intact
+        run: python -m compileall -q .assimilation-work/hermes-agent
+      - name: Verify constructed Body remains un-born
+        run: mantle --nest .assimilation-work/hermes-agent verify

@@ -1,0 +1,9 @@
+name: mantle-body-observer
+version: 2.0.0-alpha.1
+description: "Opt-in Hermes edge adapter for a born MantleOS Body"
+hooks:
+  - on_session_start
+  - pre_llm_call
+  - post_llm_call
+  - post_tool_call
+  - on_session_end

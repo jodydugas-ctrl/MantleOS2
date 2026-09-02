@@ -1,0 +1,2 @@
+"""Hermes reference assimilation template."""
+
