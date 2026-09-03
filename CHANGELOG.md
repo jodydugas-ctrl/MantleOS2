@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0-alpha.2 - 2026-09-03
+
 - Replace the alpha.1 Hermes plugin-shaped edge with eight direct, reversible,
   hash-bound source nerves and a substrate-neutral Body/Nerve contract.
 - Place the Hermes AppAI Limb proposal at the native tool-authority boundary;

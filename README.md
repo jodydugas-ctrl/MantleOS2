@@ -80,10 +80,11 @@ software defaults.
 ## Project status
 
 `v2.0.0-alpha.1` is preserved as historical bootstrap evidence; its
-plugin-shaped Hermes edge is superseded by direct source innervation in the
-alpha.2 work. The first target is a reproducible full construction of Hermes as
-the Default Body. Real birth, production tissue adoption, migration continuity,
-and source-safe-to-shed authority remain separately gated.
+plugin-shaped Hermes edge is superseded by the direct source innervation in
+`v2.0.0-alpha.2`. Alpha.2 is a reproducible construction release for Hermes as
+the Default Body. Native Hermes runtime certification, real birth, production
+tissue adoption, migration continuity, and source-safe-to-shed authority remain
+separately gated.
 
 The active implementation compass and remaining gates are recorded in
 [PLAN.md](PLAN.md).
