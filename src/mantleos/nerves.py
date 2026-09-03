@@ -184,7 +184,7 @@ def authorize_tool(
     return None
 
 
-def session_ended(
+def turn_ended(
     *,
     session_id: str,
     turn_id: str,
@@ -196,7 +196,7 @@ def session_ended(
     if body is None:
         return
     sense(
-        "body.session.ended",
+        "body.turn.ended",
         {
             "session_id": session_id,
             "completed": completed,
@@ -209,3 +209,16 @@ def session_ended(
         body.complete_host_heartbeat(session_id, turn_id, mind_status=state)
     except Exception:
         pass
+
+
+def session_ended(*, session_id: str, surface: str, reason: str) -> None:
+    """Record an actual host session boundary and close interrupted Heartbeats."""
+    body = _body()
+    if body is None:
+        return
+    body.recover_host_heartbeats()
+    body.record_observation(
+        "layer-0",
+        "body.session.ended",
+        {"session_id": session_id, "surface": surface, "reason": reason},
+    )

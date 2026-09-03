@@ -28,13 +28,16 @@ that candidate and later gives separate approval for the first full Heartbeat.
 
 ## Direct innervation
 
-The Hermes language map inserts six direct Nerves: session start, committed
+The Hermes language map inserts eight direct Nerves: session start, committed
 user turn with Primer-first context, finalized MIND result, AppAI Limb proposal,
-terminal tool completion, and session end. The Limb proposal is an efferent
-Nerve at Hermes's native tool-authority boundary; the others are afferent or
-bidirectional. These are source-level calls between Hermes and the NEST-local
-Mantle nerve surface. They do not register a plugin, depend on a plugin loader,
-or hand authority to an extension manager.
+terminal tool completion, completed-turn status, CLI session shutdown, and
+gateway session shutdown. The Limb proposal is an efferent Nerve at Hermes's
+native tool-authority boundary; the others are afferent or bidirectional. Both
+terminal and gateway turns traverse the common turn seams. A failure is carried
+once in completed-turn status rather than duplicated at every exception site.
+These are source-level calls between Hermes and the NEST-local Mantle nerve
+surface. They do not register a plugin, depend on a plugin loader, or hand
+authority to an extension manager.
 
 Ordinary Hermes turns are unchanged when Mantle is absent, unborn, unavailable,
 or in stasis. During an explicitly addressed AppAI turn, Mantle records a

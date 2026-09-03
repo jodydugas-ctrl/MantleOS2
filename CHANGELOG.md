@@ -2,11 +2,13 @@
 
 ## Unreleased
 
-- Replace the alpha.1 Hermes plugin-shaped edge with six direct, reversible,
+- Replace the alpha.1 Hermes plugin-shaped edge with eight direct, reversible,
   hash-bound source nerves and a substrate-neutral Body/Nerve contract.
 - Place the Hermes AppAI Limb proposal at the native tool-authority boundary;
   ordinary turns remain native, stasis refuses AppAI motor activity, and active
   proposals continue through Hermes's existing guardrails.
+- Distinguish completed turns from actual sessions and record true CLI and
+  gateway shutdown boundaries without duplicating their shared turn events.
 - Add local Git source assimilation, private evidence-based Personality
   generation and approval, Primer-first MIND context, explicit physiology,
   Body-owned Limb authority, and user-level resident Heart controls.

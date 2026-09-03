@@ -16,6 +16,8 @@ source-nerve patch, upstream proof, and checksums. Use `mantle delta apply`,
 exercise reconstruction. Runtime identity, unique Personality, keys, provider
 material, communication transcripts, and live VCW data are excluded.
 
-The source patch has six direct Nerves. Its efferent Nerve records a redacted
+The source patch has eight direct Nerves. Its efferent Nerve records a redacted
 AppAI Limb proposal at Hermes's native tool-authority boundary; it neither
-registers Mantle as a plugin nor replaces Hermes's existing guardrails.
+registers Mantle as a plugin nor replaces Hermes's existing guardrails. Common
+turn seams cover terminal and gateway operation; two additional Nerves record
+their real session shutdown boundaries.

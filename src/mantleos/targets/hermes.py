@@ -28,6 +28,7 @@ class Insertion:
     source: str
     book_id: str = "book:layer-0:v2"
     capability_id: str | None = None
+    nerve_id: str | None = None
 
 
 INSERTIONS = (
@@ -76,10 +77,28 @@ INSERTIONS = (
     Insertion(
         path="agent/turn_finalizer.py",
         symbol="finalize_turn",
-        semantic_event="body.session.ended",
+        semantic_event="body.turn.ended",
         direction=Direction.AFFERENT,
         anchor="    # Plugin hook: on_session_end",
-        source="""    # MantleOS direct afferent nerve: turn/session boundary.\n    try:\n        from mantle.nerves import session_ended as _mantle_session_ended\n        _mantle_session_ended(\n            session_id=agent.session_id or \"\",\n            turn_id=turn_id,\n            completed=completed,\n            failed=failed,\n            interrupted=interrupted,\n        )\n    except Exception:\n        logger.debug(\"Mantle session-end nerve unavailable\", exc_info=True)\n\n""",  # noqa: E501
+        source="""    # MantleOS direct afferent nerve: completed turn boundary.\n    try:\n        from mantle.nerves import turn_ended as _mantle_turn_ended\n        _mantle_turn_ended(\n            session_id=agent.session_id or \"\",\n            turn_id=turn_id,\n            completed=completed,\n            failed=failed,\n            interrupted=interrupted,\n        )\n    except Exception:\n        logger.debug(\"Mantle turn-end nerve unavailable\", exc_info=True)\n\n""",  # noqa: E501
+    ),
+    Insertion(
+        path="cli.py",
+        symbol="_notify_session_finalize",
+        semantic_event="body.session.ended",
+        direction=Direction.AFFERENT,
+        anchor="    try:\n        from hermes_cli.lifecycle import finalize_session",
+        source="""    # MantleOS direct afferent nerve: actual CLI session boundary.\n    try:\n        from mantle.nerves import session_ended as _mantle_session_ended\n        _mantle_session_ended(\n            session_id=session_id or \"\",\n            surface=platform or \"cli\",\n            reason=reason or \"shutdown\",\n        )\n    except Exception:\n        logger.debug(\"Mantle CLI session-end nerve unavailable\", exc_info=True)\n\n""",  # noqa: E501
+        nerve_id="hermes:cli:body.session.ended",
+    ),
+    Insertion(
+        path="tui_gateway/server.py",
+        symbol="_finalize_session",
+        semantic_event="body.session.ended",
+        direction=Direction.AFFERENT,
+        anchor='    agent = session.get("agent")\n    lock = session.get("history_lock")',
+        source="""    # MantleOS direct afferent nerve: actual gateway session boundary.\n    _mantle_agent = session.get(\"agent\")\n    if _mantle_agent is not None:\n        try:\n            from mantle.nerves import session_ended as _mantle_session_ended\n            _mantle_session_ended(\n                session_id=getattr(_mantle_agent, \"session_id\", None)\n                or session.get(\"session_key\", \"\"),\n                surface=_session_source(session) or \"tui\",\n                reason=end_reason or \"tui_close\",\n            )\n        except Exception:\n            logger.debug(\"Mantle gateway session-end nerve unavailable\", exc_info=True)\n\n""",  # noqa: E501
+        nerve_id="hermes:gateway:body.session.ended",
     ),
 )
 
@@ -112,7 +131,7 @@ def innervate(root: Path) -> list[dict]:
         changed = text.replace(anchor, inserted_source + anchor, 1)
         path.write_bytes(changed.encode("utf-8"))
         nerve = NerveSpec(
-            nerve_id=f"hermes:{insertion.semantic_event}",
+            nerve_id=insertion.nerve_id or f"hermes:{insertion.semantic_event}",
             direction=insertion.direction,
             semantic_event=insertion.semantic_event,
             anchor=SourceAnchor(

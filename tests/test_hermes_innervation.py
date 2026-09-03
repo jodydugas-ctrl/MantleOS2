@@ -9,7 +9,29 @@ from mantleos.targets.hermes import INSERTIONS, innervate, is_hermes
 def _hermes_fixture(root: Path) -> Path:
     agent = root / "agent"
     agent.mkdir()
+    gateway = root / "tui_gateway"
+    gateway.mkdir()
     (root / "run_agent.py").write_text("class Agent: pass\n", encoding="utf-8")
+    (root / "cli.py").write_text(
+        "import logging\nlogger=logging.getLogger(__name__)\n"
+        "def _notify_session_finalize(*, session_id, platform='cli', reason='shutdown'):\n"
+        "    try:\n"
+        "        from hermes_cli.lifecycle import finalize_session\n"
+        "        return finalize_session(session_id=session_id)\n"
+        "    except Exception:\n"
+        "        return None\n",
+        encoding="utf-8",
+    )
+    (gateway / "server.py").write_text(
+        "import logging\nlogger=logging.getLogger(__name__)\n"
+        "def _session_source(session):\n"
+        "    return 'tui'\n"
+        "def _finalize_session(session, end_reason='tui_close'):\n"
+        "    agent = session.get(\"agent\")\n"
+        "    lock = session.get(\"history_lock\")\n"
+        "    return agent, lock\n",
+        encoding="utf-8",
+    )
     (agent / "conversation_loop.py").write_text(
         "import logging\nlogger=logging.getLogger(__name__)\n"
         "def initialize_conversation(agent):\n"
@@ -63,7 +85,9 @@ def test_direct_innervation_is_reproducible_and_not_a_plugin(tmp_path: Path):
     root = _hermes_fixture(tmp_path)
     assert is_hermes(root)
     records = innervate(root)
-    assert len(records) == len(INSERTIONS) == 6
+    assert len(records) == len(INSERTIONS) == 8
+    assert len({record["nerve_id"] for record in records}) == 8
+    assert sum(record["semantic_event"] == "body.session.ended" for record in records) == 2
     assert {record["failure_mode"] for record in records} == {"native-no-op"}
     action_nerve = next(
         record for record in records if record["semantic_event"] == "appai.limb.proposed"

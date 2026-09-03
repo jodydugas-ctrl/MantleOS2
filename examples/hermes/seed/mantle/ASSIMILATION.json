@@ -1,7 +1,7 @@
 {
   "schema": "mantle.assimilation.v2",
   "status": "constructed-not-born",
-  "constructed_at": "2026-09-03T18:39:45.047479Z",
+  "constructed_at": "2026-09-03T18:51:13.991316Z",
   "source": {
     "canonical_url": "https://github.com/nousresearch/hermes-agent",
     "branch": "main",
@@ -443,9 +443,9 @@
       "after_sha256": "bd521ed6b99067e37df1eac9dd8706daca023070e480b7e07cc69a442a92c633"
     },
     {
-      "nerve_id": "hermes:body.session.ended",
+      "nerve_id": "hermes:body.turn.ended",
       "direction": "afferent",
-      "semantic_event": "body.session.ended",
+      "semantic_event": "body.turn.ended",
       "anchor": {
         "path": "agent/turn_finalizer.py",
         "symbol": "finalize_turn",
@@ -459,7 +459,45 @@
       "failure_mode": "native-no-op",
       "tissue_state": "staged",
       "before_sha256": "725f5ef78d0f0e1bd1b63bf04c3d8a66083169679e2d270cd3a1c4cfe54d1835",
-      "after_sha256": "c8b83cb6a0b6129353e63dd4e56f7c8783e9e571e2f5affc146ce9b62dbaeb93"
+      "after_sha256": "08b46729655f03db7c1010edfd2d93f332673e881a4a87611f9f49da2880f6b5"
+    },
+    {
+      "nerve_id": "hermes:cli:body.session.ended",
+      "direction": "afferent",
+      "semantic_event": "body.session.ended",
+      "anchor": {
+        "path": "cli.py",
+        "symbol": "_notify_session_finalize",
+        "anchor_sha256": "5a66048df6913dedd425c64f5a67eab640f1e0e156944530d9da1fbcb3631b55",
+        "insertion": "before-anchor"
+      },
+      "book_id": "book:layer-0:v2",
+      "capability_id": null,
+      "payload_schema": "mantle.semantic-event.v2",
+      "redaction_policy": "deny-secrets",
+      "failure_mode": "native-no-op",
+      "tissue_state": "staged",
+      "before_sha256": "0eaab73ee696321e6c3084ac38fede21396b3c7f40d5df3d67bdd76f84310b0e",
+      "after_sha256": "f4856e80fb74ab78c198f91ccd305e87faa66d66638e8cb51684447e6084af05"
+    },
+    {
+      "nerve_id": "hermes:gateway:body.session.ended",
+      "direction": "afferent",
+      "semantic_event": "body.session.ended",
+      "anchor": {
+        "path": "tui_gateway/server.py",
+        "symbol": "_finalize_session",
+        "anchor_sha256": "db6ca85927df4e0b8bb738927d3363e806a8a43dea9a1b7527ba15118fd054b8",
+        "insertion": "before-anchor"
+      },
+      "book_id": "book:layer-0:v2",
+      "capability_id": null,
+      "payload_schema": "mantle.semantic-event.v2",
+      "redaction_policy": "deny-secrets",
+      "failure_mode": "native-no-op",
+      "tissue_state": "staged",
+      "before_sha256": "7e98a93354522498026619813329bf28ab76093b9abe89884eaa4c1e5605377d",
+      "after_sha256": "a6d7e0c547810ed4477959a592eeb337fcba78afd834a54e56c6199584afbc1f"
     }
   ],
   "target": {
@@ -518,8 +556,8 @@
       "mantle/__init__.py": "b9b7388d4eb4f581a54ed9f6710e459135ae51b5b97117b75ab2d6831094a52f",
       "mantle/__main__.py": "1c69b7345b54f1b54f6c002249b6bc73f60b3fc103a2d1b2ac207d4b78032232",
       "mantle/maps/BODY_MAP.json": "e30ab074c554bce1230bea7b315801b97eb9de23dfcc34ded40c938097c8a471",
-      "mantle/maps/NERVE_MAP.json": "5b3a1d55ed87b6c5218dcb806fae7c1b65a67f0eaf31555b09d700b8fa96b998",
-      "mantle/nerves.py": "d9083e857ebca53d238e5d8e5547549c71dde9af4a2c2fede068a7ebdbf77c6c",
+      "mantle/maps/NERVE_MAP.json": "fed98e32193d556f7893335a219d0dc16c2a93dcdebd753280dc2939e6c1b69e",
+      "mantle/nerves.py": "4ad4312a37cf8172bd7903bc35f7de259812ebb1cf631ff6469733c13f2411f2",
       "mantle/primer/COMMANDMENTS.md": "4ff12af6206c83047ec605e52bb5d6bcdfb7520cf515d373bb5298f7e68613b9"
     }
   }

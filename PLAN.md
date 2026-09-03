@@ -57,9 +57,9 @@ independence before the stable release.
 - The generic framework and direct-innervation architecture are published on
   `main`; the alpha.1 plugin-shaped attachment remains historical only.
 - A fresh Hermes candidate at commit
-  `63279301bcbdc185c1b07b98a9312eb0c862f26d` is constructed-not-born with six
+  `63279301bcbdc185c1b07b98a9312eb0c862f26d` is constructed-not-born with eight
   direct Nerves, including the efferent AppAI Limb proposal at the native Hermes
-  tool-authority boundary.
+  tool-authority boundary and actual CLI/gateway session shutdown boundaries.
 - The public seed applies to a clean checkout, verifies, reverses, and leaves the
   checkout pristine. No private identity, Personality, key, provider state, or
   live VCW is in the seed.
