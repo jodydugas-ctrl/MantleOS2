@@ -12,8 +12,8 @@ jobs:
   latest-hermes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -21,4 +21,3 @@ jobs:
       - run: mantle assimilate github.com/nousresearch/hermes-agent --destination .assimilation-work/hermes-agent
       - run: python scripts/verify_hermes_delta.py .assimilation-work/hermes-agent
       - run: python -m compileall -q .assimilation-work/hermes-agent
-
