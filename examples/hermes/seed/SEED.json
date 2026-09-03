@@ -235,7 +235,7 @@
     "mapping": "built-in-language-map",
     "traditional_plugin": false
   },
-  "host_edge_sha256": "955887d6f2d6719c91c812070a6469ecce371574d1477a3f3593df8e3f3f3eac",
+  "host_edge_sha256": "47b8f13b9e8ebc05ec72b0922d98e86aa885866d28112c6c86dc1ef3391b04ea",
   "host_edges": [
     {
       "path": ".gitignore",
@@ -264,7 +264,19 @@
     {
       "path": "agent/turn_finalizer.py",
       "before_sha256": "463a0d3bd92b2f1fcb7674c0400bfd2451a2344011c35de906bbb61ca96cc7e3",
-      "after_sha256": "c8b83cb6a0b6129353e63dd4e56f7c8783e9e571e2f5affc146ce9b62dbaeb93",
+      "after_sha256": "08b46729655f03db7c1010edfd2d93f332673e881a4a87611f9f49da2880f6b5",
+      "hash_mode": "lf-normalized-text-or-exact-binary"
+    },
+    {
+      "path": "cli.py",
+      "before_sha256": "0eaab73ee696321e6c3084ac38fede21396b3c7f40d5df3d67bdd76f84310b0e",
+      "after_sha256": "f4856e80fb74ab78c198f91ccd305e87faa66d66638e8cb51684447e6084af05",
+      "hash_mode": "lf-normalized-text-or-exact-binary"
+    },
+    {
+      "path": "tui_gateway/server.py",
+      "before_sha256": "7e98a93354522498026619813329bf28ab76093b9abe89884eaa4c1e5605377d",
+      "after_sha256": "a6d7e0c547810ed4477959a592eeb337fcba78afd834a54e56c6199584afbc1f",
       "hash_mode": "lf-normalized-text-or-exact-binary"
     }
   ],

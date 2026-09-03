@@ -8,6 +8,7 @@ class _FakeBody:
         self.pending = pending
         self.physiology = physiology
         self.observations = []
+        self.recovered = False
 
     def host_heartbeat_pending(self, session_id, turn_id):
         assert session_id == "session"
@@ -19,6 +20,10 @@ class _FakeBody:
 
     def record_observation(self, layer, kind, data):
         self.observations.append((layer, kind, data))
+
+    def recover_host_heartbeats(self):
+        self.recovered = True
+        return []
 
 
 def test_unborn_or_absent_body_is_native_noop(monkeypatch, tmp_path):
@@ -78,3 +83,17 @@ def test_appai_tool_dispatch_is_refused_in_stasis(monkeypatch):
     )
     assert result == "Mantle Body refused AppAI Limb action while physiology is stasis"
     assert body.observations[0][2]["physiology"] == "stasis"
+
+
+def test_actual_session_end_recovers_pending_heartbeats(monkeypatch):
+    body = _FakeBody(pending=False)
+    monkeypatch.setattr(nerves, "_body", lambda: body)
+    nerves.session_ended(session_id="session", surface="cli", reason="shutdown")
+    assert body.recovered is True
+    assert body.observations == [
+        (
+            "layer-0",
+            "body.session.ended",
+            {"session_id": "session", "surface": "cli", "reason": "shutdown"},
+        )
+    ]
