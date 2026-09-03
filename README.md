@@ -25,6 +25,9 @@ python -m mantle verify
 Assimilation clones the newest default branch unless `--ref` is supplied. It
 records the exact commit and tree, inventories the NEST without executing it,
 adds the public Mantle delta, creates a private prebirth checkpoint, and stops.
+`mantle verify` re-checks the manifest binding, every declared public delta
+checksum, required Git exclusions, and the absence of undeclared candidate
+tissue before birth can proceed.
 
 Birth is intentionally separate:
 
@@ -72,4 +75,3 @@ Body. Real birth, production tissue adoption, migration continuity, and
 source-safe-to-shed authority remain separately gated.
 
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).
-

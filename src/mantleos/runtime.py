@@ -43,6 +43,14 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _atomic_write(path: Path, data: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -405,12 +413,98 @@ class MantleBody:
     def _receipt_name(*parts: str) -> str:
         return sha256_bytes("\0".join(parts).encode("utf-8")) + ".enc"
 
+    def _construction_proof(self) -> dict[str, Any]:
+        """Verify that reviewed prebirth tissue still matches construction evidence."""
+        if not self.paths.prebirth.is_file():
+            raise MantleError("Assimilation construction has no prebirth checkpoint")
+        try:
+            prebirth = json.loads(self.paths.prebirth.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise MantleError("The prebirth checkpoint is unreadable") from exc
+        if prebirth.get("schema") != "mantle.prebirth.v2":
+            raise MantleError("The prebirth checkpoint has an unknown schema")
+
+        manifest_path = self.paths.public / "ASSIMILATION.json"
+        if not manifest_path.is_file():
+            raise MantleError("The public assimilation manifest is missing")
+        expected_manifest = prebirth.get("public_manifest_sha256")
+        if not isinstance(expected_manifest, str) or len(expected_manifest) != 64:
+            raise MantleError("The prebirth checkpoint does not bind the public manifest")
+        actual_manifest = sha256_file(manifest_path)
+        if actual_manifest != expected_manifest:
+            raise MantleError("The public assimilation manifest changed after construction")
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise MantleError("The public assimilation manifest is unreadable") from exc
+        if manifest.get("schema") != "mantle.assimilation.v2":
+            raise MantleError("The public assimilation manifest has an unknown schema")
+        if manifest.get("status") != "constructed-not-born":
+            raise MantleError("The public assimilation manifest is not a prebirth construction")
+
+        delta = manifest.get("delta")
+        if not isinstance(delta, dict):
+            raise MantleError("The public assimilation manifest has no delta proof")
+        declared = delta.get("paths")
+        checksums = delta.get("sha256")
+        if not isinstance(declared, list) or not isinstance(checksums, dict):
+            raise MantleError("The public assimilation manifest has an invalid delta proof")
+        declared_paths = set()
+        for value in declared:
+            if not isinstance(value, str):
+                raise MantleError("The public delta contains a non-path declaration")
+            candidate = (self.paths.nest / value).resolve()
+            try:
+                candidate.relative_to(self.paths.public.resolve())
+            except ValueError as exc:
+                raise MantleError(f"Public delta path escapes mantle/: {value}") from exc
+            declared_paths.add(value)
+        if len(declared_paths) != len(declared):
+            raise MantleError("The public delta contains duplicate path declarations")
+
+        manifest_relative = "mantle/ASSIMILATION.json"
+        expected_hashed = declared_paths - {manifest_relative}
+        if set(checksums) != expected_hashed:
+            raise MantleError("The public delta path and checksum declarations disagree")
+        for relative in sorted(expected_hashed):
+            path = self.paths.nest / relative
+            expected = checksums.get(relative)
+            if not path.is_file():
+                raise MantleError(f"Public candidate tissue is missing: {relative}")
+            if not isinstance(expected, str) or sha256_file(path) != expected:
+                raise MantleError(f"Public candidate tissue changed after construction: {relative}")
+
+        actual_paths = {
+            path.relative_to(self.paths.nest).as_posix()
+            for path in self.paths.public.rglob("*")
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix not in {".pyc", ".pyo"}
+        }
+        undeclared = sorted(actual_paths - declared_paths)
+        missing = sorted(declared_paths - actual_paths)
+        if undeclared:
+            raise MantleError(f"Undeclared public candidate tissue is present: {undeclared[0]}")
+        if missing:
+            raise MantleError(f"Declared public candidate tissue is missing: {missing[0]}")
+
+        gitignore = self.paths.nest / ".gitignore"
+        gitignore_text = gitignore.read_text(encoding="utf-8") if gitignore.is_file() else ""
+        required_ignores = ("/.mantle/", "/COMMUNICATION.TXT", "/Food.txt")
+        if any(line not in gitignore_text.splitlines() for line in required_ignores):
+            raise MantleError("The NEST no longer excludes private Mantle surfaces from Git")
+        return {
+            "ok": True,
+            "status": "constructed-not-born",
+            "manifest_sha256": actual_manifest,
+            "declared_files": len(declared_paths),
+            "verified_files": len(expected_hashed),
+            "birth_authorized": False,
+        }
+
     def status(self) -> dict[str, Any]:
-        prebirth = (
-            json.loads(self.paths.prebirth.read_text(encoding="utf-8"))
-            if self.paths.prebirth.exists()
-            else None
-        )
+        prebirth = None
+        if self.paths.prebirth.exists():
+            with suppress(OSError, UnicodeDecodeError, json.JSONDecodeError):
+                prebirth = json.loads(self.paths.prebirth.read_text(encoding="utf-8"))
         result: dict[str, Any] = {
             "schema": SCHEMA,
             "nest": str(self.paths.nest),
@@ -419,6 +513,12 @@ class MantleBody:
             "prebirth": prebirth,
             "mind": "not-configured",
         }
+        if not self.is_born:
+            try:
+                result["construction_integrity"] = self._construction_proof()
+            except MantleError as exc:
+                result["status"] = "construction-invalid"
+                result["construction_integrity"] = {"ok": False, "error": str(exc)}
         if self.is_born:
             cipher = self._cipher()
             result["identity"] = _load_sealed_json(
@@ -450,6 +550,7 @@ class MantleBody:
             raise MantleError("Assimilation construction has no prebirth checkpoint")
         if not name.strip():
             raise MantleError("Birth requires a confirmed identity name")
+        construction_proof = self._construction_proof()
         prebirth = json.loads(self.paths.prebirth.read_text(encoding="utf-8"))
         if prebirth.get("gates", {}).get("primer") != "ready-for-birth-review":
             raise MantleError("The Primer candidate is not ready for a separate birth review")
@@ -481,6 +582,7 @@ class MantleBody:
                 "name": name.strip(),
                 "prepared_at": utc_now(),
                 "default_body": "Layer 0 / NEST",
+                "construction_manifest_sha256": construction_proof["manifest_sha256"],
             }
             _save_sealed_json(self.paths.birth_candidate, cipher, "birth-candidate", identity)
         if not self.paths.primer.exists():
@@ -988,7 +1090,9 @@ class MantleBody:
 
     def verify(self) -> dict[str, Any]:
         if not self.is_born:
-            return {"ok": True, "status": "constructed-not-born", "live_vcw": False}
+            proof = self._construction_proof()
+            proof["live_vcw"] = False
+            return proof
         return self._vcw().verify()
 
     def watch(self, interval: float = 1.0) -> None:

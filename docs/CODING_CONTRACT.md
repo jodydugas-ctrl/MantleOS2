@@ -47,6 +47,13 @@ first successful *full* Heartbeat is birth. It creates the unique identity,
 Body-owned encryption key, sealed Primer, default VCW layers and Books, and the
 initial Layer 0 state record. A timer firing or partial attempt is not birth.
 
+Immediately before key creation, the Body must re-verify that every reviewed
+public Mantle delta file—including both Primer components—still matches the
+construction manifest, that the manifest still matches its prebirth binding,
+and that no undeclared public candidate tissue appeared. A mismatch stops birth
+without creating an identity key. Native NEST files remain OTHER and may evolve;
+their current state is observed by Layer 0 rather than silently claimed as SELF.
+
 ## 4. Heart and MIND
 
 Every Heartbeat follows the same broad physiological transaction: load, verify,
@@ -130,6 +137,8 @@ Receipts identify the input, source and parent state, scope, authority, attempt,
 observed outcome, verifier, proof, before/after fingerprints, changed paths, and
 unresolved limits. Failed or interrupted work remains visible. No requested
 effect is reported as successful without observation and applicable proof.
+Construction proof is checked again at use time: evidence recorded when a
+candidate was built is not evidence that its bytes remained unchanged.
 
 ## 10. Current open contracts
 
@@ -144,4 +153,3 @@ identity continuity beyond their evidence.
 “Zombie Body” is a historical MantleOS 1 term for what is now called the Default
 Body. In MantleOS 2, the Default Body is Layer 0: the NEST. The older phrase is
 not used in current APIs, schemas, filenames, or ordinary documentation.
-

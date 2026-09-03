@@ -274,6 +274,7 @@ def construct_nest(
             "read_only_census": "verified",
             "host_behavior": "requires-runtime-verification",
             "primer": "ready-for-birth-review",
+            "public_delta": "verified-at-construction",
             "birth": "not-authorized",
         },
     }
@@ -290,6 +291,7 @@ def construct_nest(
         nest / "mantle" / "ASSIMILATION.json",
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
     )
+    manifest_sha256 = sha256_file(nest / "mantle" / "ASSIMILATION.json")
 
     prebirth = {
         "schema": "mantle.prebirth.v2",
@@ -297,6 +299,7 @@ def construct_nest(
         "command": command,
         "source": manifest["source"],
         "public_delta": "mantle/",
+        "public_manifest_sha256": manifest_sha256,
         "default_body": "Layer 0 / NEST",
         "identity_suggestion": identity_suggestion,
         "approvals": {"assimilation_construction": True, "foreign_code_execution": False, "birth": False},
@@ -305,6 +308,7 @@ def construct_nest(
             "read_only_census": "verified",
             "host_behavior": "requires-runtime-verification",
             "primer": "ready-for-birth-review",
+            "public_delta": "verified-at-construction",
             "birth": "not-authorized",
         },
         "constraints": [
