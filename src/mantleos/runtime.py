@@ -7,10 +7,12 @@ remains usable without this runtime or an AppAI MIND.
 from __future__ import annotations
 
 import base64
+import csv
 import hashlib
 import json
 import os
 import secrets
+import subprocess
 import time
 import uuid
 from collections.abc import Callable, Iterable
@@ -56,6 +58,54 @@ def _atomic_write(path: Path, data: bytes) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_bytes(data)
     os.replace(temporary, path)
+
+
+def _restrict_identity_key(path: Path, *, platform_name: str | None = None) -> None:
+    """Restrict a Body identity key to the creating OS account."""
+
+    platform_name = platform_name or os.name
+    try:
+        os.chmod(path, 0o600)
+    except OSError as exc:
+        raise MantleError("The Body identity key could not be restricted to its owner") from exc
+    if platform_name != "nt":
+        return
+
+    try:
+        identity = subprocess.run(
+            ["whoami", "/user", "/fo", "csv", "/nh"],
+            check=False,
+            capture_output=True,
+            text=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        row = next(csv.reader(identity.stdout.splitlines()))
+        principal_sid = row[1].strip()
+    except (OSError, IndexError, StopIteration, csv.Error) as exc:
+        raise MantleError("Windows did not identify the account creating the Body identity key") from exc
+    if identity.returncode != 0 or not principal_sid.startswith("S-1-"):
+        raise MantleError("Windows did not identify the account creating the Body identity key")
+    command = [
+        "icacls",
+        str(path),
+        "/inheritance:r",
+        "/grant:r",
+        f"*{principal_sid}:(F)",
+        "*S-1-5-18:(F)",
+        "*S-1-5-32-544:(F)",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            check=False,
+            capture_output=True,
+            text=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except OSError as exc:
+        raise MantleError("Windows could not apply a private ACL to the Body identity key") from exc
+    if result.returncode != 0:
+        raise MantleError("Windows could not apply a private ACL to the Body identity key")
 
 
 @dataclass(frozen=True)
@@ -563,11 +613,18 @@ class MantleBody:
         # inspected on machines that cannot safely birth the organism.
         BodyCipher.require_available()
         self.paths.key.parent.mkdir(parents=True, exist_ok=True)
+        created_key = False
         if not self.paths.key.exists():
             with self.paths.key.open("xb") as handle:
                 handle.write(secrets.token_bytes(32))
-            with suppress(OSError):
-                os.chmod(self.paths.key, 0o600)
+            created_key = True
+        try:
+            _restrict_identity_key(self.paths.key)
+        except MantleError:
+            if created_key:
+                with suppress(OSError):
+                    self.paths.key.unlink()
+            raise
         cipher = self._cipher()
         identity = _load_sealed_json(self.paths.birth_candidate, cipher, "birth-candidate", {})
         if identity and identity.get("name") != name.strip():

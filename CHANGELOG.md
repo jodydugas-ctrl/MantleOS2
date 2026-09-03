@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Restrict new Body identity keys to the creating OS account on Windows as
+  well as POSIX, removing inherited general-user access and failing birth
+  closed if a private key ACL cannot be applied.
 - Reconcile the newest V3 SPORE and daemon donors without adopting their
   provisional wire formats or Git-as-VCW assumptions.
 - Re-verify the complete public delta and Primer against construction evidence
