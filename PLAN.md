@@ -52,6 +52,23 @@ independence before the stable release.
   implementation. A clean successor requires its own reviewed Primer and new
   explicit birth approval.
 
+## Current verified checkpoint
+
+- The generic framework and direct-innervation architecture are published on
+  `main`; the alpha.1 plugin-shaped attachment remains historical only.
+- A fresh Hermes candidate at commit
+  `63279301bcbdc185c1b07b98a9312eb0c862f26d` is constructed-not-born with six
+  direct Nerves, including the efferent AppAI Limb proposal at the native Hermes
+  tool-authority boundary.
+- The public seed applies to a clean checkout, verifies, reverses, and leaves the
+  checkout pristine. No private identity, Personality, key, provider state, or
+  live VCW is in the seed.
+- Mantle's offline suite passes. Executing Hermes and installing its dependencies
+  remain behind the user's explicit sandbox gate.
+- After native Body tests pass, the next identity gates are developmental-MIND
+  Personality generation, user review and approval of the complete Primer, and
+  a separate approval for the first full Heartbeat (birth).
+
 ## Implementation sequence
 
 ### 1. Correct the public architecture

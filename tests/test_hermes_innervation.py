@@ -37,6 +37,14 @@ def _hermes_fixture(root: Path) -> Path:
     )
     (agent / "tool_executor.py").write_text(
         "import logging\nlogger=logging.getLogger(__name__)\n"
+        "def execute(agent, function_name):\n"
+        "    def _authorized_dispatch(final_args):\n"
+        "        block_message = None\n"
+        "        if block_message is None:\n"
+        "            block_error_type = \"plugin_block\"\n"
+        "        return block_message\n"
+        "    return _authorized_dispatch({})\n"
+        "\n\n"
         "def _emit_terminal_post_tool_call(agent, function_name, function_args, duration_ms=0, "
         "status=None, error_type=None):\n"
         "    try:\n"
@@ -55,8 +63,14 @@ def test_direct_innervation_is_reproducible_and_not_a_plugin(tmp_path: Path):
     root = _hermes_fixture(tmp_path)
     assert is_hermes(root)
     records = innervate(root)
-    assert len(records) == len(INSERTIONS) == 5
+    assert len(records) == len(INSERTIONS) == 6
     assert {record["failure_mode"] for record in records} == {"native-no-op"}
+    action_nerve = next(
+        record for record in records if record["semantic_event"] == "appai.limb.proposed"
+    )
+    assert action_nerve["direction"] == "efferent"
+    assert action_nerve["book_id"] == "book:actions:v2"
+    assert action_nerve["capability_id"] == "hermes.tool-dispatch"
     all_source = "\n".join(
         (root / insertion.path).read_text(encoding="utf-8") for insertion in INSERTIONS
     )

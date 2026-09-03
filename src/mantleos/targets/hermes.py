@@ -57,11 +57,21 @@ INSERTIONS = (
     ),
     Insertion(
         path="agent/tool_executor.py",
+        symbol="_authorized_dispatch",
+        semantic_event="appai.limb.proposed",
+        direction=Direction.EFFERENT,
+        anchor='        if block_message is None:\n            block_error_type = "plugin_block"',
+        source="""        # MantleOS direct efferent nerve: AppAI Limb proposal.\n        if block_message is None:\n            try:\n                from mantle.nerves import authorize_tool as _mantle_authorize_tool\n                _mantle_block = _mantle_authorize_tool(\n                    tool_name=function_name,\n                    arguments=final_args,\n                    session_id=getattr(agent, \"session_id\", \"\") or \"\",\n                    turn_id=getattr(agent, \"_current_turn_id\", \"\") or \"\",\n                )\n                if _mantle_block:\n                    block_message = _mantle_block\n                    block_error_type = \"mantle_authority_block\"\n            except Exception:\n                logger.debug(\"Mantle Limb-authority nerve unavailable\", exc_info=True)\n\n""",  # noqa: E501
+        book_id="book:actions:v2",
+        capability_id="hermes.tool-dispatch",
+    ),
+    Insertion(
+        path="agent/tool_executor.py",
         symbol="_emit_terminal_post_tool_call",
         semantic_event="body.tool.completed",
         direction=Direction.AFFERENT,
         anchor='def _cancelled_tool_result(reason: str = "user interrupt") -> str:',
-        source="""\n    # MantleOS direct afferent nerve: one terminal semantic tool event.\n    try:\n        from mantle.nerves import tool_completed as _mantle_tool_completed\n        _mantle_tool_completed(\n            tool_name=function_name,\n            arguments=function_args,\n            status=status or (\"failed\" if error_type else \"completed\"),\n            duration_ms=duration_ms,\n        )\n    except Exception:\n        logger.debug(\"Mantle tool nerve unavailable\", exc_info=True)\n""",  # noqa: E501
+        source="""\n    # MantleOS direct afferent nerve: one terminal semantic tool event.\n    try:\n        from mantle.nerves import tool_completed as _mantle_tool_completed\n        _mantle_tool_completed(\n            tool_name=function_name,\n            arguments=function_args,\n            status=status or (\"failed\" if error_type else \"completed\"),\n            duration_ms=duration_ms,\n            session_id=getattr(agent, \"session_id\", \"\") or \"\",\n            turn_id=getattr(agent, \"_current_turn_id\", \"\") or \"\",\n        )\n    except Exception:\n        logger.debug(\"Mantle tool nerve unavailable\", exc_info=True)\n""",  # noqa: E501
     ),
     Insertion(
         path="agent/turn_finalizer.py",
@@ -91,14 +101,15 @@ def innervate(root: Path) -> list[dict]:
         text = before.decode("utf-8")
         eol = "\r\n" if "\r\n" in text else "\n"
         inserted_source = insertion.source.replace("\n", eol)
+        anchor = insertion.anchor.replace("\n", eol)
         if inserted_source in text:
             raise HermesInnervationError(f"Nerve is already present: {insertion.semantic_event}")
-        if text.count(insertion.anchor) != 1:
+        if text.count(anchor) != 1:
             raise HermesInnervationError(
                 f"Hermes seam drifted for {insertion.semantic_event}: {insertion.path}"
             )
         anchor_sha = hashlib.sha256(insertion.anchor.encode("utf-8")).hexdigest()
-        changed = text.replace(insertion.anchor, inserted_source + insertion.anchor, 1)
+        changed = text.replace(anchor, inserted_source + anchor, 1)
         path.write_bytes(changed.encode("utf-8"))
         nerve = NerveSpec(
             nerve_id=f"hermes:{insertion.semantic_event}",

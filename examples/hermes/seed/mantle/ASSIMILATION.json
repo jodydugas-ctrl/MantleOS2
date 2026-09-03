@@ -1,7 +1,7 @@
 {
   "schema": "mantle.assimilation.v2",
   "status": "constructed-not-born",
-  "constructed_at": "2026-09-03T18:09:25.399214Z",
+  "constructed_at": "2026-09-03T18:39:45.047479Z",
   "source": {
     "canonical_url": "https://github.com/nousresearch/hermes-agent",
     "branch": "main",
@@ -240,7 +240,7 @@
     "compatibility_rule": "The host must retain ordinary behavior without the AppAI MIND."
   },
   "identity_suggestion": "The Compiler",
-  "declared_purpose": "The Compiler: a MantleOS AppAI whose Default Body is Hermes and whose role is to compile, test, and preserve frame-aware software changes",
+  "declared_purpose": "The Compiler: a Hermes coding-agent Body assimilated by the generic MantleOS 2 autonomic nervous system",
   "body_map": {
     "source_uri": "https://github.com/nousresearch/hermes-agent",
     "source_fingerprint": "sha256:25230b2ff2fbf7c7abdcc3b428cc2cf0c16acedd0be2d8bff3a519390c3b0322",
@@ -405,6 +405,25 @@
       "after_sha256": "725f5ef78d0f0e1bd1b63bf04c3d8a66083169679e2d270cd3a1c4cfe54d1835"
     },
     {
+      "nerve_id": "hermes:appai.limb.proposed",
+      "direction": "efferent",
+      "semantic_event": "appai.limb.proposed",
+      "anchor": {
+        "path": "agent/tool_executor.py",
+        "symbol": "_authorized_dispatch",
+        "anchor_sha256": "7c2eb9f38b1e7afd30943c79d5b9714f1c66116815be229ee762e9cf1e3e0f9f",
+        "insertion": "before-anchor"
+      },
+      "book_id": "book:actions:v2",
+      "capability_id": "hermes.tool-dispatch",
+      "payload_schema": "mantle.semantic-event.v2",
+      "redaction_policy": "deny-secrets",
+      "failure_mode": "native-no-op",
+      "tissue_state": "staged",
+      "before_sha256": "08965a18d17fc7b92ac9264e8131ce91cce23b88b479fe7356154a8144bc35d2",
+      "after_sha256": "016ccf405676842ebad7e9190a07d7bba7ddfbbb241f8fe43418379cfe867808"
+    },
+    {
       "nerve_id": "hermes:body.tool.completed",
       "direction": "afferent",
       "semantic_event": "body.tool.completed",
@@ -420,8 +439,8 @@
       "redaction_policy": "deny-secrets",
       "failure_mode": "native-no-op",
       "tissue_state": "staged",
-      "before_sha256": "08965a18d17fc7b92ac9264e8131ce91cce23b88b479fe7356154a8144bc35d2",
-      "after_sha256": "cd33128b2e791795f86bfe523064c7dbfdc1260f3b1ba546ada1162d03100f3b"
+      "before_sha256": "016ccf405676842ebad7e9190a07d7bba7ddfbbb241f8fe43418379cfe867808",
+      "after_sha256": "bd521ed6b99067e37df1eac9dd8706daca023070e480b7e07cc69a442a92c633"
     },
     {
       "nerve_id": "hermes:body.session.ended",
@@ -499,8 +518,8 @@
       "mantle/__init__.py": "b9b7388d4eb4f581a54ed9f6710e459135ae51b5b97117b75ab2d6831094a52f",
       "mantle/__main__.py": "1c69b7345b54f1b54f6c002249b6bc73f60b3fc103a2d1b2ac207d4b78032232",
       "mantle/maps/BODY_MAP.json": "e30ab074c554bce1230bea7b315801b97eb9de23dfcc34ded40c938097c8a471",
-      "mantle/maps/NERVE_MAP.json": "c61709766db32b4192fee06f91a35aaf50d0e66e3944783611e3904d6c5f5aab",
-      "mantle/nerves.py": "5ca72f0af5be985a3098cd013d8ba23baed341a3ff9cf3339db99a6e2568223d",
+      "mantle/maps/NERVE_MAP.json": "5b3a1d55ed87b6c5218dcb806fae7c1b65a67f0eaf31555b09d700b8fa96b998",
+      "mantle/nerves.py": "d9083e857ebca53d238e5d8e5547549c71dde9af4a2c2fede068a7ebdbf77c6c",
       "mantle/primer/COMMANDMENTS.md": "4ff12af6206c83047ec605e52bb5d6bcdfb7520cf515d373bb5298f7e68613b9"
     }
   }

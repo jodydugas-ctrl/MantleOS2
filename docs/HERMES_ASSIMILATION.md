@@ -28,17 +28,21 @@ that candidate and later gives separate approval for the first full Heartbeat.
 
 ## Direct innervation
 
-The Hermes language map inserts afferent or bidirectional Nerves at five semantic
-boundaries: session start, committed user turn, finalized MIND result, terminal
-tool completion, and session end. These are source-level calls from Hermes into
-the NEST-local Mantle nerve surface. They do not register a plugin, depend on a
-plugin loader, or hand authority to an extension manager.
+The Hermes language map inserts six direct Nerves: session start, committed
+user turn with Primer-first context, finalized MIND result, AppAI Limb proposal,
+terminal tool completion, and session end. The Limb proposal is an efferent
+Nerve at Hermes's native tool-authority boundary; the others are afferent or
+bidirectional. These are source-level calls between Hermes and the NEST-local
+Mantle nerve surface. They do not register a plugin, depend on a plugin loader,
+or hand authority to an extension manager.
 
-Each call is fail-open toward Hermes: when Mantle is absent, unborn, in stasis,
-or unavailable, normal Hermes execution continues. Semantic commits are recorded
-rather than raw keystrokes. Credential-shaped fields and unrestricted tool
-arguments/results are not admitted to the VCW. Hermes's own MIND loop remains
-native Hermes behavior.
+Ordinary Hermes turns are unchanged when Mantle is absent, unborn, unavailable,
+or in stasis. During an explicitly addressed AppAI turn, Mantle records a
+redacted action proposal, refuses motor activity unless physiology is active,
+and otherwise delegates the final decision to Hermes's existing Body-owned
+guardrails. Semantic commits are recorded rather than raw keystrokes.
+Credential-shaped fields and unrestricted tool arguments/results are not
+admitted to the VCW. Hermes's own MIND loop remains native Hermes behavior.
 
 ## Delta seed
 
