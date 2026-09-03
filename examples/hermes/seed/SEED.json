@@ -235,7 +235,7 @@
     "mapping": "built-in-language-map",
     "traditional_plugin": false
   },
-  "host_edge_sha256": "7f80756d452ae8b33374906a29043571d88ca3492be13df99d998827f2ecd4fb",
+  "host_edge_sha256": "f874f32fd86f37b7f7e10bb9c8ef07a65cb70901db2c0b03c3c8e86a59dda31d",
   "host_edges": [
     {
       "path": ".gitignore",

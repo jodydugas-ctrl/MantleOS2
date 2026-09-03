@@ -30,7 +30,7 @@ def main() -> int:
 
     bundle = output / "mantleos2-hermes-delta.zip"
     patch = subprocess.run(
-        ["git", "diff", "--binary", "--", ":(exclude)mantle/**"],
+        ["git", "diff", "--binary", "--full-index", "--", ":(exclude)mantle/**"],
         cwd=nest,
         check=True,
         capture_output=True,

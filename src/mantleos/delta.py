@@ -78,7 +78,15 @@ def build_seed(nest: str | Path, destination: str | Path) -> dict[str, Any]:
         raise DeltaError(f"Seed destination is not empty: {destination}")
     destination.mkdir(parents=True, exist_ok=True)
     manifest = _manifest(nest)
-    patch = _git(nest, "diff", "--binary", "--", ":(exclude)mantle/**", binary=True)
+    patch = _git(
+        nest,
+        "diff",
+        "--binary",
+        "--full-index",
+        "--",
+        ":(exclude)mantle/**",
+        binary=True,
+    )
     if not isinstance(patch, bytes) or not patch:
         raise DeltaError("The host-edge patch is empty")
     (destination / "host-edge.patch").write_bytes(patch)

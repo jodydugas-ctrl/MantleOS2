@@ -1,5 +1,5 @@
 diff --git a/.gitignore b/.gitignore
-index 7cf39fcfc..80ba51716 100644
+index 7cf39fcfc9df8bd991c608a94153a77eb9c6d9a0..80ba51716fe5861c668397200887c02836cd217c 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -220,3 +220,8 @@ native/fts5_cjk/*.so
@@ -12,7 +12,7 @@ index 7cf39fcfc..80ba51716 100644
 +/COMMUNICATION.TXT
 +/Food.txt
 diff --git a/agent/conversation_loop.py b/agent/conversation_loop.py
-index 46cbc717a..e8337364d 100644
+index 46cbc717a7e852471a915f04334e86a25ba4360c..e8337364d960304c52eb22a9a9eb92d3d9e7ace6 100644
 --- a/agent/conversation_loop.py
 +++ b/agent/conversation_loop.py
 @@ -1181,6 +1181,17 @@ def _restore_or_build_system_prompt(agent, system_message, conversation_history)
@@ -34,7 +34,7 @@ index 46cbc717a..e8337364d 100644
      # session is created (not on continuation).  Plugins can use this
      # to initialise session-scoped state (e.g. warm a memory cache).
 diff --git a/agent/tool_executor.py b/agent/tool_executor.py
-index fb0265310..4b706bd65 100644
+index fb0265310c3859b8521d21964d1c9d1dcccf5b19..4b706bd651913427d81e227edd98e447c362eaf3 100644
 --- a/agent/tool_executor.py
 +++ b/agent/tool_executor.py
 @@ -332,6 +332,18 @@ def _emit_terminal_post_tool_call(
@@ -57,7 +57,7 @@ index fb0265310..4b706bd65 100644
      return json.dumps(
          {
 diff --git a/agent/turn_context.py b/agent/turn_context.py
-index e0f06338d..a316099cf 100644
+index e0f06338dc2f25f8f86e7b03bbecea10af75c3ca..a316099cf5f149198eaf3bd5ee4c915113ff68ca 100644
 --- a/agent/turn_context.py
 +++ b/agent/turn_context.py
 @@ -1518,6 +1518,25 @@ def build_turn_context(
@@ -87,7 +87,7 @@ index e0f06338d..a316099cf 100644
      # voice-channel change) ride the same user-message injection channel as
      # plugin context so the ephemeral system prompt can stay byte-stable.
 diff --git a/agent/turn_finalizer.py b/agent/turn_finalizer.py
-index 93506f680..451bb7ca2 100644
+index 93506f680cf970ac86b262cc69a385aab646da1c..451bb7ca204d3f671b8212d586ba700f9d9bcbb3 100644
 --- a/agent/turn_finalizer.py
 +++ b/agent/turn_finalizer.py
 @@ -636,6 +636,20 @@ def finalize_turn(
