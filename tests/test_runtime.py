@@ -8,7 +8,15 @@ from pathlib import Path
 from unittest import mock
 
 from mantleos.nutrition import NutritionError, parse_openrouter_food
-from mantleos.runtime import VCW, BodyCipher, Book, MantleBody, MantleError, canonical_json
+from mantleos.runtime import (
+    VCW,
+    BodyCipher,
+    Book,
+    MantleBody,
+    MantleError,
+    _restrict_identity_key,
+    canonical_json,
+)
 
 
 class TestCipher:
@@ -133,6 +141,42 @@ class VCWTests(unittest.TestCase):
 
 
 class GateTests(unittest.TestCase):
+    def test_windows_identity_key_acl_removes_inherited_general_access(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            key = Path(temporary) / "body.key"
+            key.write_bytes(b"x" * 32)
+            identity = mock.Mock(
+                returncode=0,
+                stdout='"NEST\\Creator","S-1-5-21-123-456-789-1001"\n',
+            )
+            completed = mock.Mock(returncode=0)
+            with mock.patch(
+                "mantleos.runtime.subprocess.run",
+                side_effect=[identity, completed],
+            ) as run:
+                _restrict_identity_key(key, platform_name="nt")
+            command = run.call_args_list[1].args[0]
+            self.assertIn("/inheritance:r", command)
+            self.assertIn("*S-1-5-21-123-456-789-1001:(F)", command)
+            self.assertIn("*S-1-5-18:(F)", command)
+            self.assertIn("*S-1-5-32-544:(F)", command)
+
+    def test_new_identity_key_is_removed_when_permission_hardening_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            body = MantleBody(nest)
+            with (
+                mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM),
+                mock.patch(
+                    "mantleos.runtime._restrict_identity_key",
+                    side_effect=MantleError("private ACL failed"),
+                ),
+                self.assertRaises(MantleError),
+            ):
+                body.birth("Candidate", approved=True)
+            self.assertFalse((nest / ".mantle" / "keys" / "body.key").exists())
+
     def test_constructed_body_rejects_heartbeat_and_birth_without_approval(self):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)

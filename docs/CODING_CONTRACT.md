@@ -54,6 +54,11 @@ and that no undeclared public candidate tissue appeared. A mismatch stops birth
 without creating an identity key. Native NEST files remain OTHER and may evolve;
 their current state is observed by Layer 0 rather than silently claimed as SELF.
 
+The identity key must be owner-only at the operating-system boundary. Windows
+birth removes inherited general-user access with an explicit private ACL;
+POSIX mode bits alone are not treated as sufficient on Windows. Birth fails
+closed and removes a newly created key if this restriction cannot be applied.
+
 ## 4. Heart and MIND
 
 Every Heartbeat follows the same broad physiological transaction: load, verify,
