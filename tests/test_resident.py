@@ -18,7 +18,7 @@ def test_resident_requires_explicit_install_and_birth(tmp_path):
 def test_windows_resident_is_user_level_nest_contained_and_reversible(tmp_path, monkeypatch):
     mantle = tmp_path / "mantle"
     mantle.mkdir()
-    monkeypatch.setattr("mantleos.resident.os.name", "nt")
+    monkeypatch.setattr("mantleos.resident.PLATFORM", "nt")
     with (
         mock.patch("mantleos.resident.MantleBody.is_born", new_callable=mock.PropertyMock) as born,
         mock.patch("mantleos.resident.subprocess.run") as run,

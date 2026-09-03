@@ -13,6 +13,8 @@ from typing import Any
 
 from .runtime import MantleBody, MantleError, _atomic_write, utc_now
 
+PLATFORM = os.name
+
 
 class ResidentError(MantleError):
     pass
@@ -53,7 +55,7 @@ def install_resident(nest: str | Path, *, approved: bool) -> dict[str, Any]:
     registration_id = _registration_id(nest)
     _atomic_write(runner, _runner_text(nest).encode("utf-8"))
 
-    if os.name == "nt":
+    if PLATFORM == "nt":
         command = subprocess.list2cmdline([sys.executable, str(runner)])
         _run(
             [
