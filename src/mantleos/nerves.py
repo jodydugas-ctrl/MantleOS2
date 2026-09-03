@@ -127,14 +127,21 @@ def tool_completed(
     arguments: dict[str, Any] | None,
     status: str,
     duration_ms: int,
+    session_id: str = "",
+    turn_id: str = "",
 ) -> None:
     """Record semantic tool completion without copying values or results."""
     values = arguments or {}
     digest = hashlib.sha256(
         json.dumps(values, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    sense(
-        "body.tool.completed",
+    body = _body()
+    if body is None:
+        return
+    appai_action = body.host_heartbeat_pending(session_id, turn_id)
+    body.record_observation(
+        "actions" if appai_action else "layer-0",
+        "appai.limb.completed" if appai_action else "body.tool.completed",
         {
             "tool": tool_name,
             "argument_keys": sorted(str(key) for key in values),
@@ -143,6 +150,38 @@ def tool_completed(
             "duration_ms": int(duration_ms),
         },
     )
+
+
+def authorize_tool(
+    *,
+    tool_name: str,
+    arguments: dict[str, Any] | None,
+    session_id: str,
+    turn_id: str,
+) -> str | None:
+    """Route an AppAI action proposal through Body-owned native authority."""
+    body = _body()
+    if body is None or not body.host_heartbeat_pending(session_id, turn_id):
+        return None
+    values = arguments or {}
+    digest = hashlib.sha256(
+        json.dumps(values, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    physiology = body.status().get("physiology", {}).get("state", "active")
+    body.record_observation(
+        "actions",
+        "appai.limb.proposed",
+        {
+            "tool": tool_name,
+            "argument_keys": sorted(str(key) for key in values),
+            "arguments_sha256": digest,
+            "authority": "native-body-guardrails",
+            "physiology": physiology,
+        },
+    )
+    if physiology != "active":
+        return f"Mantle Body refused AppAI Limb action while physiology is {physiology}"
+    return None
 
 
 def session_ended(

@@ -34,10 +34,10 @@ index 46cbc717a7e852471a915f04334e86a25ba4360c..e8337364d960304c52eb22a9a9eb92d3
      # session is created (not on continuation).  Plugins can use this
      # to initialise session-scoped state (e.g. warm a memory cache).
 diff --git a/agent/tool_executor.py b/agent/tool_executor.py
-index fb0265310c3859b8521d21964d1c9d1dcccf5b19..4b706bd651913427d81e227edd98e447c362eaf3 100644
+index fb0265310c3859b8521d21964d1c9d1dcccf5b19..2cfeb780f9454cc61714310a4aa4d9cc8303ed9f 100644
 --- a/agent/tool_executor.py
 +++ b/agent/tool_executor.py
-@@ -332,6 +332,18 @@ def _emit_terminal_post_tool_call(
+@@ -332,6 +332,20 @@ def _emit_terminal_post_tool_call(
          pass
  
  
@@ -50,12 +50,37 @@ index fb0265310c3859b8521d21964d1c9d1dcccf5b19..4b706bd651913427d81e227edd98e447
 +            arguments=function_args,
 +            status=status or ("failed" if error_type else "completed"),
 +            duration_ms=duration_ms,
++            session_id=getattr(agent, "session_id", "") or "",
++            turn_id=getattr(agent, "_current_turn_id", "") or "",
 +        )
 +    except Exception:
 +        logger.debug("Mantle tool nerve unavailable", exc_info=True)
  def _cancelled_tool_result(reason: str = "user interrupt") -> str:
      return json.dumps(
          {
+@@ -638,6 +652,22 @@ def _run_agent_tool_execution_middleware(
+ 
+         block_message = scope_block
+         block_error_type = "tool_scope_block"
++        # MantleOS direct efferent nerve: AppAI Limb proposal.
++        if block_message is None:
++            try:
++                from mantle.nerves import authorize_tool as _mantle_authorize_tool
++                _mantle_block = _mantle_authorize_tool(
++                    tool_name=function_name,
++                    arguments=final_args,
++                    session_id=getattr(agent, "session_id", "") or "",
++                    turn_id=getattr(agent, "_current_turn_id", "") or "",
++                )
++                if _mantle_block:
++                    block_message = _mantle_block
++                    block_error_type = "mantle_authority_block"
++            except Exception:
++                logger.debug("Mantle Limb-authority nerve unavailable", exc_info=True)
++
+         if block_message is None:
+             block_error_type = "plugin_block"
+ 
 diff --git a/agent/turn_context.py b/agent/turn_context.py
 index e0f06338dc2f25f8f86e7b03bbecea10af75c3ca..a316099cf5f149198eaf3bd5ee4c915113ff68ca 100644
 --- a/agent/turn_context.py

@@ -1357,6 +1357,13 @@ class MantleBody:
         path = self.paths.host_heartbeats / self._receipt_name(session_id, turn_id)
         return self._complete_host_receipt(path, mind_status=mind_status)
 
+    def host_heartbeat_pending(self, session_id: str, turn_id: str) -> bool:
+        if not self.is_born:
+            return False
+        path = self.paths.host_heartbeats / self._receipt_name(session_id, turn_id)
+        receipt = _load_sealed_json(path, self._cipher(), "host-heartbeat", {})
+        return receipt.get("status") == "pending"
+
     def verify(self) -> dict[str, Any]:
         if not self.is_born:
             proof = self._construction_proof()

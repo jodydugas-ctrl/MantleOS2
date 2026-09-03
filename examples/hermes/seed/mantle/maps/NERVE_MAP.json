@@ -57,6 +57,25 @@
     "after_sha256": "725f5ef78d0f0e1bd1b63bf04c3d8a66083169679e2d270cd3a1c4cfe54d1835"
   },
   {
+    "nerve_id": "hermes:appai.limb.proposed",
+    "direction": "efferent",
+    "semantic_event": "appai.limb.proposed",
+    "anchor": {
+      "path": "agent/tool_executor.py",
+      "symbol": "_authorized_dispatch",
+      "anchor_sha256": "7c2eb9f38b1e7afd30943c79d5b9714f1c66116815be229ee762e9cf1e3e0f9f",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:actions:v2",
+    "capability_id": "hermes.tool-dispatch",
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "08965a18d17fc7b92ac9264e8131ce91cce23b88b479fe7356154a8144bc35d2",
+    "after_sha256": "016ccf405676842ebad7e9190a07d7bba7ddfbbb241f8fe43418379cfe867808"
+  },
+  {
     "nerve_id": "hermes:body.tool.completed",
     "direction": "afferent",
     "semantic_event": "body.tool.completed",
@@ -72,8 +91,8 @@
     "redaction_policy": "deny-secrets",
     "failure_mode": "native-no-op",
     "tissue_state": "staged",
-    "before_sha256": "08965a18d17fc7b92ac9264e8131ce91cce23b88b479fe7356154a8144bc35d2",
-    "after_sha256": "cd33128b2e791795f86bfe523064c7dbfdc1260f3b1ba546ada1162d03100f3b"
+    "before_sha256": "016ccf405676842ebad7e9190a07d7bba7ddfbbb241f8fe43418379cfe867808",
+    "after_sha256": "bd521ed6b99067e37df1eac9dd8706daca023070e480b7e07cc69a442a92c633"
   },
   {
     "nerve_id": "hermes:body.session.ended",
