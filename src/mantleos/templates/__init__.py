@@ -1,2 +1,0 @@
-"""Packaged public construction templates."""
-

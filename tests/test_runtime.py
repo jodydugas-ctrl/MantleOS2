@@ -55,12 +55,16 @@ def prepare_unborn_nest(nest: Path) -> None:
     primer = nest / "mantle" / "primer"
     primer.mkdir(parents=True)
     (primer / "COMMANDMENTS.md").write_text("Protect your VCW.", encoding="utf-8")
-    (primer / "PERSONALITY.md").write_text("Preserve the frame.", encoding="utf-8")
+    private_construction = nest / ".mantle" / "construction"
+    private_construction.mkdir(parents=True)
+    personality = private_construction / "PERSONALITY.CANDIDATE.md"
+    personality.write_text("Preserve the frame.\n" * 30, encoding="utf-8")
+    evidence = private_construction / "personality-evidence.json"
+    evidence.write_text('{"source":"test"}\n', encoding="utf-8")
     manifest_path = nest / "mantle" / "ASSIMILATION.json"
     delta_paths = [
         "mantle/ASSIMILATION.json",
         "mantle/primer/COMMANDMENTS.md",
-        "mantle/primer/PERSONALITY.md",
     ]
     checksums = {
         relative: hashlib.sha256((nest / relative).read_bytes()).hexdigest()
@@ -77,7 +81,6 @@ def prepare_unborn_nest(nest: Path) -> None:
         ),
         encoding="utf-8",
     )
-    (nest / ".mantle").mkdir()
     (nest / ".mantle" / "prebirth.json").write_text(
         json.dumps(
             {
@@ -85,6 +88,11 @@ def prepare_unborn_nest(nest: Path) -> None:
                 "status": "constructed-not-born",
                 "public_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                 "gates": {"primer": "ready-for-birth-review"},
+                "primer_candidate": {
+                    "personality_sha256": hashlib.sha256(personality.read_bytes()).hexdigest(),
+                    "evidence_sha256": hashlib.sha256(evidence.read_bytes()).hexdigest(),
+                    "status": "ready-for-birth-review",
+                },
             }
         ),
         encoding="utf-8",
@@ -109,6 +117,8 @@ class VCWTests(unittest.TestCase):
             self.assertEqual(8, proof["records"])
             headers = [json.loads(path.read_text(encoding="utf-8").splitlines()[0]) for path in files]
             self.assertEqual({"book:example:v1"}, {header["book_id"] for header in headers})
+            self.assertEqual({"STATE_EVENT"}, {header["tome"] for header in headers})
+            self.assertEqual({"canonical-json-v2"}, {header["dialect"] for header in headers})
             self.assertEqual(files[0].name, headers[1]["extension_of"])
 
     def test_tamper_is_detected(self):
@@ -215,6 +225,12 @@ class GateTests(unittest.TestCase):
                 self.assertEqual(identity["born_at"], identity["first_heartbeat"]["completed_at"])
                 self.assertTrue((nest / "COMMUNICATION.TXT").exists())
                 self.assertTrue((nest / ".mantle" / "vcw" / "layer-0").is_dir())
+                self.assertEqual("active", body.status()["physiology"]["state"])
+                stasis = body.set_physiology("stasis", reason="operator test")
+                self.assertEqual("stasis", stasis["state"])
+                with self.assertRaises(MantleError):
+                    body.set_physiology("unborn", reason="invalid regression")
+                body.set_physiology("active", reason="resume test")
 
                 with (nest / "COMMUNICATION.TXT").open("a", encoding="utf-8") as handle:
                     handle.write("USER> hello\n")
@@ -279,7 +295,7 @@ class GateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)
             prepare_unborn_nest(nest)
-            personality = nest / "mantle" / "primer" / "PERSONALITY.md"
+            personality = nest / ".mantle" / "construction" / "PERSONALITY.CANDIDATE.md"
             personality.write_text("A silently changed personality.", encoding="utf-8")
             body = MantleBody(nest)
             self.assertEqual("construction-invalid", body.status()["status"])

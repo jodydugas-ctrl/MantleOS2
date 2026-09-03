@@ -1,4 +1,4 @@
-"""Read-first GitHub NEST assimilation for MantleOS 2.
+"""Read-first, substrate-neutral NEST assimilation for MantleOS 2.
 
 The constructor clones and inventories a host, then writes only Mantle-owned
 construction tissue.  It never executes code from the cloned repository and
@@ -16,12 +16,13 @@ import tempfile
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
-from importlib.resources import files
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from .constitution import species_kernel_markdown
+from .constitution import COMMANDMENTS_VERSION, species_kernel_markdown, species_kernel_sha256
+from .mapping import map_body
+from .targets.hermes import HermesInnervationError, innervate, is_hermes
 
 SCHEMA = "mantle.assimilation.v2"
 GITHUB_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -165,28 +166,44 @@ def _append_gitignore(nest: Path) -> dict[str, str]:
     return {"path": ".gitignore", "before_sha256": before, "after_sha256": sha256_file(path)}
 
 
-def _template_text(name: str) -> str:
-    return files("mantleos.templates.hermes").joinpath(name).read_text(encoding="utf-8")
+PUBLIC_README = """# MantleOS 2 tissue
 
+This directory is the public, reproducible tissue added during assimilation.
+The surrounding NEST is Layer 0 and remains the Default Body. Native behavior
+must remain available when the organism is unborn, in stasis, lacks a MIND, or
+cannot load Mantle.
 
-def _hermes_integration_text(name: str) -> str:
-    return files("mantleos.integrations.hermes").joinpath(name).read_text(encoding="utf-8")
+`ASSIMILATION.json` binds the Body Map, direct nerve map, source provenance,
+candidate Primer state, and every declared public file. Private identity, VCW,
+provider state, and Heart receipts live under ignored `.mantle/` storage.
+"""
 
+NERVE_PROXY = '''"""NEST-local direct nerve surface. This is not a plugin."""
+try:
+    from mantleos.nerves import after_mind, before_mind, session_ended, session_started, tool_completed
+except Exception:
+    def _noop(*args, **kwargs):
+        return {"direct": False, "context": "", "message": kwargs.get("user_message", "")}
+    after_mind = before_mind = session_ended = session_started = tool_completed = _noop
+
+__all__ = ["after_mind", "before_mind", "session_ended", "session_started", "tool_completed"]
+'''
 
 def _write_public_delta(nest: Path, manifest: dict[str, Any]) -> list[str]:
     public = nest / "mantle"
     payloads = {
         "__init__.py": (
             '"""MantleOS 2 NEST controls. Requires the mantleos2 package."""\n'
-            "from mantleos.runtime import Book, MantleBody, MantleError, VCW\n"
+            "from mantleos.runtime import VCW, Book, MantleBody, MantleError\n"
+            "\n"
             '__all__ = ["Book", "MantleBody", "MantleError", "VCW"]\n'
         ),
-        "__main__.py": "from mantleos.cli import main\nraise SystemExit(main())\n",
-        "README.md": _template_text("README.md"),
+        "__main__.py": "from mantleos.cli import main\n\nraise SystemExit(main())\n",
+        "README.md": PUBLIC_README,
+        "nerves.py": NERVE_PROXY,
         "primer/COMMANDMENTS.md": species_kernel_markdown(),
-        "primer/PERSONALITY.md": _template_text("PERSONALITY.md"),
-        "hermes_plugin/__init__.py": _hermes_integration_text("plugin.py"),
-        "hermes_plugin/plugin.yaml": _hermes_integration_text("plugin.yaml"),
+        "maps/BODY_MAP.json": json.dumps(manifest["body_map"], indent=2, ensure_ascii=False) + "\n",
+        "maps/NERVE_MAP.json": json.dumps(manifest["nerve_map"], indent=2, ensure_ascii=False) + "\n",
     }
     written: list[str] = []
     for relative, value in payloads.items():
@@ -206,6 +223,7 @@ def construct_nest(
     source_url: str,
     command: str,
     identity_suggestion: str = "The Compiler",
+    purpose: str = "Create an AppAI while preserving native Body behavior",
 ) -> dict[str, Any]:
     """Construct an un-born Mantle delta in an already-cloned Git NEST."""
     nest = nest.resolve()
@@ -218,6 +236,11 @@ def construct_nest(
     tree = _git(["rev-parse", "HEAD^{tree}"], cwd=nest)
     branch = _git(["branch", "--show-current"], cwd=nest) or None
     before = census_repository(nest)
+    body_map = map_body(
+        nest,
+        source_uri=source_url,
+        source_fingerprint=before.source_fingerprint,
+    )
     license_path = next(
         (
             path
@@ -227,6 +250,11 @@ def construct_nest(
         None,
     )
     host_edge = _append_gitignore(nest)
+    try:
+        nerve_map = innervate(nest) if is_hermes(nest) else []
+    except HermesInnervationError as exc:
+        raise AssimilationError(str(exc)) from exc
+    target_kind = "hermes" if nerve_map else "unresolved"
     manifest: dict[str, Any] = {
         "schema": SCHEMA,
         "status": "constructed-not-born",
@@ -251,29 +279,36 @@ def construct_nest(
             "compatibility_rule": "The host must retain ordinary behavior without the AppAI MIND.",
         },
         "identity_suggestion": identity_suggestion,
+        "declared_purpose": purpose,
+        "body_map": body_map,
+        "nerve_map": nerve_map,
+        "target": {
+            "kind": target_kind,
+            "mapping": "built-in-language-map" if nerve_map else "requires-user-reviewed-mapper",
+            "traditional_plugin": False,
+        },
         "primer_candidate": {
-            "status": "ready-for-birth-review",
+            "status": "awaiting-developmental-mind",
             "commandments": "primer/COMMANDMENTS.md",
-            "personality": "primer/PERSONALITY.md",
+            "commandments_version": COMMANDMENTS_VERSION,
+            "commandments_sha256": species_kernel_sha256(),
+            "personality": "private construction candidate; never part of the public delta",
             "developmental_mind": "external construction process; not the organism MIND",
-            "provenance": [
-                "shared AppAI species kernel",
-                "frame-preserving Cuttlefish persona distillation",
-                "Hermes source and development contract",
-                "operator clarification and review",
-            ],
+            "provenance": ["Body Map", "declared purpose", "user-approved construction evidence"],
         },
         "host_edges": [host_edge],
         "activation": {
             "automatic": False,
             "birth_requires_separate_approval": True,
-            "hermes_plugin_requires_opt_in": True,
+            "direct_nerves": bool(nerve_map),
+            "traditional_plugin": False,
         },
         "gates": {
             "source_identified": "verified",
             "read_only_census": "verified",
-            "host_behavior": "requires-runtime-verification",
-            "primer": "ready-for-birth-review",
+            "innervation": "staged" if nerve_map else "requires-reviewed-mapper",
+            "host_behavior": "awaiting-explicit-sandbox-tests",
+            "primer": "awaiting-developmental-mind",
             "public_delta": "verified-at-construction",
             "birth": "not-authorized",
         },
@@ -307,14 +342,15 @@ def construct_nest(
             "source_identified": "verified",
             "read_only_census": "verified",
             "host_behavior": "requires-runtime-verification",
-            "primer": "ready-for-birth-review",
+            "innervation": "staged" if nerve_map else "requires-reviewed-mapper",
+            "primer": "awaiting-developmental-mind",
             "public_delta": "verified-at-construction",
             "birth": "not-authorized",
         },
         "constraints": [
             "Host-native behavior remains available without a MIND.",
             "No live VCW, identity key, or communication file exists before birth.",
-            "The Hermes adapter is opt-in and uses documented host edges.",
+            "Direct nerves are inserted at mapped host seams; no traditional plugin is used.",
         ],
     }
     _atomic_text(
@@ -324,13 +360,24 @@ def construct_nest(
     return manifest
 
 
-def assimilate_github(
+def assimilate_source(
     source: str,
     *,
     destination: str | Path | None = None,
     ref: str | None = None,
+    purpose: str = "Create an AppAI while preserving native Body behavior",
+    canonical_source: str | None = None,
 ) -> dict[str, Any]:
-    canonical_url, repository = normalize_github_source(source)
+    local_source = Path(source).resolve()
+    if local_source.is_dir():
+        if not (local_source / ".git").exists():
+            raise AssimilationError("A local Body source must be a Git checkout")
+        clone_source = str(local_source)
+        repository = local_source.name
+        canonical_url = canonical_source or local_source.as_uri()
+    else:
+        canonical_url, repository = normalize_github_source(source)
+        clone_source = canonical_url
     target = Path(destination or repository).resolve()
     if target.exists() and any(target.iterdir()):
         raise AssimilationError(f"Destination is not empty: {target}")
@@ -343,13 +390,15 @@ def assimilate_github(
             "-c",
             f"core.hooksPath={hook_dir}",
             "-c",
+            "core.autocrlf=false",
+            "-c",
             "filter.lfs.smudge=",
             "-c",
             "filter.lfs.required=false",
             "clone",
             "--no-recurse-submodules",
         ]
-        clone.extend([canonical_url, str(target)])
+        clone.extend([clone_source, str(target)])
         _git(clone)
     if ref:
         _git(["fetch", "--depth", "1", "origin", ref], cwd=target)
@@ -360,4 +409,16 @@ def assimilate_github(
         command += f" --ref {ref}"
     if destination:
         command += f" --destination {destination}"
-    return construct_nest(target, source_url=canonical_url, command=command)
+    return construct_nest(target, source_url=canonical_url, command=command, purpose=purpose)
+
+
+def assimilate_github(
+    source: str,
+    *,
+    destination: str | Path | None = None,
+    ref: str | None = None,
+    purpose: str = "Create an AppAI while preserving native Body behavior",
+) -> dict[str, Any]:
+    """Compatibility entry point restricted to GitHub sources."""
+    normalize_github_source(source)
+    return assimilate_source(source, destination=destination, ref=ref, purpose=purpose)

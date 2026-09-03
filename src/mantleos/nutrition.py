@@ -62,7 +62,7 @@ def openrouter_completion(
         {
             "model": model,
             "messages": [{"role": "user", "content": message}],
-            "max_tokens": max(1, min(max_tokens, 2_048)),
+            "max_tokens": max(1, min(max_tokens, 4_096)),
             "temperature": 0,
         }
     ).encode("utf-8")

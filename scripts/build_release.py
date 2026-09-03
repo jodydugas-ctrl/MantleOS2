@@ -30,11 +30,13 @@ def main() -> int:
 
     bundle = output / "mantleos2-hermes-delta.zip"
     patch = subprocess.run(
-        ["git", "diff", "--binary", "--", ".gitignore"],
+        ["git", "diff", "--binary", "--", ":(exclude)mantle/**"],
         cwd=nest,
         check=True,
         capture_output=True,
     ).stdout
+    if not patch:
+        raise SystemExit("host-edge patch is empty")
     manifest = (nest / "mantle" / "ASSIMILATION.json").read_bytes()
     timestamp = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     with zipfile.ZipFile(bundle, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
@@ -42,6 +44,16 @@ def main() -> int:
             if path.is_file() and "__pycache__" not in path.parts and path.suffix not in {".pyc", ".pyo"}:
                 archive.write(path, path.relative_to(nest).as_posix())
         archive.writestr("host-edge.patch", patch)
+        archive.writestr(
+            "APPLY.md",
+            "# Apply the Hermes reference seed\n\n"
+            "Start from the exact commit recorded in `mantle/ASSIMILATION.json`. "
+            "Copy `mantle/` into the NEST, then run `git apply --check host-edge.patch` "
+            "and `git apply host-edge.patch`. Verify with MantleOS before any birth.\n\n"
+            "To reverse the public delta before birth, run `git apply -R host-edge.patch` "
+            "and remove only the copied `mantle/` directory. Private organism state is "
+            "not part of this bundle.\n",
+        )
         archive.writestr("manifest/ASSIMILATION.json", manifest)
         if args.test_report and args.test_report.is_file():
             archive.write(args.test_report, "evidence/test-results.xml")

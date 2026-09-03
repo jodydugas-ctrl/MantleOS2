@@ -9,6 +9,7 @@ import pytest
 
 from mantleos.assimilate import (
     AssimilationError,
+    assimilate_source,
     census_repository,
     construct_nest,
     normalize_github_source,
@@ -79,10 +80,16 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     assert manifest["status"] == "constructed-not-born"
     assert manifest["default_body"]["logical_layer"] == 0
     assert manifest["activation"]["automatic"] is False
+    assert manifest["activation"]["traditional_plugin"] is False
+    assert manifest["body_map"]["default_body"] == "NEST"
+    assert manifest["gates"]["primer"] == "awaiting-developmental-mind"
     assert not sentinel.exists()
     assert not (root / "COMMUNICATION.TXT").exists()
     assert not (root / ".mantle" / "keys").exists()
     assert (root / "mantle" / "ASSIMILATION.json").is_file()
+    assert (root / "mantle" / "maps" / "BODY_MAP.json").is_file()
+    assert (root / "mantle" / "maps" / "NERVE_MAP.json").is_file()
+    assert not any("plugin" in path.as_posix().lower() for path in (root / "mantle").rglob("*"))
     assert (root / ".mantle" / "prebirth.json").is_file()
     assert "/.mantle/" in (root / ".gitignore").read_text(encoding="utf-8")
 
@@ -101,3 +108,17 @@ def test_existing_mantle_tissue_is_not_overwritten(tmp_path: Path):
     (root / "mantle").mkdir()
     with pytest.raises(AssimilationError, match="already contains"):
         construct_nest(root, source_url="https://github.com/example/host", command="test")
+
+
+def test_local_git_source_is_cloned_without_execution(tmp_path: Path):
+    source = _host(tmp_path)
+    destination = tmp_path / "candidate"
+    manifest = assimilate_source(
+        str(source),
+        destination=destination,
+        canonical_source="https://github.com/example/native-body",
+    )
+    assert manifest["source"]["canonical_url"] == "https://github.com/example/native-body"
+    assert manifest["target"]["kind"] == "unresolved"
+    assert manifest["gates"]["innervation"] == "requires-reviewed-mapper"
+    assert not (destination / "would-run.txt").exists()

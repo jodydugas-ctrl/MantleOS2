@@ -34,8 +34,6 @@ jobs:
               output.write(f"commit={commit}\n")
       - name: Construct disposable NEST
         run: mantle assimilate github.com/nousresearch/hermes-agent --ref "${{ steps.lock.outputs.commit }}" --destination "$RUNNER_TEMP/hermes-agent"
-      - name: Birth disposable CI organism
-        run: mantle --nest "$RUNNER_TEMP/hermes-agent" birth --name "CI Disposable" --approve-birth
       - name: Prepare Food without logging the credential
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -48,8 +46,14 @@ jobs:
               raise SystemExit("OPENROUTER_API_KEY is not configured")
           Path(os.environ["RUNNER_TEMP"], "hermes-agent", "Food.txt").write_text(
               os.environ["OPENROUTER_API_KEY"] + "\n" + os.environ["OPENROUTER_MODEL"] + "\n",
-              encoding="utf-8",
+            encoding="utf-8",
           )
+      - name: Generate and approve disposable test Personality
+        run: |
+          mantle --nest "$RUNNER_TEMP/hermes-agent" primer generate --food "$RUNNER_TEMP/hermes-agent/Food.txt" --context "Disposable CI organism for provider-boundary verification only."
+          mantle --nest "$RUNNER_TEMP/hermes-agent" primer approve --approve-primer
+      - name: Birth disposable CI organism
+        run: mantle --nest "$RUNNER_TEMP/hermes-agent" birth --name "CI Disposable" --approve-birth
       - name: Digest and verify Food
         run: mantle --nest "$RUNNER_TEMP/hermes-agent" digest "$RUNNER_TEMP/hermes-agent/Food.txt"
       - name: Verify VCW integrity

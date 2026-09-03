@@ -16,13 +16,15 @@ import subprocess
 import time
 import uuid
 from collections.abc import Callable, Iterable
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from .contracts import PhysiologyState
 from .nutrition import NutritionError, openrouter_completion, parse_openrouter_food, verify_openrouter_food
+from .organs import redact_semantic_data
 
 SCHEMA = "mantle.body.v2"
 DEFAULT_LAYER_CAPACITY = 1_048_576
@@ -58,6 +60,47 @@ def _atomic_write(path: Path, data: bytes) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_bytes(data)
     os.replace(temporary, path)
+
+
+@contextmanager
+def _exclusive_file(path: Path, *, timeout: float = 10.0):
+    """Portable advisory lock for append and Heartbeat critical sections."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("a+b")
+    if path.stat().st_size == 0:
+        handle.write(b"0")
+        handle.flush()
+    started = time.monotonic()
+    while True:
+        try:
+            handle.seek(0)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except OSError:
+            if time.monotonic() - started >= timeout:
+                handle.close()
+                raise MantleError(f"Timed out waiting for Body lock: {path.name}") from None
+            time.sleep(0.05)
+    try:
+        yield
+    finally:
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        handle.close()
 
 
 def _restrict_identity_key(path: Path, *, platform_name: str | None = None) -> None:
@@ -133,6 +176,14 @@ class BodyPaths:
         return self.private / "self" / "primer.enc"
 
     @property
+    def personality_candidate(self) -> Path:
+        return self.private / "construction" / "PERSONALITY.CANDIDATE.md"
+
+    @property
+    def personality_evidence(self) -> Path:
+        return self.private / "construction" / "personality-evidence.json"
+
+    @property
     def birth_candidate(self) -> Path:
         return self.private / "self" / "birth-candidate.enc"
 
@@ -171,6 +222,10 @@ class BodyPaths:
     @property
     def openrouter_provider(self) -> Path:
         return self.private / "providers" / "openrouter.enc"
+
+    @property
+    def physiology(self) -> Path:
+        return self.private / "state" / "physiology.enc"
 
     @property
     def communication(self) -> Path:
@@ -228,13 +283,20 @@ class Book:
     application: str
     book_id: str
     capacity: int = DEFAULT_LAYER_CAPACITY
+    tome: str = "STATE_EVENT"
+    dialect: str = "canonical-json-v2"
 
 
 DEFAULT_BOOKS = (
-    Book("layer-0", "Default Body / NEST", "book:default-body:v1"),
-    Book("heart", "HEART", "book:heart:v1"),
-    Book("communication", "User communication", "book:communication:v1"),
-    Book("mind", "MIND interface", "book:mind:v1"),
+    Book("layer-0", "Default Body / NEST", "book:default-body:v2"),
+    Book("heart", "HEART", "book:heart:v2", tome="PHYSIOLOGY"),
+    Book("communication", "User communication", "book:communication:v2", tome="COMMUNICATION"),
+    Book("mind", "MIND interface", "book:mind:v2", tome="AGENT"),
+    Book("senses", "Semantic sensory ingress", "book:senses:v2", tome="SENSORY"),
+    Book("immune", "Immune findings", "book:immune:v2", tome="AUTHORITY"),
+    Book("authority", "Capability grants", "book:authority:v2", tome="AUTHORITY"),
+    Book("actions", "Admitted Limb actions", "book:actions:v2", tome="TOOLS"),
+    Book("lineage", "Identity and lifecycle", "book:lineage:v2", tome="LINEAGE"),
 )
 
 
@@ -285,6 +347,8 @@ class VCW:
             "logical_layer": book.logical_id,
             "application": book.application,
             "book_id": book.book_id,
+            "tome": book.tome,
+            "dialect": book.dialect,
             "physical_sequence": sequence,
             "extension_of": extension_of,
             "previous_tail_hash": previous_tail_hash,
@@ -296,6 +360,10 @@ class VCW:
         return path
 
     def append(self, logical_id: str, kind: str, data: dict[str, Any]) -> dict[str, Any]:
+        with _exclusive_file(self.root / ".append.lock"):
+            return self._append_unlocked(logical_id, kind, redact_semantic_data(data))
+
+    def _append_unlocked(self, logical_id: str, kind: str, data: dict[str, Any]) -> dict[str, Any]:
         if logical_id not in self.books:
             raise MantleError(f"No Book exists for logical VCW layer {logical_id!r}")
         book = self.books[logical_id]
@@ -351,7 +419,12 @@ class VCW:
                 claimed_header_hash = header.pop("header_hash")
                 if sha256_bytes(canonical_json(header)) != claimed_header_hash:
                     raise MantleError(f"VCW header hash failed: {path}")
-                if header["book_id"] != book.book_id or header["physical_sequence"] != index:
+                if (
+                    header["book_id"] != book.book_id
+                    or header.get("tome") != book.tome
+                    or header.get("dialect") != book.dialect
+                    or header["physical_sequence"] != index
+                ):
                     raise MantleError(f"VCW Book or extension sequence mismatch: {path}")
                 if index > 1 and header["previous_tail_hash"] != previous_physical_tail:
                     raise MantleError(f"VCW extension does not continue its parent: {path}")
@@ -492,6 +565,21 @@ class MantleBody:
         if manifest.get("status") != "constructed-not-born":
             raise MantleError("The public assimilation manifest is not a prebirth construction")
 
+        primer_candidate = prebirth.get("primer_candidate")
+        if isinstance(primer_candidate, dict):
+            expected_personality = primer_candidate.get("personality_sha256")
+            expected_evidence = primer_candidate.get("evidence_sha256")
+            if expected_personality and (
+                not self.paths.personality_candidate.is_file()
+                or sha256_file(self.paths.personality_candidate) != expected_personality
+            ):
+                raise MantleError("The private Personality candidate changed after construction")
+            if expected_evidence and (
+                not self.paths.personality_evidence.is_file()
+                or sha256_file(self.paths.personality_evidence) != expected_evidence
+            ):
+                raise MantleError("The private Personality evidence changed after construction")
+
         delta = manifest.get("delta")
         if not isinstance(delta, dict):
             raise MantleError("The public assimilation manifest has no delta proof")
@@ -536,6 +624,24 @@ class MantleBody:
         if missing:
             raise MantleError(f"Declared public candidate tissue is missing: {missing[0]}")
 
+        # Direct nerve bytes are candidate tissue too. Before birth, every
+        # mapped seam must still match its final construction hash.
+        nerve_map = manifest.get("nerve_map", [])
+        final_by_path: dict[str, str] = {}
+        for nerve in nerve_map:
+            if not isinstance(nerve, dict):
+                raise MantleError("The Nerve Map contains an invalid record")
+            anchor = nerve.get("anchor", {})
+            path = anchor.get("path") if isinstance(anchor, dict) else None
+            after = nerve.get("after_sha256")
+            if not isinstance(path, str) or not isinstance(after, str):
+                raise MantleError("The Nerve Map does not bind a source seam")
+            final_by_path[path] = after
+        for relative, expected in final_by_path.items():
+            path = self.paths.nest / relative
+            if not path.is_file() or sha256_file(path) != expected:
+                raise MantleError(f"Direct nerve tissue changed after construction: {relative}")
+
         gitignore = self.paths.nest / ".gitignore"
         gitignore_text = gitignore.read_text(encoding="utf-8") if gitignore.is_file() else ""
         required_ignores = ("/.mantle/", "/COMMUNICATION.TXT", "/Food.txt")
@@ -547,6 +653,7 @@ class MantleBody:
             "manifest_sha256": actual_manifest,
             "declared_files": len(declared_paths),
             "verified_files": len(expected_hashed),
+            "verified_nerve_files": len(final_by_path),
             "birth_authorized": False,
         }
 
@@ -589,7 +696,59 @@ class MantleBody:
                     "model": provider.get("model"),
                     "status": provider.get("status"),
                 }
+            result["physiology"] = _load_sealed_json(
+                self.paths.physiology,
+                cipher,
+                "physiology",
+                {"state": PhysiologyState.ACTIVE.value},
+            )
         return result
+
+    def set_physiology(self, state: PhysiologyState | str, *, reason: str) -> dict[str, Any]:
+        if not self.is_born:
+            raise MantleError("Physiology cannot change before birth")
+        try:
+            resolved = state if isinstance(state, PhysiologyState) else PhysiologyState(state)
+        except ValueError as exc:
+            raise MantleError(f"Unknown physiology state: {state}") from exc
+        if resolved is PhysiologyState.CONSTRUCTION or resolved is PhysiologyState.UNBORN:
+            raise MantleError("A born organism cannot return to a prebirth physiology state")
+        record = {"state": resolved.value, "reason": reason, "changed_at": utc_now()}
+        _save_sealed_json(self.paths.physiology, self._cipher(), "physiology", record)
+        self._vcw().append("heart", "physiology.changed", record)
+        return record
+
+    def primer_context(self, events: list[dict[str, Any]]) -> str:
+        """Build the Body-owned, Primer-first context for an AppAI MIND call.
+
+        The identity key is used only to open SELF inside the Body.  It and the
+        encrypted source records are never returned to the MIND.
+        """
+        if not self.is_born:
+            raise MantleError("Primer context is unavailable before birth")
+        primer = _load_sealed_json(self.paths.primer, self._cipher(), "primer", {})
+        if not primer:
+            raise MantleError("The sealed Primer is missing")
+        safe_events = [
+            {
+                "logical_layer": event.get("logical_layer"),
+                "kind": event.get("kind"),
+                "recorded_at": event.get("recorded_at"),
+                "data": event.get("data"),
+                "hash": event.get("hash"),
+            }
+            for event in events
+        ]
+        return (
+            "<APPAI_PRIMER>\n"
+            + primer["commandments"].strip()
+            + "\n\n"
+            + primer["personality"].strip()
+            + "\n</APPAI_PRIMER>\n\n"
+            + "<BODY_CONTINUITY>\n"
+            + json.dumps(safe_events, sort_keys=True, ensure_ascii=False)
+            + "\n</BODY_CONTINUITY>"
+        )
 
     def birth(self, name: str, *, approved: bool = False) -> dict[str, Any]:
         if not approved:
@@ -604,10 +763,14 @@ class MantleBody:
         prebirth = json.loads(self.paths.prebirth.read_text(encoding="utf-8"))
         if prebirth.get("gates", {}).get("primer") != "ready-for-birth-review":
             raise MantleError("The Primer candidate is not ready for a separate birth review")
-        for required in ("COMMANDMENTS.md", "PERSONALITY.md"):
-            primer_path = self.paths.public / "primer" / required
-            if not primer_path.is_file() or not primer_path.read_text(encoding="utf-8").strip():
-                raise MantleError(f"Primer candidate is missing {required}")
+        commandments_path = self.paths.public / "primer" / "COMMANDMENTS.md"
+        if not commandments_path.is_file() or not commandments_path.read_text(encoding="utf-8").strip():
+            raise MantleError("Primer candidate is missing COMMANDMENTS.md")
+        if not self.paths.personality_candidate.is_file():
+            raise MantleError("The unique Personality candidate is missing")
+        primer_candidate = prebirth.get("primer_candidate", {})
+        if primer_candidate.get("personality_sha256") != sha256_file(self.paths.personality_candidate):
+            raise MantleError("The approved Personality candidate changed after review")
 
         # Preflight before creating even a candidate key. Construction may be
         # inspected on machines that cannot safely birth the organism.
@@ -643,14 +806,17 @@ class MantleBody:
             }
             _save_sealed_json(self.paths.birth_candidate, cipher, "birth-candidate", identity)
         if not self.paths.primer.exists():
-            commandments = (self.paths.public / "primer" / "COMMANDMENTS.md").read_text(encoding="utf-8")
-            personality = (self.paths.public / "primer" / "PERSONALITY.md").read_text(encoding="utf-8")
+            commandments = commandments_path.read_text(encoding="utf-8")
+            personality = self.paths.personality_candidate.read_text(encoding="utf-8")
             primer = {
                 "schema": "mantle.primer.v2",
                 "organism_id": identity["organism_id"],
                 "name": identity["name"],
                 "commandments": commandments,
                 "personality": personality,
+                "personality_evidence": json.loads(
+                    self.paths.personality_evidence.read_text(encoding="utf-8")
+                ) if self.paths.personality_evidence.is_file() else {},
                 "sealed_at": utc_now(),
             }
             _save_sealed_json(self.paths.primer, cipher, "primer", primer)
@@ -668,6 +834,10 @@ class MantleBody:
         identity["born_at"] = heartbeat["completed_at"]
         identity["first_heartbeat"] = heartbeat
         _save_sealed_json(self.paths.born, cipher, "body-identity", identity)
+        with suppress(OSError):
+            self.paths.personality_candidate.unlink()
+        with suppress(OSError):
+            self.paths.personality_evidence.unlink()
         return identity
 
     def _ensure_communication_file(self) -> None:
@@ -680,6 +850,17 @@ class MantleBody:
             "USER> \n"
         )
         self.paths.communication.write_text(text, encoding="utf-8", newline="\n")
+
+    def speak(self, message: str) -> dict[str, Any]:
+        """Commit one user message and run the same full unscheduled Heartbeat."""
+        if not self.is_born:
+            raise MantleError("Communication cannot begin before birth")
+        if not message.strip():
+            raise MantleError("Communication requires a non-empty message")
+        self._ensure_communication_file()
+        with self.paths.communication.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(f"USER> {message.strip()}\n")
+        return self.heartbeat(reason="direct-user-message")
 
     def _snapshot_nest(self, cipher: BodyCipher) -> dict[str, Any]:
         previous = _load_sealed_json(self.paths.snapshot, cipher, "nest-snapshot", {"files": {}})
@@ -952,6 +1133,22 @@ class MantleBody:
         _allow_unsealed_identity: bool = False,
         _birth_identity: dict[str, str] | None = None,
     ) -> dict[str, Any]:
+        with _exclusive_file(self.paths.private / "state" / ".heartbeat.lock"):
+            return self._heartbeat_unlocked(
+                reason=reason,
+                responder=responder,
+                _allow_unsealed_identity=_allow_unsealed_identity,
+                _birth_identity=_birth_identity,
+            )
+
+    def _heartbeat_unlocked(
+        self,
+        *,
+        reason: str,
+        responder: Callable[[str], str] | None,
+        _allow_unsealed_identity: bool,
+        _birth_identity: dict[str, str] | None,
+    ) -> dict[str, Any]:
         if not self.is_born and not _allow_unsealed_identity:
             raise MantleError("Heartbeat cannot begin before the birth gate")
         cipher = self._cipher()
@@ -983,6 +1180,20 @@ class MantleBody:
             mind_state = "configured-idle"
         else:
             mind_state = "not-configured"
+        physiology = _load_sealed_json(
+            self.paths.physiology,
+            cipher,
+            "physiology",
+            {},
+        )
+        if not physiology:
+            physiology = {
+                "state": PhysiologyState.ACTIVE.value,
+                "reason": "birth" if _birth_identity is not None else "heartbeat",
+                "changed_at": utc_now(),
+            }
+            _save_sealed_json(self.paths.physiology, cipher, "physiology", physiology)
+            vcw.append("heart", "physiology.changed", physiology)
         proof = vcw.verify()
         completed = utc_now()
         result = {
@@ -995,6 +1206,7 @@ class MantleBody:
             "communication": communication,
             "nutrition": nutrition,
             "mind": mind_state,
+            "physiology": physiology,
             "proof": proof,
         }
         vcw.append("heart", "heartbeat.completed", result)

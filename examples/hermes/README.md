@@ -1,14 +1,17 @@
 # Hermes Delta Specimen
 
-`upstream.lock.json` names the exact Hermes commit certified by the alpha
-release. The source repository is not copied here.
+`upstream.lock.json` names the exact Hermes commit certified by the alpha.2
+construction gate. The source repository is not copied here. The checked-in
+`seed/` directory is the complete public delta for the un-born reference Body.
 
 Reconstruct the candidate NEST with:
 
 ```console
-mantle assimilate github.com/nousresearch/hermes-agent --ref 30b83ab7b1f194503de9f5545d88c81c4db91e3f
+mantle assimilate github.com/nousresearch/hermes-agent --ref 63279301bcbdc185c1b07b98a9312eb0c862f26d
 ```
 
-The GitHub Release contains a generated bundle with the public `mantle/`
-payload, the exact host-edge patch, checksums, test evidence, and SBOM. Runtime
-identity and VCW state are intentionally absent.
+The seed contains the public `mantle/` construction payload, complete direct
+source-nerve patch, upstream proof, and checksums. Use `mantle delta apply`,
+`mantle delta verify`, and the explicitly approved `mantle delta reverse` to
+exercise reconstruction. Runtime identity, unique Personality, keys, provider
+material, communication transcripts, and live VCW data are excluded.

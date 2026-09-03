@@ -32,7 +32,7 @@ memory are different facts. UNKNOWN and OPEN are valid stop states.
 
 ## 3. Boot, preparation, and birth
 
-The Primer is the shared AppAI species kernel plus an individual Personality.
+The Primer is the exact shared Commandments plus an individual Personality.
 Together with Immune and Special tissue it forms SELF. The Primer is loaded
 first and all ordinary thought is filtered through its lens.
 
@@ -48,11 +48,14 @@ Body-owned encryption key, sealed Primer, default VCW layers and Books, and the
 initial Layer 0 state record. A timer firing or partial attempt is not birth.
 
 Immediately before key creation, the Body must re-verify that every reviewed
-public Mantle delta file—including both Primer components—still matches the
+public Mantle delta file—including the exact Commandments—still matches the
 construction manifest, that the manifest still matches its prebirth binding,
 and that no undeclared public candidate tissue appeared. A mismatch stops birth
 without creating an identity key. Native NEST files remain OTHER and may evolve;
 their current state is observed by Layer 0 rather than silently claimed as SELF.
+The unique Personality candidate remains private construction tissue. After
+explicit approval it is sealed with the Commandments at birth; its plaintext
+candidate and evidence are removed only after that successful seal.
 
 The identity key must be owner-only at the operating-system boundary. Windows
 birth removes inherited general-user access with an explicit private ACL;
@@ -104,9 +107,12 @@ INVENTORY -> REUSE -> ADAPT -> COMPOSE -> CREATE -> STAGE -> TEST -> PROVE -> AU
 ```
 
 The optimization target is minimum new unproven work, not minimum bytes. Native
-host code remains the Default Body whenever possible. Mantle attaches through
-narrow Nerves at evidenced Seams and degrades to host-native/no-op behavior when
-Mantle is absent.
+host code remains the Default Body whenever possible. Assimilation maps
+evidenced host Seams and inserts small, reversible nerve calls directly into the
+Body source. Those calls connect semantic Senses and governed Limbs to Mantle
+organs and degrade to host-native/no-op behavior when Mantle is absent. A host's
+traditional extension mechanism may be useful evidence for locating a Seam, but
+Mantle itself is not registered, installed, or governed as a plugin.
 
 Pre-existing host state is never silently owned or rewritten. A host mutation
 requires explicit operator intent, bounded scope, before/after fingerprints, and

@@ -1,2 +1,0 @@
-"""Hermes reference integration resources."""
-

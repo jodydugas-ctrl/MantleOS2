@@ -23,7 +23,7 @@ eligible only when a later contract question requires older detail.
 Assimilation already recorded SHA-256 evidence for every public Mantle delta
 file. Birth checked that the Primer files existed and were nonempty, but it did
 not prove that the reviewed bytes were still the constructed bytes. A changed
-Personality, Commandments file, adapter, or manifest could therefore be sealed
+private Personality, public Commandments file, direct nerve, or manifest could therefore be sealed
 as SELF during an otherwise approved birth.
 
 The daemon candidate's Primer pin and candidate-tissue verification were kept
@@ -36,8 +36,9 @@ at the invariant level and adapted to the current NEST/private-VCW design:
 - the required Git exclusions for private state, communication, and Food must
   remain present;
 - birth performs this proof before cryptographic preflight or key creation;
-- native host files are not frozen or claimed as SELF—the first full Heartbeat
-  observes their current Layer 0 state.
+- direct prebirth nerve files are checked against the Nerve Map before birth;
+- other native host files are not frozen or claimed as SELF—the first full
+  Heartbeat observes their current Layer 0 state.
 
 This is a drift and authority gate, not a claim that an unprivileged checkpoint
 can resist a machine administrator who deliberately rewrites both evidence and

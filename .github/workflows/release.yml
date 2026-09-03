@@ -32,7 +32,7 @@ jobs:
       - run: python scripts/verify_hermes_delta.py .assimilation-work/hermes-agent --expected-commit "${{ steps.lock.outputs.commit }}"
       - run: python -m build
       - run: python scripts/build_release.py .assimilation-work/hermes-agent .artifacts --test-report test-results.xml
-      - name: Publish immutable alpha artifacts
+      - name: Publish immutable prerelease artifacts
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "MantleOS 2.0.0 alpha 1" --prerelease --generate-notes dist/* .artifacts/*
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --prerelease --generate-notes dist/* .artifacts/*
