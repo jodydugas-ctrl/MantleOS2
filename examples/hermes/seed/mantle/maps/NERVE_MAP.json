@@ -1,0 +1,97 @@
+[
+  {
+    "nerve_id": "hermes:body.session.started",
+    "direction": "afferent",
+    "semantic_event": "body.session.started",
+    "anchor": {
+      "path": "agent/conversation_loop.py",
+      "symbol": "initialize_conversation",
+      "anchor_sha256": "04da14f93572c421657285d0745f42d385ed5ea1c8e5e35bfb0904ef174047cd",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:layer-0:v2",
+    "capability_id": null,
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "dda70a8d459aa5a31418b55e43c0eeb27276e4f243a4974e9d201af777280ac1",
+    "after_sha256": "548c9289d86f65d39b848b46bde20489eeaff37418486d9c0e76fab4479e5ed1"
+  },
+  {
+    "nerve_id": "hermes:communication.user.message",
+    "direction": "bidirectional",
+    "semantic_event": "communication.user.message",
+    "anchor": {
+      "path": "agent/turn_context.py",
+      "symbol": "prepare_turn_context",
+      "anchor_sha256": "9435a83dad50a98a0e310f15d48b4f17039d0452240e5ac074dd96e1114ddab3",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:layer-0:v2",
+    "capability_id": null,
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "9a3caec7b67fc58b1635d933ae7c71a37387f981aafba0095ad28f020bee1fd8",
+    "after_sha256": "79c05bc4feb7b58794b6278bd0a8144003101afe69ba70544dc3fd878707f5cd"
+  },
+  {
+    "nerve_id": "hermes:appai.mind.turn",
+    "direction": "afferent",
+    "semantic_event": "appai.mind.turn",
+    "anchor": {
+      "path": "agent/turn_finalizer.py",
+      "symbol": "finalize_turn",
+      "anchor_sha256": "4160ed6b79dc674d98d4a78c6cc8d74685abb3956e52819386f3f0aff0e93bd1",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:layer-0:v2",
+    "capability_id": null,
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "463a0d3bd92b2f1fcb7674c0400bfd2451a2344011c35de906bbb61ca96cc7e3",
+    "after_sha256": "725f5ef78d0f0e1bd1b63bf04c3d8a66083169679e2d270cd3a1c4cfe54d1835"
+  },
+  {
+    "nerve_id": "hermes:body.tool.completed",
+    "direction": "afferent",
+    "semantic_event": "body.tool.completed",
+    "anchor": {
+      "path": "agent/tool_executor.py",
+      "symbol": "_emit_terminal_post_tool_call",
+      "anchor_sha256": "252b5e6fdf4eaa340281f6ce35fb2419f043ed06e1cbdae60e2c4a1240834818",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:layer-0:v2",
+    "capability_id": null,
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "08965a18d17fc7b92ac9264e8131ce91cce23b88b479fe7356154a8144bc35d2",
+    "after_sha256": "cd33128b2e791795f86bfe523064c7dbfdc1260f3b1ba546ada1162d03100f3b"
+  },
+  {
+    "nerve_id": "hermes:body.session.ended",
+    "direction": "afferent",
+    "semantic_event": "body.session.ended",
+    "anchor": {
+      "path": "agent/turn_finalizer.py",
+      "symbol": "finalize_turn",
+      "anchor_sha256": "381eed49052c87c0c725cdc1e17a9edadb591e832906165a9ed86abab73c76d1",
+      "insertion": "before-anchor"
+    },
+    "book_id": "book:layer-0:v2",
+    "capability_id": null,
+    "payload_schema": "mantle.semantic-event.v2",
+    "redaction_policy": "deny-secrets",
+    "failure_mode": "native-no-op",
+    "tissue_state": "staged",
+    "before_sha256": "725f5ef78d0f0e1bd1b63bf04c3d8a66083169679e2d270cd3a1c4cfe54d1835",
+    "after_sha256": "c8b83cb6a0b6129353e63dd4e56f7c8783e9e571e2f5affc146ce9b62dbaeb93"
+  }
+]

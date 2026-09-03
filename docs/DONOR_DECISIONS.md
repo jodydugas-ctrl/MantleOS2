@@ -11,7 +11,8 @@ below explain why an idea entered or stayed out of the alpha bootstrap.
 | Read-only repository census | Keep | Establishes evidence without executing or mutating candidate host code. |
 | Git-native Daemon receipts and checkpoints | Adapt later | Useful evidence pattern, but Git history is not the organism's VCW. |
 | Persona distillation prompt and examples | Adapt | Use as developmental evidence; the candidate cannot approve or birth itself. |
-| Hermes project plugin hooks | Adapt | Correct edge mechanism, but activation must be explicit and user-facing settings belong in Hermes config. |
+| Hermes extension hooks and lifecycle boundaries | Adapt as seam evidence | Useful for locating semantic host boundaries, but Mantle is inserted as direct Body nerves and is not registered as a plugin. |
+| Traditional Mantle-as-Hermes-plugin implementation | Reject and supersede | It misstates the organism model and makes the nervous system appear optional and externally governed. Preserved only in alpha.1 history. |
 | MacroDroid/Android sensors and actions | Defer | Valuable ecology proof, outside the lean Hermes alpha surface. |
 | PNG VCW representation | Defer as candidate | Demonstrated transport/storage phenotype; not required for canonical alpha memory. |
 | SPORE Tomb candidate | Defer as candidate | Useful conformance seed, but migration and continuity law remain open. |

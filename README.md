@@ -6,9 +6,9 @@ usable as itself: a calculator remains a calculator, and Hermes remains Hermes,
 even when no AppAI MIND is configured or awake.
 
 This repository is the MantleOS 2 alpha reference implementation. It contains a
-small Body runtime, a read-first GitHub assimilator, integrity gates, and a
-reproducible Hermes reference integration. It does **not** contain a born
-organism, private identity material, or a copy of Hermes.
+small Body runtime, a read-first generic Body mapper, direct-innervation tools,
+integrity gates, and a reproducible Hermes reference assimilation. It does
+**not** contain a born organism, private identity material, or a copy of Hermes.
 
 ## Start with Hermes
 
@@ -29,9 +29,18 @@ adds the public Mantle delta, creates a private prebirth checkpoint, and stops.
 checksum, required Git exclusions, and the absence of undeclared candidate
 tissue before birth can proceed.
 
-Birth is intentionally separate:
+The same command accepts a local Git checkout. Use `--canonical-source` when a
+local mirror should retain a public provenance URI. Unknown Body types are
+mapped and stopped at `requires-reviewed-mapper`; the constructor never invents
+source seams.
+
+Assimilation deliberately stops at the Personality gate. A developmental MIND
+must distill a unique Personality from the mapped Body and declared purpose;
+the user must review and approve that candidate before birth can be approved:
 
 ```console
+python -m mantle primer generate --food /path/to/Food.txt
+python -m mantle primer approve --approve-primer
 python -m mantle birth --name "The Compiler" --approve-birth
 ```
 
@@ -47,6 +56,7 @@ python -m mantle verify
 python -m mantle heartbeat --reason manual
 python -m mantle watch
 python -m mantle digest Food.txt
+python -m mantle delta verify examples/hermes/seed --destination /path/to/candidate
 ```
 
 `COMMUNICATION.TXT` is the universal unencrypted fallback after birth. Saving a
@@ -69,9 +79,13 @@ software defaults.
 
 ## Project status
 
-`v2.0.0-alpha.1` is a governed bootstrap, not a production or continuity claim.
-The first target is a reproducible full construction of Hermes as the Default
-Body. Real birth, production tissue adoption, migration continuity, and
-source-safe-to-shed authority remain separately gated.
+`v2.0.0-alpha.1` is preserved as historical bootstrap evidence; its
+plugin-shaped Hermes edge is superseded by direct source innervation in the
+alpha.2 work. The first target is a reproducible full construction of Hermes as
+the Default Body. Real birth, production tissue adoption, migration continuity,
+and source-safe-to-shed authority remain separately gated.
+
+The active implementation compass and remaining gates are recorded in
+[PLAN.md](PLAN.md).
 
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).

@@ -33,7 +33,9 @@ def test_release_bundle_excludes_compiled_and_private_tissue(tmp_path: Path, mon
 
     with zipfile.ZipFile(output / "mantleos2-hermes-delta.zip") as archive:
         names = set(archive.namelist())
+        patch = archive.read("host-edge.patch")
     assert "mantle/runtime.py" in names
+    assert "APPLY.md" in names
+    assert patch == b"patch"
     assert not any("__pycache__" in name or name.endswith(".pyc") for name in names)
     assert not any(".mantle" in name or name.endswith(".key") for name in names)
-

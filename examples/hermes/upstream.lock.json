@@ -2,7 +2,8 @@
   "schema": "mantle.upstream-lock.v1",
   "repository": "https://github.com/NousResearch/hermes-agent",
   "ref": "main",
-  "commit": "30b83ab7b1f194503de9f5545d88c81c4db91e3f",
-  "resolved_at": "2026-09-02T19:57:05Z",
-  "purpose": "MantleOS 2.0.0-alpha.1 Hermes Default Body baseline"
+  "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
+  "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
+  "resolved_at": "2026-09-03T13:25:00Z",
+  "purpose": "MantleOS 2.0.0-alpha.2 direct-innervation Hermes baseline"
 }

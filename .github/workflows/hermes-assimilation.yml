@@ -33,6 +33,12 @@ jobs:
         run: mantle assimilate github.com/nousresearch/hermes-agent --ref "${{ steps.lock.outputs.commit }}" --destination .assimilation-work/hermes-agent
       - name: Verify delta and host boundary
         run: python scripts/verify_hermes_delta.py .assimilation-work/hermes-agent --expected-commit "${{ steps.lock.outputs.commit }}"
+      - name: Build and verify public direct-innervation seed
+        run: |
+          mantle --nest .assimilation-work/hermes-agent delta build .assimilation-work/generated-seed
+          cmp examples/hermes/seed/host-edge.patch .assimilation-work/generated-seed/host-edge.patch
+          cmp examples/hermes/seed/mantle/maps/BODY_MAP.json .assimilation-work/generated-seed/mantle/maps/BODY_MAP.json
+          cmp examples/hermes/seed/mantle/maps/NERVE_MAP.json .assimilation-work/generated-seed/mantle/maps/NERVE_MAP.json
       - name: Prove host Python remains syntactically intact
         run: python -m compileall -q .assimilation-work/hermes-agent
       - name: Verify constructed Body remains un-born
