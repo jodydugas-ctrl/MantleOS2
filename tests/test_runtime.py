@@ -43,6 +43,50 @@ class FakeAESGCM:
         return bytes(byte ^ mask[index % len(mask)] for index, byte in enumerate(ciphertext))
 
 
+def prepare_unborn_nest(nest: Path) -> None:
+    primer = nest / "mantle" / "primer"
+    primer.mkdir(parents=True)
+    (primer / "COMMANDMENTS.md").write_text("Protect your VCW.", encoding="utf-8")
+    (primer / "PERSONALITY.md").write_text("Preserve the frame.", encoding="utf-8")
+    manifest_path = nest / "mantle" / "ASSIMILATION.json"
+    delta_paths = [
+        "mantle/ASSIMILATION.json",
+        "mantle/primer/COMMANDMENTS.md",
+        "mantle/primer/PERSONALITY.md",
+    ]
+    checksums = {
+        relative: hashlib.sha256((nest / relative).read_bytes()).hexdigest()
+        for relative in delta_paths
+        if relative != "mantle/ASSIMILATION.json"
+    }
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": "mantle.assimilation.v2",
+                "status": "constructed-not-born",
+                "delta": {"paths": delta_paths, "sha256": checksums},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (nest / ".mantle").mkdir()
+    (nest / ".mantle" / "prebirth.json").write_text(
+        json.dumps(
+            {
+                "schema": "mantle.prebirth.v2",
+                "status": "constructed-not-born",
+                "public_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                "gates": {"primer": "ready-for-birth-review"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    (nest / ".gitignore").write_text(
+        "/.mantle/\n/COMMUNICATION.TXT\n/Food.txt\n",
+        encoding="utf-8",
+    )
+
+
 class VCWTests(unittest.TestCase):
     def test_append_verify_and_extension_reuse_book(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -92,17 +136,10 @@ class GateTests(unittest.TestCase):
     def test_constructed_body_rejects_heartbeat_and_birth_without_approval(self):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)
-            (nest / "mantle").mkdir()
-            (nest / ".mantle").mkdir()
-            (nest / ".mantle" / "prebirth.json").write_text(
-                json.dumps({"gates": {"primer": "ready-for-birth-review"}}), encoding="utf-8"
-            )
-            primer = nest / "mantle" / "primer"
-            primer.mkdir()
-            (primer / "COMMANDMENTS.md").write_text("Protect your VCW.", encoding="utf-8")
-            (primer / "PERSONALITY.md").write_text("Preserve the frame.", encoding="utf-8")
+            prepare_unborn_nest(nest)
             body = MantleBody(nest)
             self.assertEqual("constructed-not-born", body.status()["status"])
+            self.assertTrue(body.verify()["ok"])
             with self.assertRaises(MantleError):
                 body.heartbeat()
             with self.assertRaises(MantleError):
@@ -112,15 +149,7 @@ class GateTests(unittest.TestCase):
     def test_failed_crypto_preflight_creates_no_identity_key(self):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)
-            (nest / "mantle").mkdir()
-            (nest / ".mantle").mkdir()
-            (nest / ".mantle" / "prebirth.json").write_text(
-                json.dumps({"gates": {"primer": "ready-for-birth-review"}}), encoding="utf-8"
-            )
-            primer = nest / "mantle" / "primer"
-            primer.mkdir()
-            (primer / "COMMANDMENTS.md").write_text("Protect your VCW.", encoding="utf-8")
-            (primer / "PERSONALITY.md").write_text("Preserve the frame.", encoding="utf-8")
+            prepare_unborn_nest(nest)
             body = MantleBody(nest)
             with (
                 mock.patch.object(BodyCipher, "require_available", side_effect=MantleError("unavailable")),
@@ -132,20 +161,7 @@ class GateTests(unittest.TestCase):
     def test_birth_first_heartbeat_and_no_mind_communication(self):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)
-            primer = nest / "mantle" / "primer"
-            primer.mkdir(parents=True)
-            (primer / "COMMANDMENTS.md").write_text("Protect your VCW.", encoding="utf-8")
-            (primer / "PERSONALITY.md").write_text("Preserve the frame.", encoding="utf-8")
-            (nest / ".mantle").mkdir()
-            (nest / ".mantle" / "prebirth.json").write_text(
-                json.dumps(
-                    {
-                        "status": "constructed-not-born",
-                        "gates": {"primer": "ready-for-birth-review"},
-                    }
-                ),
-                encoding="utf-8",
-            )
+            prepare_unborn_nest(nest)
             (nest / "host.txt").write_text("native body", encoding="utf-8")
 
             with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
@@ -214,6 +230,42 @@ class GateTests(unittest.TestCase):
                 transcript = (nest / "COMMUNICATION.TXT").read_text(encoding="utf-8")
                 self.assertIn("APPAI> MIND response", transcript)
                 self.assertTrue(body.verify()["ok"])
+
+    def test_changed_or_undeclared_prebirth_tissue_stops_before_key_creation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            personality = nest / "mantle" / "primer" / "PERSONALITY.md"
+            personality.write_text("A silently changed personality.", encoding="utf-8")
+            body = MantleBody(nest)
+            self.assertEqual("construction-invalid", body.status()["status"])
+            with self.assertRaisesRegex(MantleError, "changed after construction"):
+                body.verify()
+            with self.assertRaisesRegex(MantleError, "changed after construction"):
+                body.birth("Candidate", approved=True)
+            self.assertFalse((nest / ".mantle" / "keys" / "body.key").exists())
+
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            (nest / "mantle" / "unreviewed.py").write_text("pass\n", encoding="utf-8")
+            with self.assertRaisesRegex(MantleError, "Undeclared public candidate tissue"):
+                MantleBody(nest).verify()
+
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            (nest / ".gitignore").write_text("/.mantle/\n", encoding="utf-8")
+            with self.assertRaisesRegex(MantleError, "no longer excludes"):
+                MantleBody(nest).verify()
+
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            (nest / ".mantle" / "prebirth.json").write_text("not-json", encoding="utf-8")
+            status = MantleBody(nest).status()
+            self.assertEqual("construction-invalid", status["status"])
+            self.assertFalse(status["construction_integrity"]["ok"])
 
     def test_canonical_json_is_stable(self):
         self.assertEqual(canonical_json({"b": 2, "a": 1}), canonical_json({"a": 1, "b": 2}))

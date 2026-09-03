@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -86,8 +87,13 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     assert "/.mantle/" in (root / ".gitignore").read_text(encoding="utf-8")
 
     public = json.loads((root / "mantle" / "ASSIMILATION.json").read_text(encoding="utf-8"))
+    prebirth = json.loads((root / ".mantle" / "prebirth.json").read_text(encoding="utf-8"))
     assert public["source"]["commit"] == _git(root, "rev-parse", "HEAD")
     assert public["gates"]["birth"] == "not-authorized"
+    assert public["gates"]["public_delta"] == "verified-at-construction"
+    assert prebirth["public_manifest_sha256"] == hashlib.sha256(
+        (root / "mantle" / "ASSIMILATION.json").read_bytes()
+    ).hexdigest()
 
 
 def test_existing_mantle_tissue_is_not_overwritten(tmp_path: Path):
@@ -95,4 +101,3 @@ def test_existing_mantle_tissue_is_not_overwritten(tmp_path: Path):
     (root / "mantle").mkdir()
     with pytest.raises(AssimilationError, match="already contains"):
         construct_nest(root, source_url="https://github.com/example/host", command="test")
-

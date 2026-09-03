@@ -15,8 +15,14 @@ below explain why an idea entered or stayed out of the alpha bootstrap.
 | MacroDroid/Android sensors and actions | Defer | Valuable ecology proof, outside the lean Hermes alpha surface. |
 | PNG VCW representation | Defer as candidate | Demonstrated transport/storage phenotype; not required for canonical alpha memory. |
 | SPORE Tomb candidate | Defer as candidate | Useful conformance seed, but migration and continuity law remain open. |
+| V3 SPORE boundary: Tomb != Book and decode != execution | Keep | Prevents a readable carrier from becoming authority, adoption, or continuity by implication. |
+| V3 fixed `M3ST` PNG bootstrap and embedded registry subset | Defer as non-governing candidate | It is a bounded conformance vector, not adopted universal SPORE wire law. Adding its decoder now would create unused surface. |
+| V3 demo “first Heartbeat” receipt without identity, key, sealed Primer, or VCW birth duties | Reject as a full Heartbeat | Retain only as a liveness simulation; current law reserves first successful full Heartbeat for birth. |
+| Daemon pre-use candidate hash verification and Primer pin | Adapt now | Construction-time hashes were already recorded, but birth needed to re-check them before creating identity tissue. |
+| Daemon crash/stale-checkpoint evidence | Keep at the invariant level | Failed attempts and concurrent frontiers must stay visible; current private VCW receipts implement this without making Git organismal memory. |
+| Daemon Git repository as canonical VCW | Reject for this implementation | Git is public NEST evidence and delta transport, while live identity-bearing VCW remains encrypted private tissue. |
+| Daemon source-reported PNG growth result | Use as caution, not proof | Its reported 59.6 MB/1,000-cycle result supports deferring full-image rewrites; it was not independently reproduced here. |
 | “Zombie Body” API and lifecycle | Reject | Superseded by Default Body/Layer 0 = NEST and repeatedly confused implementers. |
 | Brain organ or permanent LLM loop | Reject | The brain-stem phrase is metaphor; MIND is optional and Body-governed. |
 | Autonomous host rewriting | Reject | Violates OTHER/SELF boundary, explicit authority, and host preservation. |
 | Whole older MantleOS 2 tree | Reject wholesale import | Contains useful modules but also obsolete contracts, excess surface, and dependency/test drift. |
-
