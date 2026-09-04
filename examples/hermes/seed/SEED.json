@@ -12,8 +12,8 @@
     },
     "census": {
       "file_count": 11327,
-      "byte_count": 172382262,
-      "source_fingerprint": "sha256:25230b2ff2fbf7c7abdcc3b428cc2cf0c16acedd0be2d8bff3a519390c3b0322",
+      "byte_count": 172374206,
+      "source_fingerprint": "sha256:37662fc34e51ed3ddf3c0a6e631b7de6b5c5d6f8271579d6f69a17b644642fa8",
       "extensions": {
         ".py": 5128,
         ".ts": 2020,
@@ -231,8 +231,8 @@
     }
   },
   "target": {
-    "kind": "hermes",
-    "mapping": "built-in-language-map",
+    "kind": "reference-candidate",
+    "mapping": "mapping-blocked",
     "traditional_plugin": false
   },
   "host_edge_sha256": "47b8f13b9e8ebc05ec72b0922d98e86aa885866d28112c6c86dc1ef3391b04ea",

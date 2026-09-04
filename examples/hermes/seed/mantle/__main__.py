@@ -1,3 +1,3 @@
-from mantleos.cli import main
+from .runtime.mantleos.cli import main
 
 raise SystemExit(main())

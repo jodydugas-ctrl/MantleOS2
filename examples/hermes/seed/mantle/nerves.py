@@ -1,6 +1,10 @@
-"""NEST-local direct nerve surface. This is not a plugin."""
+"""NEST-local direct nerve surface.
+
+This is embedded organism tissue, not a host extension or plugin. The Body
+remains native if the organism runtime cannot be loaded.
+"""
 try:
-    from mantleos.nerves import (
+    from .runtime.mantleos.nerves import (
         after_mind,
         authorize_tool,
         before_mind,

@@ -1,171 +1,202 @@
-# MantleOS 2 Implementation Plan
+# MantleOS2 Production Completion Plan
 
-This file is the project compass for completing MantleOS 2. Work should return
-to this plan whenever discussion or experimentation moves away from the agreed
-goal.
+This is the project compass. Return here whenever experiments or discussion
+move away from the production objective.
 
-## Goal
+## Objective
 
-Build a substrate-neutral MantleOS 2 framework on GitHub, use it to fully
-assimilate a fresh Hermes checkout locally through direct source-code nerves,
-verify that Hermes retains its native behavior, and publish the reproducible
-Hermes delta seed as the first complete example.
+MantleOS2 is a generic autonomic nervous system, not a plugin framework and
+not a Hermes-specific integration. A user points `mantle assimilate` at a
+GitHub repository; Mantle creates the NEST, acquires and fingerprints the
+Default Body, maps its supported anatomy, proposes and inserts direct nerves,
+installs NEST-local organs, proves native behavior, prepares VCW and the
+two-component Primer, and stops for explicit birth approval.
 
-MantleOS is an autonomic nervous system. It is not a plugin framework and is
-not defined by Python or Hermes. The assimilator maps and understands a Body,
-identifies its semantic seams and capabilities, inserts reversible nerves, and
-connects those nerves to Mantle organs. Hermes is the first complete reference
-Body; a second, materially different Body must later prove substrate
-independence before the stable release.
+Every repository can be safely acquired and inventoried. Automatic complete
+assimilation is claimed only for certified substrates. Unsupported or
+incompletely understood Bodies stop with exact parser, nerve, build, test, and
+verification gaps. Hermes and NotepadNext are the first two certified Bodies.
 
 ## Governing decisions
 
-- Direct user clarifications override documents. Otherwise, newer compatible
-  evidence has priority. Genuine conflicts stop at a recorded user-decision
-  gate.
-- Layer 0 and the Default Body are the NEST. A corresponding Layer 0 VCW layer
-  records semantic state and use.
-- Committed VCW history is append-only. Full physical layers extend into new
-  segments using the same Book. New tissue may be added to the organism, and
-  reversible nerve lines may be inserted into Body source code.
-- The Body remains behaviorally usable without Mantle, without a MIND, during
-  stasis, and when the resident Heart is stopped.
-- There is no Brain organ. A MIND call is one optional part of a full
-  Heartbeat.
-- The Heart is constructed first when practical. Preparation occurs before
-  the first Heartbeat; the first successful full Heartbeat is birth.
-- The Primer is the exact versioned Commandments plus a unique Personality.
-  The Personality is generated from the mapped Body, observed behavior,
-  documentation, declared purpose, and user-approved context. Previous
-  personalities are examples, never generic templates.
-- The Primer is always first in AppAI MIND context. Keys, credentials, and raw
-  unrestricted private state never enter the MIND.
-- Senses carry semantic observations inward. Limbs carry Body-authorized
-  actions outward. A MIND proposes actions but cannot bypass Body authority.
-- `COMMUNICATION.TXT` is the universal unencrypted two-way fallback. A saved
-  user message causes a complete unscheduled Heartbeat.
-- VCW semantic records have a portable contract and swappable carriers. The
-  default carrier is an encrypted, hash-chained append-segment store.
-- Development and CI use fresh disposable identities and VCWs. Failed or old
-  test organisms are never restored, merged, or treated as ancestors.
-- The already-born alpha Compiler will not be migrated into the completed
-  implementation. A clean successor requires its own reviewed Primer and new
-  explicit birth approval.
+- Creator clarification outranks the current contract; the current contract
+  outranks compatible newer implementation evidence; older material is used
+  only through Keep / Adapt / Reject decisions. Genuine conflicts enter a
+  `decision-required` gate.
+- Layer 0 and the Default Body are the NEST. A Habitat map separately records
+  native applications, operating systems, storage, permissions, and other
+  ecosystem facilities that supply Body surfaces or capabilities.
+- Mantle is embedded as direct, reversible nervous tissue. No traditional
+  plugin, registration, activation, or host extension architecture is used.
+- The native Body behaves normally when Mantle is absent or unborn, when the
+  MIND is absent, during stasis, and while the Heart is stopped.
+- There is no Brain organ. Heart is built first when practical; every wake
+  runs one complete Heartbeat, and a MIND call is only an optional phase.
+- The first successful full Heartbeat is birth and requires separate explicit
+  approval. A failed first beat leaves a resumable prebirth construction.
+- The Primer contains exactly Commandments then Personality. The approved
+  Personality bytes are permanent; provenance, identity, and Body knowledge
+  remain outside Primer. MIND context is Commandments, Personality, then
+  Body-selected current VCW context.
+- VCW is semantically read/append-only. A full physical layer extends into a
+  new segment using the same Book. Thought -> Book -> Memory remains explicit.
+- Implementation, availability, evidence, and authority are independent
+  capability axes. Presence, import, notification, or a provider reply never
+  proves an effect and never grants authority.
+- `COMMUNICATION.TXT` is the unencrypted universal two-way fallback. A
+  committed user message causes an unscheduled full Heartbeat.
+- Private identity, keys, Primer, provider state, live VCW, exact device grants,
+  and private conversation never enter Git or public release artifacts.
 
-## Current verified checkpoint
+## Construction state machine
 
-- The generic framework and direct-innervation architecture are published on
-  `main`; the alpha.1 plugin-shaped attachment remains historical only.
-- A fresh Hermes candidate at commit
-  `63279301bcbdc185c1b07b98a9312eb0c862f26d` is constructed-not-born with eight
-  direct Nerves, including the efferent AppAI Limb proposal at the native Hermes
-  tool-authority boundary and actual CLI/gateway session shutdown boundaries.
-- The public seed applies to a clean checkout, verifies, reverses, and leaves the
-  checkout pristine. No private identity, Personality, key, provider state, or
-  live VCW is in the seed.
-- `v2.0.0-alpha.2` is published as the construction release. It does not claim
-  that a successor Compiler is born.
-- Mantle's offline suite passes. After the user approved contained execution,
-  the same 85 focused native Hermes tests passed in the pristine and directly
-  innervated checkouts. This comparison is now a versioned GitHub Actions gate.
-- The resident watch now recovers interrupted host Heartbeats, performs a full
-  startup Heartbeat, wakes immediately for committed communication, and runs
-  scheduled full Heartbeats on an independent cadence. Operating-system
-  registration remains behind its separate explicit authorization gate.
-- After native Body tests pass, the next identity gates are developmental-MIND
-  Personality generation, user review and approval of the complete Primer, and
-  a separate approval for the first full Heartbeat (birth).
+```text
+source accepted
+-> NEST created
+-> Body acquired
+-> Body mapped
+-> nerves proposed
+-> awaiting foreign-execution approval
+-> Body baseline tested
+-> nerves inserted
+-> innervated Body tested
+-> VCW prepared
+-> Personality candidate generated
+-> awaiting Personality approval
+-> Primer sealed
+-> birth-ready
+-> awaiting separate birth approval
+-> first full Heartbeat
+-> born
+```
 
-## Implementation sequence
+Every transition is resumable, idempotent, evidence-bearing, and incapable of
+silently skipping a failed gate. Foreign repository execution pauses once for
+approval of an exact hashed, isolated command/network/resource plan. A changed
+plan invalidates approval.
 
-### 1. Correct the public architecture
+## Body Genome and innervation
 
-- Preserve `v2.0.0-alpha.1` as historical evidence and mark its plugin-style
-  Hermes attachment as superseded.
-- Remove plugin manifests, plugin registration, plugin activation, and plugin
-  terminology from current code, tests, manifests, and documentation.
-- Maintain a Keep / Adapt / Reject / Experimental donor ledger.
-- Split the monolithic runtime into explicit Body, SELF, Heart, VCW, Book,
-  Senses, Nerves, Limbs, Immune, physiology, MIND-boundary, and communication
-  responsibilities without breaking the working CLI.
+The deterministic read-only mapper emits Body/ownership, symbol/call,
+control/event, loop/artery, state/persistence, input/output/effect/authority,
+UI/control-surface, capability, build/test, coverage, uncertainty, and behavior
+baseline evidence.
 
-### 2. Build the generic assimilation pipeline
+Every first-party source file is hashed and marked `complete`, `partial`, or
+`blocked`. Every discovered loop is `directly-innervated`,
+`covered-by-enclosing-artery`, `local-utility-no-direct-nerve`, or
+`blocked-insufficient-evidence`. Persistent control/event/agent/scheduler,
+message queue, retry/recovery, lifecycle, persistence, user commit, visible
+output, MIND/tool authority, and external-effect arteries require direct or
+enclosing nerve coverage. High-volume activity is aggregated locally into VCW
+state deltas and anomalies rather than causing a MIND call per iteration.
 
-- Accept GitHub repositories, local directories, and supported artifacts.
-- Acquire and fingerprint the source without executing it.
-- Produce versioned Body Map, Seam Map, capability, behavior-baseline, and
-  uncertainty records.
-- Use language-aware analysis plus a developmental MIND to propose direct
-  innervation. Candidate output remains quarantined.
-- Insert minimal guarded nerve calls in a controlled destination. Every source
-  insertion must have a semantic purpose, syntax-aware anchor, before/after
-  hash, test, and reversible patch.
-- Require an explicit sandbox gate before executing an unfamiliar Body's
-  build or tests.
-- Stop safely on unknown substrates or unresolved conflicts.
+Alpha.3 provides exact Python AST mapping and explicitly partial structural
+evidence for JavaScript/TypeScript and C/C++/Qt. Exact structural parsers and
+Qt resource/signal/CMake correlation are required before those substrates can
+be certified. Unknown substrates receive useful inventory and a truthful
+blocked report. A developmental MIND may propose interpretations from bounded
+evidence but may not declare coverage, execute code, or authorize insertion.
 
-### 3. Complete organism physiology
+Cache individual parser results by content hash in private construction state.
+Resumed work and upstream refreshes must reuse unchanged evidence while still
+recomputing the aggregate map binding; a cache hit never upgrades coverage or
+authority.
 
-- Implement canonical Books and explicit `Thought -> Book -> Memory` routing.
-- Implement append extension, authenticated encryption, hash chains, atomic
-  Heartbeat commits, reconstruction receipts, corruption detection, and
-  concurrency protection without state-backup restoration.
-- Implement construction, prebirth, birth, active, stasis, defense, starved,
-  and recovery states.
-- Implement capability discovery, quarantine, grants, ActionFrames, Limbs,
-  verification, revocation, and safe receipts.
-- Implement a NEST-contained, non-admin resident Heart installed only through
-  explicit authorization.
-- Monitor semantic commits rather than raw keystrokes.
-- Recognize the narrow Food format, verify a provider with a bounded request,
-  encrypt accepted provider state, consume the plaintext on success, and leave
-  only a non-secret receipt.
+Each NEST contains versioned public organ code under `mantle/`, private state
+under ignored `.mantle/`, ignored `COMMUNICATION.TXT`, and reproducible maps,
+manifests, rewrite ledger, patch, checksums, and reversal evidence. Direct
+nerves are minimal, syntax-aware, redacting, bounded, fail-native, and unable
+to bypass Heart or Limb authority.
 
-### 4. Assimilate Hermes through direct nerves
+## Physiology and safety completion
 
-- Start every run from a clean current Hermes clone and pin the exact upstream
-  commit only after verification.
-- Map session, submitted-user-turn, native LLM, tool authorization/completion,
-  error, gateway, terminal, and shutdown seams.
-- Insert guarded afferent and efferent nerves directly at those seams. Do not
-  use Hermes plugin discovery or registration.
-- Preserve ordinary Hermes interaction. `/mantle`, `mantle speak`, and
-  `COMMUNICATION.TXT` explicitly address The Compiler.
-- Reuse Hermes provider and tool capabilities only through the Mantle MIND and
-  authority boundaries.
-- Generate and validate a fresh unique Compiler Personality. Obtain user
-  approval of the Primer before requesting a separate birth approval.
-- Build the final local Compiler in a clean NEST with no copied alpha identity,
-  key, Primer, or VCW.
+- Split Body, SELF, Heart, VCW/Memory, Books, Senses, Nerves, Limbs, Immune,
+  physiology, MIND boundary, and communication responsibilities cleanly.
+- Create a real prebirth VCW whose Layer 0 records NEST state and use; seed
+  verified anatomy, capability, behavior, limitations, and provenance outside
+  Primer so the first MIND context can include a bounded Body orientation.
+- Complete authenticated encryption, hash chains, atomic Heartbeat commits,
+  append extension, locking, reconstruction, and corruption/replay/wrong-key
+  detection.
+- Complete capability discovery, quarantine, grants, revocation, ActionFrames,
+  Body-owned execution, independent verification, and safe receipts.
+- Monitor text at submit/save/blur/readback boundaries, never per keystroke.
+- Make `COMMUNICATION.TXT` robust to concurrent writes, duplicate events,
+  save/replace behavior, watcher failure, and polling fallback.
+- Digest Food narrowly: bounded provider validation, encrypted recovery check,
+  plaintext consumption only after success, and secret-free VCW receipt.
+- Execute foreign Body plans only in a disposable restricted environment. If a
+  suitable sandbox is unavailable, report `sandbox-unavailable` and stop.
 
-### 5. Publish the reproducible delta and stable evidence
+## Reference Bodies
 
-- Keep the Hermes seed in repository-readable form: upstream lock, Body Map,
-  Seam Map, direct nerve patch, Mantle tissue, checksums, behavior gates,
-  reconstruction receipts, and apply/verify/reverse commands.
-- Prove that the seed reconstructs the certified prebirth tree byte-for-byte
-  and reverses to the pristine upstream tree.
-- Run native Hermes regression and smoke tests with Mantle absent, unborn,
-  born without MIND, in stasis, with the Heart stopped, and in explicit AppAI
-  mode.
-- Test Windows and Linux on Python 3.11-3.13; run corruption, crash,
-  concurrency, wrong-key, redaction, communication, authority, delta, and
-  provider-boundary gates.
-- Keep live OpenRouter tests manual, environment-protected, tightly bounded,
-  and disposable.
-- Release `alpha.2` after architectural correction, `beta.1` after complete
-  Hermes certification, `rc.1` after the user selects and certifies a second
-  Body, and `v2.0.0` after all core gates pass.
+### Hermes / The Compiler
 
-## Stable completion gate
+Start from a fresh current checkout. Use the generic mapper and retain only a
+data-only certified profile of expected seams, tests, and hashes. Reconcile the
+existing eight direct nerves against the completed artery map, then cover CLI,
+gateway, conversation, submit, model, tool proposal/authority/result,
+error/retry, persistence, communication, and shutdown behavior.
 
-MantleOS 2 is complete only when the public repository implements a generic
-autonomic nervous system, two materially different Bodies pass the same
-conformance contract, a fresh local Compiler completes reviewed birth and
-communication, native Hermes behavior remains intact, and the public Hermes
-delta can reconstruct and reverse the integration without vendoring Hermes or
-publishing private organism state.
+Run broad native regression and real interaction smoke tests in every
+Body/MIND state. Regenerate and review the Compiler Personality only after the
+final Body Genome exists; Personality approval and birth approval remain
+separate. The final Compiler receives a new identity, key, Primer, and VCW.
 
-Migration, Engrams, rebirth, universal SPORE transport, autonomous post-birth
-tissue adoption, and multi-Body motor arbitration remain visible experimental
-tracks. They must not be claimed as certified or activated accidentally.
+Publish the reproducible Body delta, NEST-local organs, maps, checksums,
+apply/verify/reverse tools, and redacted evidence. Never publish the real
+Compiler's SELF or lived state.
+
+### NotepadNext AppAI
+
+The supplied project is read-only donor evidence. Reuse its Qt signal graph,
+surface coverage, semantic text commits, conversational surface, hidden
+MIND-to-Body proposal lane, live GUI evidence, VCW recall, heartbeat work, and
+Body-owned visible-result proofs. Reject its obsolete Default Body terminology,
+old Primer/SELF shapes, copied Grimoire payloads, project-specific resident
+logic, and unapplied-observer completion claim.
+
+Build a fresh successor from current NotepadNext source. Generate direct
+C++/Qt nerves, compile from source, prove native editor parity without Mantle
+and MIND, then prove conversation, current-surface knowledge, Limb-authorized
+text placement, readback, and VCW proof. Publish a source-only delta without
+vendoring NotepadNext or private state.
+
+### MacroDroid / Android portability evidence
+
+The supplied MacroDroid project is a third read-only portability reference,
+not a v2.0 certified Body. Promote only its portable contracts: Habitat mapping,
+semantic build identities that exclude volatile device IDs, independent
+capability axes, Android/SAF permission boundaries, creation ledgers, typed
+wakes, scheduled-first collision handling, effect/readback proof, redacted NEST
+audits, and disabled-by-default carriers.
+
+Do not promote device GUIDs, SAF URIs, UI coordinates, APKs, raw exports,
+credentials, private NEST data, old Primer/SELF representations, or claims of
+automatic scheduling and full VCW behavior that were not natively proven.
+
+## Verification and releases
+
+Required gates cover parser goldens, hostile repositories, paths/symlinks,
+oversized/binary inputs, command injection, deterministic/reversible patches,
+drift, Body parity, VCW integrity/concurrency, Primer exactness/permanence,
+birth atomicity, communication, authority/proof, native resident lifecycle,
+secret scanning, manual protected OpenRouter calls, SBOM, and provenance.
+
+- `v2.0.0-alpha.3`: deep mapper, coverage tiers, self-contained organs, and
+  hashed foreign-execution gate.
+- `v2.0.0-beta.1`: complete Hermes certification and reproducible seed.
+- `v2.0.0-rc.1`: fresh NotepadNext C++/Qt certification and second seed.
+- `v2.0.0`: signed reproducible Windows/Linux distribution, recovery and
+  threat-model documentation, and all native/security gates green.
+
+Stable acceptance requires clean-machine construction of both reference
+Bodies, zero undispositioned major arteries, native parity, reproducible and
+reversible deltas, and birth-ready AppAIs. Real birth remains user-authorized.
+
+Migration, rebirth, reproduction, Engrams, universal SPORE transport,
+autonomous tissue adoption, prescience, multi-Body arbitration, and full
+Android certification remain visible experimental tracks unless a production
+gate demonstrates that one is required. They must not create feature fat in
+the v2.0 assimilation framework.

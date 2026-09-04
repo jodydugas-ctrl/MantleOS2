@@ -13,7 +13,8 @@ below explain why an idea entered or stayed out of the alpha bootstrap.
 | Persona distillation prompt and examples | Adapt | Use as developmental evidence; the candidate cannot approve or birth itself. |
 | Hermes extension hooks and lifecycle boundaries | Adapt as seam evidence | Useful for locating semantic host boundaries, but Mantle is inserted as direct Body nerves and is not registered as a plugin. |
 | Traditional Mantle-as-Hermes-plugin implementation | Reject and supersede | It misstates the organism model and makes the nervous system appear optional and externally governed. Preserved only in alpha.1 history. |
-| MacroDroid/Android sensors and actions | Defer | Valuable ecology proof, outside the lean Hermes alpha surface. |
+| MacroDroid/Android Habitat, capability axes, and proof boundaries | Adapt now | They prevent the repository-first implementation from confusing application, NEST, ecosystem availability, evidence, and authority. See `DONOR_RECALIBRATION_HERMES_MACRODROID.md`. |
+| MacroDroid device delivery and full Android certification | Defer | Valuable portability proof, but exact device grants, autonomous scheduling, and full VCW behavior are not yet natively verified and are outside the v2.0 certification pair. |
 | PNG VCW representation | Defer as candidate | Demonstrated transport/storage phenotype; not required for canonical alpha memory. |
 | SPORE Tomb candidate | Defer as candidate | Useful conformance seed, but migration and continuity law remain open. |
 | V3 SPORE boundary: Tomb != Book and decode != execution | Keep | Prevents a readable carrier from becoming authority, adoption, or continuity by implication. |
