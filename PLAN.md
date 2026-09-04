@@ -63,10 +63,11 @@ independence before the stable release.
 - The public seed applies to a clean checkout, verifies, reverses, and leaves the
   checkout pristine. No private identity, Personality, key, provider state, or
   live VCW is in the seed.
-- `v2.0.0-alpha.2` is the construction-release target for this evidence; it does
-  not claim that Hermes has been executed or that a successor Compiler is born.
-- Mantle's offline suite passes. Executing Hermes and installing its dependencies
-  remain behind the user's explicit sandbox gate.
+- `v2.0.0-alpha.2` is published as the construction release. It does not claim
+  that a successor Compiler is born.
+- Mantle's offline suite passes. After the user approved contained execution,
+  the same 85 focused native Hermes tests passed in the pristine and directly
+  innervated checkouts. This comparison is now a versioned GitHub Actions gate.
 - After native Body tests pass, the next identity gates are developmental-MIND
   Personality generation, user review and approval of the complete Primer, and
   a separate approval for the first full Heartbeat (birth).

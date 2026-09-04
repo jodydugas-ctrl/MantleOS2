@@ -43,3 +43,21 @@ jobs:
         run: python -m compileall -q .assimilation-work/hermes-agent
       - name: Verify constructed Body remains un-born
         run: mantle --nest .assimilation-work/hermes-agent verify
+      - name: Install pinned native-certification dependencies
+        run: python -m pip install -r examples/hermes/native-certification-requirements.txt
+      - name: Create pristine comparison checkout
+        run: git clone .assimilation-work/hermes-agent .assimilation-work/hermes-pristine
+      - name: Compare native behavior before and after innervation
+        run: >-
+          python scripts/certify_hermes_native.py
+          .assimilation-work/hermes-pristine
+          .assimilation-work/hermes-agent
+          --expected-commit "${{ steps.lock.outputs.commit }}"
+          --report .assimilation-work/hermes-native-certification.json
+      - name: Retain native-behavior evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-native-certification
+          path: .assimilation-work/hermes-native-certification.json
+          if-no-files-found: warn
