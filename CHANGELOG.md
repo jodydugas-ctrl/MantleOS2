@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Launch the resident Heart from its NEST-local organ runtime with isolated
+  Python imports. Missing local organs now stop before OS registration.
+- Exercise startup, MIND-less communication, pending host receipt recovery,
+  restart, and permanent Primer preservation in a real disposable subprocess
+  with authenticated encryption on the Windows/Linux test matrix.
+
 ## 2.0.0-alpha.3 - 2026-09-04
 
 - Replace shallow census output with a deterministic Body Genome covering file

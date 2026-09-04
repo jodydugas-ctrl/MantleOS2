@@ -822,7 +822,7 @@
       "mantle/runtime/mantleos/organs.py": "310c7b6350e7129404797c9df00014cb828c9718c5c2a0ff7e0b1738e341e0a8",
       "mantle/runtime/mantleos/primer.py": "9be97da54a038d6dd1a4321b8a5aedfa3078f4d1f35f400c1653ddb0b634f8c0",
       "mantle/runtime/mantleos/public_audit.py": "d1f2b5d0532df1af49437194c800be226eb53c1d1230aae26a96fb382f7624e9",
-      "mantle/runtime/mantleos/resident.py": "85560e7a55ec6be43a0eb3dd3f35011f3d9ee109133d688633033283769dabd7",
+      "mantle/runtime/mantleos/resident.py": "31ffae29d64aa28151ecde86739f520a9b054619f8c492c79192cdc79a87c5ef",
       "mantle/runtime/mantleos/runtime.py": "5c793db52dae2e30db62332e25fa0117eaaafef3fcb9316a6c1b52d90a65e3a6",
       "mantle/runtime/mantleos/targets/__init__.py": "936f338c8be6e9e37ca076c7d7e0f92bbf4ea50fbdb39a30e29771a14f69e082",
       "mantle/runtime/mantleos/targets/hermes.py": "9b9284e904825ee1fd6a4e7bdf3c03f51b4901a06c0d5ef63a7203f1e85a3d72"

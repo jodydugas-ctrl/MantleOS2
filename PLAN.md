@@ -111,6 +111,15 @@ to bypass Heart or Limb authority.
 
 ## Physiology and safety completion
 
+Resident Heart progress: the generated launcher now imports the NEST-local
+organ bundle using isolated Python. A real disposable process test covers
+startup, a committed communication wake without MIND, forced stop and restart,
+pending host receipt recovery, and unchanged sealed Primer/native Body bytes.
+OS registration remains mocked in unit tests: actual Task Scheduler/systemd
+installation, automatic process restart, graceful stop and removal still need
+native certification for issue #16. Python and cryptography remain runtime
+prerequisites; this does not yet provide a standalone interpreter bundle.
+
 - Split Body, SELF, Heart, VCW/Memory, Books, Senses, Nerves, Limbs, Immune,
   physiology, MIND boundary, and communication responsibilities cleanly.
 - Create a real prebirth VCW whose Layer 0 records NEST state and use; seed
