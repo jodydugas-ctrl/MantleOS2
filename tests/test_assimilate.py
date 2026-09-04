@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -88,7 +89,10 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     assert not (root / ".mantle" / "keys").exists()
     assert (root / "mantle" / "ASSIMILATION.json").is_file()
     assert (root / "mantle" / "maps" / "BODY_MAP.json").is_file()
+    assert (root / "mantle" / "maps" / "ARTERY_MAP.json").is_file()
+    assert (root / "mantle" / "maps" / "COVERAGE.json").is_file()
     assert (root / "mantle" / "maps" / "NERVE_MAP.json").is_file()
+    assert (root / "mantle" / "runtime" / "mantleos" / "runtime.py").is_file()
     assert not any("plugin" in path.as_posix().lower() for path in (root / "mantle").rglob("*"))
     assert (root / ".mantle" / "prebirth.json").is_file()
     assert "/.mantle/" in (root / ".gitignore").read_text(encoding="utf-8")
@@ -101,6 +105,24 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     assert prebirth["public_manifest_sha256"] == hashlib.sha256(
         (root / "mantle" / "ASSIMILATION.json").read_bytes()
     ).hexdigest()
+
+    isolated = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            (
+                "import sys; "
+                f"sys.path.insert(0, {str(root)!r}); "
+                "import mantle; "
+                "assert mantle.MantleBody.__module__ == 'mantle.runtime.mantleos.runtime'"
+            ),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert isolated.returncode == 0, isolated.stderr
 
 
 def test_existing_mantle_tissue_is_not_overwritten(tmp_path: Path):
@@ -119,6 +141,8 @@ def test_local_git_source_is_cloned_without_execution(tmp_path: Path):
         canonical_source="https://github.com/example/native-body",
     )
     assert manifest["source"]["canonical_url"] == "https://github.com/example/native-body"
-    assert manifest["target"]["kind"] == "unresolved"
-    assert manifest["gates"]["innervation"] == "requires-reviewed-mapper"
+    assert manifest["target"]["kind"] == "generic"
+    assert manifest["target"]["mapping"] == "mapping-complete"
+    assert manifest["gates"]["innervation"] == "awaiting-nerve-synthesis"
+    assert manifest["execution_plan"]["approval"] == "required-before-any-command"
     assert not (destination / "would-run.txt").exists()

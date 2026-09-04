@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import __version__
 from .assimilate import AssimilationError, assimilate_source
+from .construction import ConstructionError, approve_foreign_execution
 from .delta import DeltaError, apply_seed, build_seed, reverse_seed, verify_seed
 from .primer import (
     PrimerError,
@@ -38,6 +39,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     commands.add_parser("status", help="Show construction or organism status")
+    continue_build = commands.add_parser(
+        "continue", help="Advance a resumable construction through an explicit gate"
+    )
+    continue_build.add_argument("nest_path", nargs="?", help="NEST root")
+    continue_build.add_argument("--approve-foreign-execution", action="store_true")
     birth = commands.add_parser("birth", help="Run the separately approved first Heartbeat")
     birth.add_argument("--name", required=True, help="Confirmed organism identity name")
     birth.add_argument(
@@ -135,6 +141,12 @@ def main(argv: list[str] | None = None) -> int:
                 result = remove_resident(Path(args.nest), approved=args.approve_remove)
             else:
                 result = resident_status(Path(args.nest))
+        elif args.command == "continue":
+            nest = Path(args.nest_path or args.nest)
+            result = approve_foreign_execution(
+                nest,
+                approved=args.approve_foreign_execution,
+            )
         else:
             body = MantleBody(Path(args.nest))
             if args.command == "status":
@@ -159,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     except (
         AssimilationError,
+        ConstructionError,
         DeltaError,
         MantleError,
         PrimerError,

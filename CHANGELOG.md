@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## 2.0.0-alpha.3 - 2026-09-04
+
+- Replace shallow census output with a deterministic Body Genome covering file
+  ownership, parser certainty, symbols, calls, events, loops, behavior surfaces,
+  candidate nerves, capabilities, and honest uncertainty.
+- Give every detected loop an explicit artery disposition and block automatic
+  construction when major control flow lacks adequate parser evidence.
+- Copy the versioned Mantle organ runtime into each constructed NEST so direct
+  nerves do not depend on the globally installed constructor.
+- Add a source-, map-, command-, policy-, and resource-bound foreign execution
+  plan. Approval never executes code by itself and stops at
+  `sandbox-unavailable` unless a supported isolated runner is available.
+- Separate Habitat evidence from Default Body Layer 0 and independently track
+  capability implementation, availability, evidence, and authority.
+- Reconcile the read-only Hermes and MacroDroid references without copying
+  private organism state, device identifiers, credentials, or old Primer forms.
+
 ## 2.0.0-alpha.2 - 2026-09-03
 
 - Replace the alpha.1 Hermes plugin-shaped edge with eight direct, reversible,

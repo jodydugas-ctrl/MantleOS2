@@ -35,8 +35,9 @@ memory are different facts. UNKNOWN and OPEN are valid stop states.
 The Primer has exactly two components: the shared Commandments and one
 individual Personality. Identity, timestamps, provenance, construction
 evidence, and approval records are private Body records, not additional Primer
-components. Together with Immune and Special tissue the Primer forms SELF. It
-is loaded first—Commandments, then Personality—and all ordinary thought is
+components. The Primer is one protected part of SELF; Immune and Special are
+separate tissue and are never additional Primer components. The Primer is
+loaded first—Commandments, then Personality—and all ordinary thought is
 filtered through that permanent lens.
 
 A Personality may be dynamically distilled from source code, research,
@@ -112,6 +113,14 @@ record; it does not rewrite prior experience.
 
 ## 6. Host preservation and assimilation
 
+The NEST's surrounding **Habitat** is mapped separately from the Default Body.
+It records the operating system or device ecosystem, installed native
+application, storage and permission boundaries, and usable native surfaces.
+This allows a repository checkout, an installed desktop application, or an
+Android application to supply different anatomy without changing the invariant
+that the NEST is Default Body Layer 0. Host permission, capability
+availability, exercised evidence, and Mantle authority are separate facts.
+
 Assimilation begins with read-only census and evidence. The order is:
 
 ```text
@@ -132,6 +141,15 @@ a receipt. Cloned, fetched, or generated code remains candidate tissue.
 
 Text input is recorded semantically when committed by the interface—such as
 Enter in a single-line field, a save action, or loss of focus—not per keystroke.
+
+Static acquisition and Body Genome mapping never execute foreign repository
+code. The mapper accounts for every first-party source file and every detected
+loop, assigns explicit parser coverage and loop disposition, and reports gaps
+without inventing certainty. Builds, tests, dependency actions, or host launch
+require a shell-free execution plan bound to the exact source commit, Body Map,
+commands, network policy, and resource limits. A changed plan invalidates
+approval. If an adequate isolated runner is unavailable, construction stops at
+`sandbox-unavailable`.
 
 ## 7. Communication
 

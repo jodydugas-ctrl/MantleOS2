@@ -21,6 +21,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from .constitution import COMMANDMENTS_VERSION, species_kernel_markdown, species_kernel_sha256
+from .construction import create_execution_plan
 from .mapping import map_body
 from .targets.hermes import HermesInnervationError, innervate, is_hermes
 
@@ -178,9 +179,13 @@ candidate Primer state, and every declared public file. Private identity, VCW,
 provider state, and Heart receipts live under ignored `.mantle/` storage.
 """
 
-NERVE_PROXY = '''"""NEST-local direct nerve surface. This is not a plugin."""
+NERVE_PROXY = '''"""NEST-local direct nerve surface.
+
+This is embedded organism tissue, not a host extension or plugin. The Body
+remains native if the organism runtime cannot be loaded.
+"""
 try:
-    from mantleos.nerves import (
+    from .runtime.mantleos.nerves import (
         after_mind,
         authorize_tool,
         before_mind,
@@ -201,22 +206,74 @@ __all__ = [
 ]
 '''
 
+
+def _runtime_payloads() -> dict[str, str]:
+    """Return the versioned constructor runtime as NEST-local organ tissue."""
+    package = Path(__file__).resolve().parent
+    payloads = {"runtime/__init__.py": '"""NEST-local MantleOS organ runtime."""\n'}
+    for source in sorted(package.rglob("*.py")):
+        if "__pycache__" in source.parts:
+            continue
+        relative = source.relative_to(package).as_posix()
+        payloads[f"runtime/mantleos/{relative}"] = source.read_text(encoding="utf-8")
+    return payloads
+
 def _write_public_delta(nest: Path, manifest: dict[str, Any]) -> list[str]:
     public = nest / "mantle"
     payloads = {
         "__init__.py": (
-            '"""MantleOS 2 NEST controls. Requires the mantleos2 package."""\n'
-            "from mantleos.runtime import VCW, Book, MantleBody, MantleError\n"
+            '"""Self-contained MantleOS 2 NEST controls."""\n'
+            "from .runtime.mantleos.runtime import VCW, Book, MantleBody, MantleError\n"
             "\n"
             '__all__ = ["Book", "MantleBody", "MantleError", "VCW"]\n'
         ),
-        "__main__.py": "from mantleos.cli import main\n\nraise SystemExit(main())\n",
+        "__main__.py": "from .runtime.mantleos.cli import main\n\nraise SystemExit(main())\n",
         "README.md": PUBLIC_README,
         "nerves.py": NERVE_PROXY,
         "primer/COMMANDMENTS.md": species_kernel_markdown(),
         "maps/BODY_MAP.json": json.dumps(manifest["body_map"], indent=2, ensure_ascii=False) + "\n",
         "maps/NERVE_MAP.json": json.dumps(manifest["nerve_map"], indent=2, ensure_ascii=False) + "\n",
     }
+    payloads.update(_runtime_payloads())
+    body_map = manifest["body_map"]
+    payloads.update(
+        {
+            "maps/ARTERY_MAP.json": json.dumps(body_map["loops"], indent=2, ensure_ascii=False)
+            + "\n",
+            "maps/SYMBOL_GRAPH.json": json.dumps(
+                body_map["graphs"]["symbols"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/CALL_GRAPH.json": json.dumps(
+                body_map["graphs"]["calls"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/EVENT_GRAPH.json": json.dumps(
+                body_map["graphs"]["events"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/COVERAGE.json": json.dumps(
+                body_map["coverage"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/CAPABILITY_MAP.json": json.dumps(
+                body_map["capabilities"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/SEAM_MAP.json": json.dumps(
+                body_map["surfaces"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/BEHAVIOR_BASELINE.json": json.dumps(
+                body_map["behavior_baseline"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+            "maps/EXECUTION_PLAN.json": json.dumps(
+                manifest["execution_plan"], indent=2, ensure_ascii=False
+            )
+            + "\n",
+        }
+    )
     written: list[str] = []
     for relative, value in payloads.items():
         target = public / relative
@@ -266,7 +323,17 @@ def construct_nest(
         nerve_map = innervate(nest) if is_hermes(nest) else []
     except HermesInnervationError as exc:
         raise AssimilationError(str(exc)) from exc
-    target_kind = "hermes" if nerve_map else "unresolved"
+    target_kind = "reference-candidate" if nerve_map else "generic"
+    coverage_tier = body_map["coverage"]["tier"]
+    innervation_gate = (
+        "staged-requires-coverage-reconciliation"
+        if nerve_map
+        else (
+            "awaiting-nerve-synthesis"
+            if coverage_tier == "mapping-complete"
+            else "blocked-by-mapping-coverage"
+        )
+    )
     manifest: dict[str, Any] = {
         "schema": SCHEMA,
         "status": "constructed-not-born",
@@ -296,7 +363,7 @@ def construct_nest(
         "nerve_map": nerve_map,
         "target": {
             "kind": target_kind,
-            "mapping": "built-in-language-map" if nerve_map else "requires-user-reviewed-mapper",
+            "mapping": coverage_tier,
             "traditional_plugin": False,
         },
         "primer_candidate": {
@@ -318,13 +385,14 @@ def construct_nest(
         "gates": {
             "source_identified": "verified",
             "read_only_census": "verified",
-            "innervation": "staged" if nerve_map else "requires-reviewed-mapper",
+            "innervation": innervation_gate,
             "host_behavior": "awaiting-explicit-sandbox-tests",
             "primer": "awaiting-developmental-mind",
             "public_delta": "verified-at-construction",
             "birth": "not-authorized",
         },
     }
+    manifest["execution_plan"] = create_execution_plan(manifest)
     delta_paths = _write_public_delta(nest, manifest)
     manifest["delta"] = {
         "paths": delta_paths,
@@ -354,10 +422,14 @@ def construct_nest(
             "source_identified": "verified",
             "read_only_census": "verified",
             "host_behavior": "requires-runtime-verification",
-            "innervation": "staged" if nerve_map else "requires-reviewed-mapper",
+            "innervation": innervation_gate,
             "primer": "awaiting-developmental-mind",
             "public_delta": "verified-at-construction",
             "birth": "not-authorized",
+        },
+        "execution_plan": {
+            "path": "mantle/maps/EXECUTION_PLAN.json",
+            "sha256": manifest["execution_plan"]["plan_sha256"],
         },
         "constraints": [
             "Host-native behavior remains available without a MIND.",

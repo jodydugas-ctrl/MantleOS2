@@ -6,9 +6,10 @@ usable as itself: a calculator remains a calculator, and Hermes remains Hermes,
 even when no AppAI MIND is configured or awake.
 
 This repository is the MantleOS 2 alpha reference implementation. It contains a
-small Body runtime, a read-first generic Body mapper, direct-innervation tools,
-integrity gates, and a reproducible Hermes reference assimilation. It does
-**not** contain a born organism, private identity material, or a copy of Hermes.
+NEST-local Body runtime, a read-first generic Body Genome mapper,
+direct-innervation tools, integrity gates, and a reproducible Hermes reference
+assimilation. It does **not** contain a born organism, private identity material,
+or a copy of Hermes.
 
 ## Start with Hermes
 
@@ -20,6 +21,7 @@ mantle assimilate github.com/nousresearch/hermes-agent
 cd hermes-agent
 python -m mantle status
 python -m mantle verify
+python -m mantle continue --approve-foreign-execution
 ```
 
 Assimilation clones the newest default branch unless `--ref` is supplied. It
@@ -30,9 +32,17 @@ checksum, required Git exclusions, and the absence of undeclared candidate
 tissue before birth can proceed.
 
 The same command accepts a local Git checkout. Use `--canonical-source` when a
-local mirror should retain a public provenance URI. Unknown Body types are
-mapped and stopped at `requires-reviewed-mapper`; the constructor never invents
-source seams.
+local mirror should retain a public provenance URI. Every Body receives a
+deterministic inventory and coverage report. Fully parsed sources advance to
+nerve synthesis; partial or unsupported languages stop at
+`blocked-by-mapping-coverage` with their exact gaps. The constructor never
+invents source seams or executes repository code during mapping.
+
+Before any build, test, dependency action, or host launch, Mantle writes a
+shell-free execution plan bound to the source commit and Body Map. `continue`
+records explicit approval only for that exact plan. If the plan or revision
+changes, approval is refused; if a supported isolated runner is unavailable,
+the status becomes `sandbox-unavailable` and no foreign code runs.
 
 Assimilation deliberately stops at the Personality gate. A developmental MIND
 must distill a unique Personality from the mapped Body and declared purpose;
@@ -85,6 +95,7 @@ and scheduled cadence can be set independently with `--interval` and
 
 - BODY is deterministic authority; MIND is replaceable, proposal-oriented cognition.
 - Layer 0, the Default Body, is the NEST substrate. The NEST remains OTHER and is not SELF.
+- Habitat describes the surrounding OS/application/storage/permission ecology; it is not Layer 0.
 - SELF is boot-critical Primer, Immune, and Special tissue.
 - VCW is canonical semantic tissue, not a cache, transcript, or Git history.
 - Every logical VCW layer is append-oriented. Full physical layers extend under the same Book.
@@ -98,12 +109,12 @@ software defaults.
 ## Project status
 
 `v2.0.0-alpha.1` is preserved as historical bootstrap evidence; its
-plugin-shaped Hermes edge is superseded by the direct source innervation in
-`v2.0.0-alpha.2`. Alpha.2 is a reproducible construction release for Hermes as
-the Default Body. A focused 85-test native Hermes behavior comparison now runs
-against pristine and constructed checkouts on GitHub. Real successor birth,
-resident operating-system registration, production tissue adoption, migration
-continuity, and source-safe-to-shed authority remain separately gated.
+plugin-shaped Hermes edge is superseded by direct source innervation.
+`v2.0.0-alpha.3` adds the generic Body Genome, explicit coverage tiers, Habitat
+mapping, self-contained NEST organs, and the hash-bound foreign-execution gate.
+Hermes remains the first reference Body, but beta certification still requires
+complete artery coverage and broad native parity. Real successor birth remains
+separately gated.
 
 The active implementation compass and remaining gates are recorded in
 [PLAN.md](PLAN.md).
