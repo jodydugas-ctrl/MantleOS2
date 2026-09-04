@@ -32,6 +32,15 @@ def _paths(nest: Path) -> tuple[Path, Path]:
 
 def _runner_text(nest: Path) -> str:
     return (
+        "from pathlib import Path\n"
+        "import sys\n\n"
+        f"runtime = Path({str(nest)!r}) / 'mantle' / 'runtime'\n"
+        "package = runtime / 'mantleos'\n"
+        "if not all((package / name).is_file() for name in ('__init__.py', 'cli.py')):\n"
+        "    raise SystemExit('Resident Heart stopped: NEST-local organs are missing')\n"
+        "if runtime.resolve() != runtime or package.resolve() != package:\n"
+        "    raise SystemExit('Resident Heart stopped: organ path is redirected')\n"
+        "sys.path.insert(0, str(runtime))\n"
         "from mantleos.cli import main\n\n"
         f"raise SystemExit(main(['--nest', {str(nest)!r}, 'watch']))\n"
     )
@@ -51,12 +60,18 @@ def install_resident(nest: str | Path, *, approved: bool) -> dict[str, Any]:
     nest = Path(nest).resolve()
     if not MantleBody(nest).is_born:
         raise ResidentError("A resident Heart can be installed only after birth")
+    runtime = nest / "mantle" / "runtime"
+    package = runtime / "mantleos"
+    if not all((package / name).is_file() for name in ("__init__.py", "cli.py")):
+        raise ResidentError("Resident Heart requires NEST-local organs; reconstruct the Body delta")
+    if runtime.resolve() != runtime or package.resolve() != package:
+        raise ResidentError("Resident Heart organ path is redirected")
     registration_path, runner = _paths(nest)
     registration_id = _registration_id(nest)
     _atomic_write(runner, _runner_text(nest).encode("utf-8"))
 
     if PLATFORM == "nt":
-        command = subprocess.list2cmdline([sys.executable, str(runner)])
+        command = subprocess.list2cmdline([sys.executable, "-I", str(runner)])
         _run(
             [
                 "schtasks.exe",
@@ -83,7 +98,7 @@ def install_resident(nest: str | Path, *, approved: bool) -> dict[str, Any]:
         unit_text = (
             "[Unit]\nDescription=MantleOS 2 resident Heart\n\n"
             "[Service]\nType=simple\n"
-            f"ExecStart={quoted_python} {quoted_runner}\nRestart=on-failure\n\n"
+            f"ExecStart={quoted_python} -I {quoted_runner}\nRestart=on-failure\n\n"
             "[Install]\nWantedBy=default.target\n"
         )
         _atomic_write(unit, unit_text.encode("utf-8"))
@@ -102,6 +117,9 @@ def install_resident(nest: str | Path, *, approved: bool) -> dict[str, Any]:
         "installed_at": utc_now(),
         "authority": "explicit-user-approval",
         "privilege": "user-level",
+        "organ_runtime": str(runtime),
+        "python": sys.executable,
+        "isolated_python": True,
     }
     _atomic_write(
         registration_path,
