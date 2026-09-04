@@ -1,7 +1,7 @@
 {
   "schema": "mantle.assimilation.v2",
   "status": "constructed-not-born",
-  "constructed_at": "2026-09-04T17:52:21.939300Z",
+  "constructed_at": "2026-09-04T17:58:41.288410Z",
   "source": {
     "canonical_url": "https://github.com/NousResearch/hermes-agent",
     "branch": "main",
@@ -810,7 +810,7 @@
       "mantle/runtime/__init__.py": "c8772c69aad0c4293a910ade7237516484fdff9c7908346e08a8946b19465703",
       "mantle/runtime/mantleos/__init__.py": "e9edec26a4efad1c8c1f345383ad6ff05238f30e50f97b2843c429e805c4ad5f",
       "mantle/runtime/mantleos/__main__.py": "76fa916e93e0ae1a6c1bb51dcc0bcf289c014e9f760a47165f8a84401ccf41d7",
-      "mantle/runtime/mantleos/assimilate.py": "f338d068a0304c2ec091cfccc63d4c2a724a5aea9d840ae8628b20a9576570a0",
+      "mantle/runtime/mantleos/assimilate.py": "011a8cd6c7a0589972f0a0cb291d6ca6cf151e07085dfd63c0d1b638c5d0c108",
       "mantle/runtime/mantleos/cli.py": "9274038c88cd8c781ed300a3abaaf4e169e878e7ff90f8fab9cb040b52d7963a",
       "mantle/runtime/mantleos/constitution.py": "fd27111ae120b61b95805a8ca2c49596820a598978ecf50746c7ca06d8786eca",
       "mantle/runtime/mantleos/construction.py": "032479dfb75f6d26876c0876f6c150fa7c88a665cb382c035809473519c8fc4b",

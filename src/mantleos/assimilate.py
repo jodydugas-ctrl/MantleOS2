@@ -28,6 +28,7 @@ from .targets.hermes import HermesInnervationError, innervate, is_hermes
 
 SCHEMA = "mantle.assimilation.v2"
 GITHUB_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+GITHUB_SSH_REPOSITORY = re.compile(r"^git@github\.com:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)$")
 PRIVATE_NAMES = {".git", ".mantle", "__pycache__", ".pytest_cache", ".venv", "venv"}
 GITIGNORE_BLOCK = """# MantleOS private organism state and local communication surfaces.
 /.mantle/
@@ -59,14 +60,13 @@ def sha256_file(path: Path) -> str:
 def normalize_github_source(source: str) -> tuple[str, str]:
     """Return canonical HTTPS URL and repository name for a GitHub source."""
     candidate = source.strip().rstrip("/")
-    if candidate.startswith("git@github.com:"):
-        raw = candidate.split(":", 1)[1]
+    ssh_match = GITHUB_SSH_REPOSITORY.fullmatch(candidate.removesuffix(".git"))
+    if ssh_match:
+        raw = ssh_match.group(1)
     else:
-        if candidate.startswith("github.com/"):
-            candidate = "https://" + candidate
-        parsed = urlparse(candidate)
+        parsed = urlparse(candidate if "://" in candidate else f"//{candidate}")
         if (
-            parsed.scheme not in {"http", "https"}
+            parsed.scheme not in {"", "http", "https"}
             or (parsed.hostname or "").lower() != "github.com"
             or parsed.username
             or parsed.password
