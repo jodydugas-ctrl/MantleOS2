@@ -16,6 +16,10 @@ source-nerve patch, upstream proof, and checksums. Use `mantle delta apply`,
 exercise reconstruction. Runtime identity, unique Personality, keys, provider
 material, communication transcripts, and live VCW data are excluded.
 
+The focused native-behavior comparison and its boundaries are recorded in
+`NATIVE_BEHAVIOR_CERTIFICATION.md`. The same 85 upstream tests run against a
+pristine checkout and the constructed checkout in GitHub Actions.
+
 The source patch has eight direct Nerves. Its efferent Nerve records a redacted
 AppAI Limb proposal at Hermes's native tool-authority boundary; it neither
 registers Mantle as a plugin nor replaces Hermes's existing guardrails. Common

@@ -59,6 +59,9 @@ private Personality, Body key, provider credential, live VCW, or continuity stat
 
 The construction gate proves that a clean pinned Hermes checkout receives only
 the declared source nerves and Mantle tissue, and every changed host file matches
-the Nerve Map. Syntax and framework tests remain non-executing. Executing Hermes
-or installing its dependencies requires the separate explicit sandbox gate. It
-does not claim a born identity, migration continuity, or production adoption.
+the Nerve Map. After explicit local authorization, the same 85 focused upstream
+Hermes lifecycle and authority tests passed in both pristine and constructed
+checkouts. The repository now reproduces that comparison in GitHub Actions; see
+`examples/hermes/NATIVE_BEHAVIOR_CERTIFICATION.md` for scope and evidence. This
+does not claim a born identity, every optional Hermes feature, migration
+continuity, or production adoption.
