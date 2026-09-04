@@ -32,9 +32,20 @@ memory are different facts. UNKNOWN and OPEN are valid stop states.
 
 ## 3. Boot, preparation, and birth
 
-The Primer is the exact shared Commandments plus an individual Personality.
-Together with Immune and Special tissue it forms SELF. The Primer is loaded
-first and all ordinary thought is filtered through its lens.
+The Primer has exactly two components: the shared Commandments and one
+individual Personality. Identity, timestamps, provenance, construction
+evidence, and approval records are private Body records, not additional Primer
+components. Together with Immune and Special tissue the Primer forms SELF. It
+is loaded first—Commandments, then Personality—and all ordinary thought is
+filtered through that permanent lens.
+
+A Personality may be dynamically distilled from source code, research,
+fiction, role-playing systems, lived experience, or another sufficiently rich
+dataset. It is an individual interpretive lens, not a compliance specification:
+unusual traits, tensions, flaws, and contradictions are valid. The small
+Commandments establish shared orientation without demanding obedience or
+flattening the individual. After birth the original Personality never changes;
+learning and development accumulate in the VCW instead.
 
 Preparation and assimilation may overlap. A developmental MIND may distill the
 host source, documentation, and other evidence into a candidate Personality.
@@ -54,8 +65,9 @@ and that no undeclared public candidate tissue appeared. A mismatch stops birth
 without creating an identity key. Native NEST files remain OTHER and may evolve;
 their current state is observed by Layer 0 rather than silently claimed as SELF.
 The unique Personality candidate remains private construction tissue. After
-explicit approval it is sealed with the Commandments at birth; its plaintext
-candidate and evidence are removed only after that successful seal.
+explicit approval its exact text is sealed with the Commandments at birth.
+Construction provenance is sealed separately as private origin evidence; the
+plaintext candidate and evidence are removed only after those successful seals.
 
 The identity key must be owner-only at the operating-system boundary. Windows
 birth removes inherited general-user access with an explicit private ACL;
