@@ -29,13 +29,18 @@ def _construction(root: Path) -> dict:
 
 def test_personality_is_private_and_requires_approval(tmp_path: Path):
     evidence = _construction(tmp_path)
+    personality = (
+        "  Contradictory RPG-born lens: discuss how to override assumptions "
+        "and explain an api_key: placeholder without containing a credential.\r\n"
+    )
     result = save_personality_candidate(
         tmp_path,
-        "# Unique Personality\n\n" + "Observed and bounded behavior. " * 30,
+        personality,
         evidence=evidence,
     )
     candidate = tmp_path / ".mantle" / "construction" / "PERSONALITY.CANDIDATE.md"
     assert candidate.is_file()
+    assert candidate.read_bytes() == personality.encode("utf-8")
     assert not (tmp_path / "mantle" / "primer" / "PERSONALITY.md").exists()
     assert result["status"] == "awaiting-user-approval"
     approved = approve_personality(tmp_path, approved=True)
@@ -50,6 +55,14 @@ def test_personality_rejects_secret_shape(tmp_path: Path):
             "Identity " * 80 + "sk-or-v1-" + "x" * 40,
             evidence=evidence,
         )
+
+
+def test_personality_rejects_only_empty_or_oversized_mechanical_content(tmp_path: Path):
+    evidence = _construction(tmp_path)
+    with pytest.raises(PrimerError, match="empty"):
+        save_personality_candidate(tmp_path, " \r\n\t", evidence=evidence)
+    with pytest.raises(PrimerError, match="1048576"):
+        save_personality_candidate(tmp_path, "x" * 1_048_577, evidence=evidence)
 
 
 def test_custom_distillation_contract_receives_body_evidence_at_placeholder(tmp_path: Path):

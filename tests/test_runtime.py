@@ -14,8 +14,11 @@ from mantleos.runtime import (
     Book,
     MantleBody,
     MantleError,
+    _load_sealed_json,
     _restrict_identity_key,
+    _save_sealed_json,
     canonical_json,
+    sha256_bytes,
 )
 
 
@@ -290,6 +293,113 @@ class GateTests(unittest.TestCase):
                 transcript = (nest / "COMMUNICATION.TXT").read_text(encoding="utf-8")
                 self.assertIn("APPAI> MIND response", transcript)
                 self.assertTrue(body.verify()["ok"])
+
+    def test_primer_has_exact_permanent_components_and_separate_origin(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            personality_path = nest / ".mantle" / "construction" / "PERSONALITY.CANDIDATE.md"
+            personality_bytes = personality_path.read_bytes()
+            commandments_bytes = (nest / "mantle" / "primer" / "COMMANDMENTS.md").read_bytes()
+
+            with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
+                body = MantleBody(nest)
+                body.birth("Two components", approved=True)
+                cipher = body._cipher()
+                primer = _load_sealed_json(body.paths.primer, cipher, "primer", {})
+                self.assertEqual({"commandments", "personality"}, set(primer))
+                self.assertEqual(commandments_bytes, primer["commandments"].encode("utf-8"))
+                self.assertEqual(personality_bytes, primer["personality"].encode("utf-8"))
+                self.assertNotIn("organism_id", primer)
+                self.assertNotIn("name", primer)
+                self.assertNotIn("personality_evidence", primer)
+                self.assertNotIn("sealed_at", primer)
+
+                origin = _load_sealed_json(
+                    body.paths.personality_origin,
+                    cipher,
+                    "personality-origin",
+                    {},
+                )
+                self.assertEqual("mantle.personality-origin.v2", origin["schema"])
+                self.assertEqual(sha256_bytes(personality_bytes), origin["personality_sha256"])
+                self.assertEqual(sha256_bytes(commandments_bytes), origin["commandments_sha256"])
+                self.assertEqual({"source": "test"}, origin["evidence"])
+                self.assertFalse(personality_path.exists())
+                self.assertFalse(body.paths.personality_evidence.exists())
+
+                sealed_primer = body.paths.primer.read_bytes()
+                body.heartbeat(reason="permanence-test")
+                self.assertEqual(sealed_primer, body.paths.primer.read_bytes())
+                self.assertEqual("verified", body.verify()["primer"]["origin"])
+
+                context = body.primer_context(
+                    [{"logical_layer": "heart", "kind": "test", "data": {"value": 1}}]
+                )
+                commandments_at = context.index(primer["commandments"])
+                personality_at = context.index(primer["personality"])
+                continuity_at = context.index("<BODY_CONTINUITY>")
+                self.assertLess(commandments_at, personality_at)
+                self.assertLess(personality_at, continuity_at)
+
+                _save_sealed_json(
+                    body.paths.primer,
+                    cipher,
+                    "primer",
+                    {**primer, "personality": primer["personality"] + "changed"},
+                )
+                with self.assertRaisesRegex(MantleError, "no longer matches its origin"):
+                    body.verify()
+
+    def test_legacy_primer_is_read_without_mutating_born_self(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
+                body = MantleBody(nest)
+                body.birth("Legacy reader", approved=True)
+                cipher = body._cipher()
+                primer = _load_sealed_json(body.paths.primer, cipher, "primer", {})
+                legacy = {
+                    "schema": "mantle.primer.v2",
+                    "organism_id": "legacy-id",
+                    **primer,
+                    "personality_evidence": {"source": "legacy"},
+                    "sealed_at": "legacy-time",
+                }
+                _save_sealed_json(body.paths.primer, cipher, "primer", legacy)
+                body.paths.personality_origin.unlink()
+                sealed_legacy = body.paths.primer.read_bytes()
+
+                context = body.primer_context([])
+                self.assertIn(primer["commandments"], context)
+                self.assertIn(primer["personality"], context)
+                self.assertEqual("legacy-unavailable", body.verify()["primer"]["origin"])
+                self.assertEqual(sealed_legacy, body.paths.primer.read_bytes())
+
+    def test_interrupted_legacy_prebirth_primer_is_canonicalized_on_resume(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
+                body = MantleBody(nest)
+                with (
+                    mock.patch.object(body, "heartbeat", side_effect=MantleError("interrupted")),
+                    self.assertRaisesRegex(MantleError, "interrupted"),
+                ):
+                    body.birth("Resume", approved=True)
+
+                cipher = body._cipher()
+                primer = _load_sealed_json(body.paths.primer, cipher, "primer", {})
+                _save_sealed_json(
+                    body.paths.primer,
+                    cipher,
+                    "primer",
+                    {"schema": "legacy", **primer, "sealed_at": "before-resume"},
+                )
+                body.birth("Resume", approved=True)
+                resumed = _load_sealed_json(body.paths.primer, body._cipher(), "primer", {})
+                self.assertEqual({"commandments", "personality"}, set(resumed))
 
     def test_resident_watch_recovers_starts_and_wakes_on_committed_message(self):
         with tempfile.TemporaryDirectory() as temporary:

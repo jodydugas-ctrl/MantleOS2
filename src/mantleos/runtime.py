@@ -184,6 +184,10 @@ class BodyPaths:
         return self.private / "construction" / "personality-evidence.json"
 
     @property
+    def personality_origin(self) -> Path:
+        return self.private / "state" / "personality-origin.enc"
+
+    @property
     def birth_candidate(self) -> Path:
         return self.private / "self" / "birth-candidate.enc"
 
@@ -726,9 +730,7 @@ class MantleBody:
         """
         if not self.is_born:
             raise MantleError("Primer context is unavailable before birth")
-        primer = _load_sealed_json(self.paths.primer, self._cipher(), "primer", {})
-        if not primer:
-            raise MantleError("The sealed Primer is missing")
+        commandments, personality = self._primer_components()
         safe_events = [
             {
                 "logical_layer": event.get("logical_layer"),
@@ -741,14 +743,45 @@ class MantleBody:
         ]
         return (
             "<APPAI_PRIMER>\n"
-            + primer["commandments"].strip()
+            + commandments
             + "\n\n"
-            + primer["personality"].strip()
+            + personality
             + "\n</APPAI_PRIMER>\n\n"
             + "<BODY_CONTINUITY>\n"
             + json.dumps(safe_events, sort_keys=True, ensure_ascii=False)
             + "\n</BODY_CONTINUITY>"
         )
+
+    def _primer_components(self) -> tuple[str, str]:
+        """Load the permanent two-component Primer, including legacy envelopes."""
+        primer = _load_sealed_json(self.paths.primer, self._cipher(), "primer", {})
+        if not isinstance(primer, dict):
+            raise MantleError("The sealed Primer has an invalid format")
+        commandments = primer.get("commandments")
+        personality = primer.get("personality")
+        if not isinstance(commandments, str) or not commandments.strip():
+            raise MantleError("The sealed Primer is missing Commandments")
+        if not isinstance(personality, str) or not personality.strip():
+            raise MantleError("The sealed Primer is missing Personality")
+        return commandments, personality
+
+    def _verify_primer_origin(self) -> dict[str, Any]:
+        commandments, personality = self._primer_components()
+        origin = _load_sealed_json(
+            self.paths.personality_origin,
+            self._cipher(),
+            "personality-origin",
+            {},
+        )
+        if not origin:
+            return {"ok": True, "origin": "legacy-unavailable"}
+        if not isinstance(origin, dict) or origin.get("schema") != "mantle.personality-origin.v2":
+            raise MantleError("The sealed Personality origin has an unknown format")
+        if origin.get("personality_sha256") != sha256_bytes(personality.encode("utf-8")):
+            raise MantleError("The permanent Personality no longer matches its origin")
+        if origin.get("commandments_sha256") != sha256_bytes(commandments.encode("utf-8")):
+            raise MantleError("The sealed Commandments no longer match the Primer origin")
+        return {"ok": True, "origin": "verified"}
 
     def birth(self, name: str, *, approved: bool = False) -> dict[str, Any]:
         if not approved:
@@ -771,6 +804,15 @@ class MantleBody:
         primer_candidate = prebirth.get("primer_candidate", {})
         if primer_candidate.get("personality_sha256") != sha256_file(self.paths.personality_candidate):
             raise MantleError("The approved Personality candidate changed after review")
+        try:
+            personality_bytes = self.paths.personality_candidate.read_bytes()
+            personality = personality_bytes.decode("utf-8")
+            commandments_bytes = commandments_path.read_bytes()
+            commandments = commandments_bytes.decode("utf-8")
+            evidence_bytes = self.paths.personality_evidence.read_bytes()
+            personality_evidence = json.loads(evidence_bytes.decode("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise MantleError("The approved Primer construction material is unreadable") from exc
 
         # Preflight before creating even a candidate key. Construction may be
         # inspected on machines that cannot safely birth the organism.
@@ -805,20 +847,39 @@ class MantleBody:
                 "construction_manifest_sha256": construction_proof["manifest_sha256"],
             }
             _save_sealed_json(self.paths.birth_candidate, cipher, "birth-candidate", identity)
-        if not self.paths.primer.exists():
-            commandments = commandments_path.read_text(encoding="utf-8")
-            personality = self.paths.personality_candidate.read_text(encoding="utf-8")
-            primer = {
-                "schema": "mantle.primer.v2",
-                "organism_id": identity["organism_id"],
-                "name": identity["name"],
-                "commandments": commandments,
-                "personality": personality,
-                "personality_evidence": json.loads(
-                    self.paths.personality_evidence.read_text(encoding="utf-8")
-                ) if self.paths.personality_evidence.is_file() else {},
-                "sealed_at": utc_now(),
-            }
+        expected_origin = {
+            "schema": "mantle.personality-origin.v2",
+            "personality_sha256": sha256_bytes(personality_bytes),
+            "commandments_sha256": sha256_bytes(commandments_bytes),
+            "evidence_sha256": sha256_bytes(evidence_bytes),
+            "evidence": personality_evidence,
+        }
+        existing_origin = _load_sealed_json(
+            self.paths.personality_origin,
+            cipher,
+            "personality-origin",
+            {},
+        )
+        if existing_origin and existing_origin != expected_origin:
+            raise MantleError("An interrupted birth has conflicting Personality origin evidence")
+        if not existing_origin:
+            _save_sealed_json(
+                self.paths.personality_origin,
+                cipher,
+                "personality-origin",
+                expected_origin,
+            )
+
+        primer = {"commandments": commandments, "personality": personality}
+        existing_primer = _load_sealed_json(self.paths.primer, cipher, "primer", {})
+        if existing_primer != primer:
+            if existing_primer:
+                legacy_components = {
+                    "commandments": existing_primer.get("commandments"),
+                    "personality": existing_primer.get("personality"),
+                } if isinstance(existing_primer, dict) else {}
+                if legacy_components != primer:
+                    raise MantleError("An interrupted birth has a conflicting sealed Primer")
             _save_sealed_json(self.paths.primer, cipher, "primer", primer)
 
         heartbeat = _load_sealed_json(self.paths.birth_receipt, cipher, "first-heartbeat", {})
@@ -1369,7 +1430,10 @@ class MantleBody:
             proof = self._construction_proof()
             proof["live_vcw"] = False
             return proof
-        return self._vcw().verify()
+        primer = self._verify_primer_origin()
+        proof = self._vcw().verify()
+        proof["primer"] = primer
+        return proof
 
     def watch(
         self,

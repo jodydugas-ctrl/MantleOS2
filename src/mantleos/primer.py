@@ -17,8 +17,13 @@ from .assimilate import _atomic_text, sha256_file, utc_now
 from .constitution import COMMANDMENTS_VERSION, species_kernel_sha256
 from .nutrition import openrouter_completion, parse_openrouter_food
 
-SECRET_PATTERN = re.compile(r"(?:sk-or-v1-[A-Za-z0-9_-]{16,}|api[_-]?key\s*[:=])", re.IGNORECASE)
+SECRET_PATTERN = re.compile(
+    r"(?:sk-or-v1-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|"
+    r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)",
+    re.IGNORECASE,
+)
 MAX_DISTILLATION_CONTRACT_BYTES = 65_536
+MAX_PERSONALITY_BYTES = 1_048_576
 
 DISTILLATION_CONTRACT = """Create one unique AppAI Personality from the supplied Body evidence.
 
@@ -95,15 +100,15 @@ def save_personality_candidate(
     provider_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     candidate, evidence_path, prebirth_path = _paths(nest)
-    text = personality.strip()
-    if len(text) < 400:
-        raise PrimerError("Generated Personality is too short to satisfy the distillation contract")
-    if SECRET_PATTERN.search(text):
+    encoded = personality.encode("utf-8")
+    if not personality.strip():
+        raise PrimerError("Generated Personality is empty")
+    if len(encoded) > MAX_PERSONALITY_BYTES:
+        raise PrimerError("Generated Personality exceeds the 1048576-byte private storage limit")
+    if SECRET_PATTERN.search(personality):
         raise PrimerError("Generated Personality appears to contain a credential")
-    if "commandments" in text.casefold() and "override" in text.casefold():
-        raise PrimerError("Generated Personality contains a possible Commandments override")
     candidate.parent.mkdir(parents=True, exist_ok=True)
-    _atomic_text(candidate, text + "\n")
+    _atomic_text(candidate, personality)
     evidence_record = dict(evidence)
     evidence_record["personality_sha256"] = sha256_file(candidate)
     if provider_receipt:

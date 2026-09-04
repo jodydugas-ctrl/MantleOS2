@@ -51,6 +51,13 @@ that placeholder is absent. The prompt, candidate, and provenance remain
 private construction material; generation never approves the Personality or
 births the organism.
 
+The runtime Primer contains exactly two permanent components: Commandments,
+then the individual Personality. Personality may be distilled from many kinds
+of source material and is not required to be perfectly consistent or
+obedience-oriented. Construction evidence and identity remain separate private
+Body records; learning accumulates in the VCW without rewriting the birth
+Personality.
+
 Do not run that command casually. Its first successful full Heartbeat creates
 the organism's unique Body-owned key, seals its Primer, creates the real VCW,
 captures the Layer 0 NEST baseline, and symbolizes birth.
