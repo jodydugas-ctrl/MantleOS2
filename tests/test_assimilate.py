@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import subprocess
@@ -76,6 +77,16 @@ def test_read_only_census_is_stable(tmp_path: Path):
     assert before.source_fingerprint.startswith("sha256:")
 
 
+def test_census_is_independent_of_checkout_line_endings(tmp_path: Path):
+    lf = tmp_path / "lf"
+    crlf = tmp_path / "crlf"
+    lf.mkdir()
+    crlf.mkdir()
+    (lf / "body.py").write_bytes(b"print('body')\n")
+    (crlf / "body.py").write_bytes(b"print('body')\r\n")
+    assert census_repository(lf) == census_repository(crlf)
+
+
 def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     root = _host(tmp_path)
     sentinel = root / "would-run.txt"
@@ -120,6 +131,9 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
     assert prebirth["public_manifest_sha256"] == hashlib.sha256(
         (root / "mantle" / "ASSIMILATION.json").read_bytes()
     ).hexdigest()
+    artery_archive = (root / "mantle" / "maps" / "ARTERY_MAP.json.gz").read_bytes()
+    assert artery_archive[9] == 255
+    assert isinstance(json.loads(gzip.decompress(artery_archive)), list)
 
     isolated = subprocess.run(
         [

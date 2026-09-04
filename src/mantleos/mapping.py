@@ -14,6 +14,7 @@ import os
 import re
 import warnings
 from collections import Counter
+from itertools import chain
 from pathlib import Path
 from typing import Any
 
@@ -109,11 +110,36 @@ def iter_body_files(root: Path):
 
 
 def _sha256_file(path: Path) -> str:
+    return canonical_file_digest(path)[0]
+
+
+def canonical_file_digest(path: Path) -> tuple[str, int]:
+    """Hash LF-normalized text or exact binary bytes, returning hash and size."""
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+        first = handle.read(1024 * 1024)
+        if b"\0" in first:
+            digest.update(first)
+            size = len(first)
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+                size += len(chunk)
+            return digest.hexdigest(), size
+
+        size = 0
+        carry = b""
+        for chunk in chain((first,), iter(lambda: handle.read(1024 * 1024), b"")):
+            value = carry + chunk
+            carry = b"\r" if value.endswith(b"\r") else b""
+            if carry:
+                value = value[:-1]
+            value = value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+            digest.update(value)
+            size += len(value)
+        if carry:
+            digest.update(b"\n")
+            size += 1
+    return digest.hexdigest(), size
 
 
 def _ownership(relative: str) -> str:
@@ -442,10 +468,11 @@ def map_body(root: Path, *, source_uri: str, source_fingerprint: str) -> dict[st
         if ownership != "first-party" and state in {CoverageState.PARTIAL, CoverageState.BLOCKED}:
             state = CoverageState.NOT_APPLICABLE
             row_limits = ("vendored-source-not-part-of-default-anatomy",)
+        digest, canonical_bytes = canonical_file_digest(path)
         coverage_rows.append(FileCoverage(
             path=relative,
-            sha256=_sha256_file(path),
-            bytes=path.stat().st_size,
+            sha256=digest,
+            bytes=canonical_bytes,
             language=language,
             ownership=ownership,
             artifact_kind=artifact_kind,

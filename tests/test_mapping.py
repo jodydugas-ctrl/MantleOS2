@@ -100,3 +100,14 @@ def test_oversized_source_is_hashed_but_not_loaded_into_parser(tmp_path: Path):
     assert row["sha256"]
     assert row["limitations"][0].startswith("source-too-large:")
     assert mapped["coverage"]["tier"] == "mapping-blocked"
+
+
+def test_text_hashes_and_maps_are_independent_of_checkout_line_endings(tmp_path: Path):
+    lf = tmp_path / "lf"
+    crlf = tmp_path / "crlf"
+    lf.mkdir()
+    crlf.mkdir()
+    source = "def main():\n    while True:\n        break\n"
+    (lf / "main.py").write_bytes(source.encode())
+    (crlf / "main.py").write_bytes(source.replace("\n", "\r\n").encode())
+    assert _map(lf) == _map(crlf)

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import io
 import json
 import os
 import re
@@ -23,7 +24,7 @@ from urllib.parse import urlparse
 
 from .constitution import COMMANDMENTS_VERSION, species_kernel_markdown, species_kernel_sha256
 from .construction import create_execution_plan
-from .mapping import map_body
+from .mapping import canonical_file_digest, map_body
 from .targets.hermes import HermesInnervationError, innervate, is_hermes
 
 SCHEMA = "mantle.assimilation.v2"
@@ -50,11 +51,7 @@ def canonical_json(value: Any) -> bytes:
 
 
 def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return canonical_file_digest(path)[0]
 
 
 def normalize_github_source(source: str) -> tuple[str, str]:
@@ -132,8 +129,7 @@ def census_repository(root: Path) -> RepositoryCensus:
     count = 0
     for path in _host_files(root):
         relative = path.relative_to(root).as_posix()
-        size = path.stat().st_size
-        digest = sha256_file(path)
+        digest, size = canonical_file_digest(path)
         aggregate.update(relative.encode("utf-8"))
         aggregate.update(b"\0")
         aggregate.update(str(size).encode("ascii"))
@@ -237,7 +233,10 @@ def _runtime_payloads() -> dict[str, str]:
 
 def _compressed_json(value: Any) -> bytes:
     raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-    return gzip.compress(raw, compresslevel=9, mtime=0)
+    target = io.BytesIO()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=target, compresslevel=9, mtime=0) as handle:
+        handle.write(raw)
+    return target.getvalue()
 
 
 def _body_map_summary(body_map: dict[str, Any]) -> dict[str, Any]:
