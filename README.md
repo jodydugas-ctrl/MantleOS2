@@ -61,7 +61,11 @@ python -m mantle delta verify examples/hermes/seed --destination /path/to/candid
 
 `COMMUNICATION.TXT` is the universal unencrypted fallback after birth. Saving a
 new `USER>` message wakes an unscheduled *full* Heartbeat. If no MIND exists, the
-Body records the message and continues operating normally.
+Body records the message and continues operating normally. The resident watch
+runs a full startup Heartbeat, recovers interrupted host Heartbeats, and also
+runs scheduled full Heartbeats every five minutes by default. File observation
+and scheduled cadence can be set independently with `--interval` and
+`--heartbeat-interval`.
 
 ## Constitutional boundaries
 
@@ -82,9 +86,10 @@ software defaults.
 `v2.0.0-alpha.1` is preserved as historical bootstrap evidence; its
 plugin-shaped Hermes edge is superseded by the direct source innervation in
 `v2.0.0-alpha.2`. Alpha.2 is a reproducible construction release for Hermes as
-the Default Body. Native Hermes runtime certification, real birth, production
-tissue adoption, migration continuity, and source-safe-to-shed authority remain
-separately gated.
+the Default Body. A focused 85-test native Hermes behavior comparison now runs
+against pristine and constructed checkouts on GitHub. Real successor birth,
+resident operating-system registration, production tissue adoption, migration
+continuity, and source-safe-to-shed authority remain separately gated.
 
 The active implementation compass and remaining gates are recorded in
 [PLAN.md](PLAN.md).

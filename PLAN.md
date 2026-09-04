@@ -68,6 +68,10 @@ independence before the stable release.
 - Mantle's offline suite passes. After the user approved contained execution,
   the same 85 focused native Hermes tests passed in the pristine and directly
   innervated checkouts. This comparison is now a versioned GitHub Actions gate.
+- The resident watch now recovers interrupted host Heartbeats, performs a full
+  startup Heartbeat, wakes immediately for committed communication, and runs
+  scheduled full Heartbeats on an independent cadence. Operating-system
+  registration remains behind its separate explicit authorization gate.
 - After native Body tests pass, the next identity gates are developmental-MIND
   Personality generation, user review and approval of the complete Primer, and
   a separate approval for the first full Heartbeat (birth).

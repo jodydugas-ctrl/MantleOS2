@@ -43,7 +43,13 @@ def build_parser() -> argparse.ArgumentParser:
     heartbeat = commands.add_parser("heartbeat", help="Run one complete Heartbeat")
     heartbeat.add_argument("--reason", default="manual")
     watch = commands.add_parser("watch", help="Watch COMMUNICATION.TXT and wake on save")
-    watch.add_argument("--interval", type=float, default=1.0)
+    watch.add_argument("--interval", type=float, default=1.0, help="File observation cadence in seconds")
+    watch.add_argument(
+        "--heartbeat-interval",
+        type=float,
+        default=300.0,
+        help="Scheduled full Heartbeat cadence in seconds",
+    )
     digest = commands.add_parser("digest", help="Securely store and verify a Food delivery")
     digest.add_argument("path", help="Path to the Food file")
     digest.add_argument("--retry", action="store_true", help="Retry an already recorded delivery")
@@ -127,7 +133,10 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "speak":
                 result = body.speak(args.message)
             else:
-                body.watch(interval=args.interval)
+                body.watch(
+                    interval=args.interval,
+                    heartbeat_interval=args.heartbeat_interval,
+                )
                 return 0
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
