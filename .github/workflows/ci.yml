@@ -27,7 +27,7 @@ jobs:
       - run: python -m ruff check .
       - run: python -m pytest --junitxml=test-results.xml
       - run: python -m mantleos.public_audit .
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.python }}

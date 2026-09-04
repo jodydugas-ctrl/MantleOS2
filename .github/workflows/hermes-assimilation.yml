@@ -56,7 +56,7 @@ jobs:
           --report .assimilation-work/hermes-native-certification.json
       - name: Retain native-behavior evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hermes-native-certification
           path: .assimilation-work/hermes-native-certification.json
