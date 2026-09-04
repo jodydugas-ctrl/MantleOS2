@@ -7,6 +7,7 @@ Heartbeat.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -17,6 +18,7 @@ from .constitution import COMMANDMENTS_VERSION, species_kernel_sha256
 from .nutrition import openrouter_completion, parse_openrouter_food
 
 SECRET_PATTERN = re.compile(r"(?:sk-or-v1-[A-Za-z0-9_-]{16,}|api[_-]?key\s*[:=])", re.IGNORECASE)
+MAX_DISTILLATION_CONTRACT_BYTES = 65_536
 
 DISTILLATION_CONTRACT = """Create one unique AppAI Personality from the supplied Body evidence.
 
@@ -37,6 +39,20 @@ Requirements:
 
 class PrimerError(RuntimeError):
     pass
+
+
+def load_distillation_contract(path: Path) -> str:
+    """Load one reviewed prompt without allowing an unbounded provider request."""
+    raw = path.read_bytes()
+    if not raw or len(raw) > MAX_DISTILLATION_CONTRACT_BYTES:
+        raise PrimerError("Distillation prompt must contain between 1 and 65536 bytes")
+    try:
+        contract = raw.decode("utf-8-sig").strip()
+    except UnicodeDecodeError as exc:
+        raise PrimerError("Distillation prompt is not UTF-8 text") from exc
+    if not contract:
+        raise PrimerError("Distillation prompt is empty")
+    return contract
 
 
 def _paths(nest: Path) -> tuple[Path, Path, Path]:
@@ -111,14 +127,33 @@ def generate_personality(
     food_path: Path,
     *,
     approved_context: str = "",
+    distillation_contract: str | None = None,
 ) -> dict[str, Any]:
     """Use an explicitly supplied developmental MIND without storing its key."""
     food = parse_openrouter_food(food_path.read_bytes())
     evidence = personality_evidence(nest, approved_context=approved_context)
-    prompt = DISTILLATION_CONTRACT + "\n\nBODY EVIDENCE:\n" + json.dumps(
-        evidence, sort_keys=True, ensure_ascii=False
+    if distillation_contract is None:
+        contract = DISTILLATION_CONTRACT.strip()
+    else:
+        if len(distillation_contract.encode("utf-8")) > MAX_DISTILLATION_CONTRACT_BYTES:
+            raise PrimerError("Distillation prompt must contain between 1 and 65536 bytes")
+        contract = distillation_contract.strip()
+        if not contract:
+            raise PrimerError("Distillation prompt is empty")
+    rendered_evidence = json.dumps(evidence, sort_keys=True, ensure_ascii=False)
+    placeholder = "[PASTE ANY TEXT HERE]"
+    if placeholder in contract:
+        prompt = contract.replace(placeholder, rendered_evidence, 1)
+    else:
+        prompt = contract + "\n\nBODY EVIDENCE:\n" + rendered_evidence
+    custom_contract = distillation_contract is not None
+    result = openrouter_completion(
+        food.api_key,
+        food.model,
+        prompt,
+        max_tokens=8192 if custom_contract else 4096,
+        timeout=120.0 if custom_contract else 90.0,
     )
-    result = openrouter_completion(food.api_key, food.model, prompt, max_tokens=4096, timeout=90.0)
     provider_receipt = {
         "provider": "openrouter",
         "requested_model": food.model,
@@ -127,6 +162,7 @@ def generate_personality(
         "usage": result["usage"],
         "food_sha256": food.source_sha256,
         "key_fingerprint": food.key_fingerprint,
+        "distillation_contract_sha256": hashlib.sha256(contract.encode("utf-8")).hexdigest(),
     }
     return save_personality_candidate(
         nest,

@@ -44,6 +44,13 @@ python -m mantle primer approve --approve-primer
 python -m mantle birth --name "The Compiler" --approve-birth
 ```
 
+A creator may supply a separately reviewed distillation contract with
+`--distillation-prompt /path/to/prompt.md`. Mantle inserts the approved Body
+evidence at the first `[PASTE ANY TEXT HERE]` placeholder, or appends it when
+that placeholder is absent. The prompt, candidate, and provenance remain
+private construction material; generation never approves the Personality or
+births the organism.
+
 Do not run that command casually. Its first successful full Heartbeat creates
 the organism's unique Body-owned key, seals its Primer, creates the real VCW,
 captures the Layer 0 NEST baseline, and symbolizes birth.

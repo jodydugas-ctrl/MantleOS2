@@ -12,6 +12,7 @@ from typing import Any
 
 OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
 MAX_FOOD_BYTES = 8_192
+MAX_PROVIDER_OUTPUT_TOKENS = 8_192
 MODEL_PATTERN = re.compile(r"^[A-Za-z0-9._~:/-]+$")
 
 
@@ -62,7 +63,7 @@ def openrouter_completion(
         {
             "model": model,
             "messages": [{"role": "user", "content": message}],
-            "max_tokens": max(1, min(max_tokens, 4_096)),
+            "max_tokens": max(1, min(max_tokens, MAX_PROVIDER_OUTPUT_TOKENS)),
             "temperature": 0,
         }
     ).encode("utf-8")
