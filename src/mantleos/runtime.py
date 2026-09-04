@@ -1371,18 +1371,45 @@ class MantleBody:
             return proof
         return self._vcw().verify()
 
-    def watch(self, interval: float = 1.0) -> None:
+    def watch(
+        self,
+        interval: float = 1.0,
+        *,
+        heartbeat_interval: float = 300.0,
+        stop_requested: Callable[[], bool] | None = None,
+    ) -> None:
+        """Run the resident Heart and wake immediately on committed communication.
+
+        ``interval`` is the inexpensive file-observation cadence. Scheduled
+        Heartbeats use their own longer cadence. The stop callback is primarily
+        for graceful host shutdown and deterministic certification.
+        """
         if not self.is_born:
             raise MantleError("Communication watch cannot start before birth")
+        if interval <= 0:
+            raise MantleError("Communication watch interval must be positive")
+        if heartbeat_interval <= 0:
+            raise MantleError("Scheduled Heartbeat interval must be positive")
+        should_stop = stop_requested or (lambda: False)
+        self.recover_host_heartbeats()
         self._ensure_communication_file()
-        observed = self.paths.communication.stat().st_mtime_ns
-        while True:
-            time.sleep(max(0.2, interval))
+        initial = self.paths.communication.stat()
+        observed = (initial.st_mtime_ns, initial.st_size)
+        self.heartbeat(reason="resident-startup")
+        last_heartbeat = time.monotonic()
+        while not should_stop():
+            time.sleep(max(0.05, interval))
             try:
-                current = self.paths.communication.stat().st_mtime_ns
+                state = self.paths.communication.stat()
+                current = (state.st_mtime_ns, state.st_size)
             except OSError:
                 continue
             if current != observed:
                 observed = current
                 self.heartbeat(reason="communication-file-save")
-                observed = self.paths.communication.stat().st_mtime_ns
+                state = self.paths.communication.stat()
+                observed = (state.st_mtime_ns, state.st_size)
+                last_heartbeat = time.monotonic()
+            elif time.monotonic() - last_heartbeat >= heartbeat_interval:
+                self.heartbeat(reason="resident-scheduled")
+                last_heartbeat = time.monotonic()

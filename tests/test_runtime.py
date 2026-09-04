@@ -291,6 +291,76 @@ class GateTests(unittest.TestCase):
                 self.assertIn("APPAI> MIND response", transcript)
                 self.assertTrue(body.verify()["ok"])
 
+    def test_resident_watch_recovers_starts_and_wakes_on_committed_message(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
+                body = MantleBody(nest)
+                body.birth("Disposable resident", approved=True)
+                reasons = []
+                original_heartbeat = body.heartbeat
+
+                def heartbeat(*, reason, **kwargs):
+                    reasons.append(reason)
+                    return original_heartbeat(reason=reason, **kwargs)
+
+                slept = False
+
+                def commit_message(_interval):
+                    nonlocal slept
+                    if not slept:
+                        slept = True
+                        with (nest / "COMMUNICATION.TXT").open("a", encoding="utf-8") as handle:
+                            handle.write("USER> resident wake test\n")
+
+                with (
+                    mock.patch.object(body, "heartbeat", side_effect=heartbeat),
+                    mock.patch.object(
+                        body,
+                        "recover_host_heartbeats",
+                        wraps=body.recover_host_heartbeats,
+                    ) as recover,
+                    mock.patch("mantleos.runtime.time.sleep", side_effect=commit_message),
+                ):
+                    body.watch(
+                        interval=0.05,
+                        heartbeat_interval=300,
+                        stop_requested=lambda: len(reasons) >= 2,
+                    )
+
+                recover.assert_called_once_with()
+                self.assertEqual(["resident-startup", "communication-file-save"], reasons)
+                transcript = (nest / "COMMUNICATION.TXT").read_text(encoding="utf-8")
+                self.assertIn("APPAI> Received and recorded.", transcript)
+
+    def test_resident_watch_runs_scheduled_full_heartbeats(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            nest = Path(temporary)
+            prepare_unborn_nest(nest)
+            with mock.patch.object(BodyCipher, "require_available", return_value=FakeAESGCM):
+                body = MantleBody(nest)
+                body.birth("Disposable schedule", approved=True)
+                reasons = []
+
+                def heartbeat(*, reason, **_kwargs):
+                    reasons.append(reason)
+                    return {"reason": reason}
+
+                with (
+                    mock.patch.object(body, "heartbeat", side_effect=heartbeat),
+                    mock.patch.object(body, "recover_host_heartbeats", return_value=[]),
+                    mock.patch("mantleos.runtime.time.sleep"),
+                    mock.patch("mantleos.runtime.time.monotonic", side_effect=[0.0, 2.0, 2.0]),
+                ):
+                    body.watch(
+                        interval=0.05,
+                        heartbeat_interval=1.0,
+                        stop_requested=lambda: len(reasons) >= 2,
+                    )
+
+                self.assertEqual(["resident-startup", "resident-scheduled"], reasons)
+
     def test_changed_or_undeclared_prebirth_tissue_stops_before_key_creation(self):
         with tempfile.TemporaryDirectory() as temporary:
             nest = Path(temporary)
