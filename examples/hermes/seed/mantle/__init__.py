@@ -1,4 +1,4 @@
-"""MantleOS 2 NEST controls. Requires the mantleos2 package."""
-from mantleos.runtime import VCW, Book, MantleBody, MantleError
+"""Self-contained MantleOS 2 NEST controls."""
+from .runtime.mantleos.runtime import VCW, Book, MantleBody, MantleError
 
 __all__ = ["Book", "MantleBody", "MantleError", "VCW"]

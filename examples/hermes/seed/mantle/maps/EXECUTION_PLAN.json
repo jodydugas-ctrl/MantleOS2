@@ -1,0 +1,51 @@
+{
+  "schema": "mantle.foreign-execution-plan.v2",
+  "source_commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
+  "source_tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
+  "body_map_sha256": "0c07dc3f4058b530c0db3d80fd44704d4b445e3db32a20fb8cbf6bbffcd0fcaf",
+  "commands": [
+    {
+      "purpose": "tests",
+      "argv": [
+        "python",
+        "-m",
+        "pytest"
+      ],
+      "working_directory": ".",
+      "timeout_seconds": 900
+    },
+    {
+      "purpose": "tests",
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "working_directory": ".",
+      "timeout_seconds": 900
+    }
+  ],
+  "shell": false,
+  "network": {
+    "default": "disabled",
+    "allowed_domains": [],
+    "dependency_fetch_requires_reapproval": true
+  },
+  "resources": {
+    "max_command_seconds": 900,
+    "max_output_bytes": 2000000,
+    "max_artifact_bytes": 1000000000
+  },
+  "sandbox": {
+    "required": true,
+    "acceptable_backends": [
+      "docker",
+      "podman",
+      "externally-attested"
+    ],
+    "run_as_non_admin": true,
+    "source_mount": "read-only-for-baseline",
+    "generated_output": "outside-source-tree"
+  },
+  "approval": "required-before-any-command",
+  "plan_sha256": "3fd611a6ccc553ace3cc60e4e7badbebee67e5f204cf3360151feb23b64407df"
+}

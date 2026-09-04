@@ -18,6 +18,9 @@
   capability implementation, availability, evidence, and authority.
 - Reconcile the read-only Hermes and MacroDroid references without copying
   private organism state, device identifiers, credentials, or old Primer forms.
+- Store exhaustive Body Genome evidence as deterministic compressed maps while
+  keeping the public manifest concise; the pinned Hermes seed is about 9.6 MB
+  instead of the rejected 485 MB duplicated draft.
 
 ## 2.0.0-alpha.2 - 2026-09-03
 

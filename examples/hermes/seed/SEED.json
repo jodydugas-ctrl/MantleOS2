@@ -1,7 +1,7 @@
 {
   "schema": "mantle.delta-seed.v2",
   "source": {
-    "canonical_url": "https://github.com/nousresearch/hermes-agent",
+    "canonical_url": "https://github.com/NousResearch/hermes-agent",
     "branch": "main",
     "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
     "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
@@ -231,8 +231,8 @@
     }
   },
   "target": {
-    "kind": "hermes",
-    "mapping": "built-in-language-map",
+    "kind": "reference-candidate",
+    "mapping": "mapping-blocked",
     "traditional_plugin": false
   },
   "host_edge_sha256": "47b8f13b9e8ebc05ec72b0922d98e86aa885866d28112c6c86dc1ef3391b04ea",

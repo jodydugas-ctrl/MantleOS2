@@ -1,9 +1,9 @@
 {
   "schema": "mantle.assimilation.v2",
   "status": "constructed-not-born",
-  "constructed_at": "2026-09-03T18:51:13.991316Z",
+  "constructed_at": "2026-09-04T17:42:59.028710Z",
   "source": {
-    "canonical_url": "https://github.com/nousresearch/hermes-agent",
+    "canonical_url": "https://github.com/NousResearch/hermes-agent",
     "branch": "main",
     "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
     "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
@@ -240,22 +240,48 @@
     "compatibility_rule": "The host must retain ordinary behavior without the AppAI MIND."
   },
   "identity_suggestion": "The Compiler",
-  "declared_purpose": "The Compiler: a Hermes coding-agent Body assimilated by the generic MantleOS 2 autonomic nervous system",
+  "declared_purpose": "Create an AppAI while preserving native Body behavior",
   "body_map": {
-    "source_uri": "https://github.com/nousresearch/hermes-agent",
+    "source_uri": "https://github.com/NousResearch/hermes-agent",
     "source_fingerprint": "sha256:25230b2ff2fbf7c7abdcc3b428cc2cf0c16acedd0be2d8bff3a519390c3b0322",
     "default_body": "NEST",
     "logical_layer": 0,
+    "habitat": {
+      "source_kind": "git-repository",
+      "ecosystem": "repository-filesystem",
+      "nest_role": "default-body-layer-0",
+      "host_application": "hermes-agent",
+      "storage_boundary": "nest-local-filesystem",
+      "permission_boundary": "host-owned",
+      "native_surfaces": [
+        "authority-boundary",
+        "error-recovery",
+        "external-effect",
+        "graphical-interface",
+        "heartbeat",
+        "lifecycle",
+        "mind-boundary",
+        "persistence",
+        "presentation",
+        "sensory-input",
+        "state-transition"
+      ],
+      "limitations": [
+        "runtime ecosystem and permissions require native verification"
+      ]
+    },
     "languages": {
       "python": 5128,
       "typescript": 2839,
-      "javascript": 116,
+      "javascript": 114,
       "shell": 39,
-      "css": 15,
+      "css": 13,
       "powershell": 12,
       "html": 11,
       "rust": 10,
-      "c": 3
+      "c-cpp-header": 2,
+      "c": 1,
+      "cpp": 1
     },
     "entrypoints": [
       "acp_adapter/__main__.py",
@@ -293,8 +319,6 @@
       "plugins/google_meet/cli.py",
       "plugins/google_meet/node/cli.py",
       "plugins/google_meet/node/server.py",
-      "plugins/hermes-achievements/dashboard/dist/index.js",
-      "plugins/kanban/dashboard/dist/index.js",
       "plugins/memory/honcho/cli.py",
       "plugins/platforms/photon/cli.py",
       "plugins/teams_pipeline/cli.py",
@@ -317,34 +341,168 @@
       "python-setuptools"
     ],
     "behavior_surfaces": [
-      "gateway-conversation",
+      "authority-boundary",
+      "error-recovery",
+      "external-effect",
       "graphical-interface",
-      "terminal-conversation",
-      "tool-execution"
+      "heartbeat",
+      "lifecycle",
+      "mind-boundary",
+      "persistence",
+      "presentation",
+      "sensory-input",
+      "state-transition"
     ],
     "capabilities": [
       {
-        "capability_id": "hermes.conversation",
+        "capability_id": "host.conversation",
         "host_symbol": "agent.conversation_loop.run_conversation",
-        "description": "Run a native Hermes conversation turn",
+        "description": "Run a native host conversation turn",
         "effect": "communicate",
-        "input_schema": "mantle.hermes-conversation-input.v2",
+        "input_schema": "mantle.host-conversation-input.v2",
         "verifier": "native-turn-receipt",
-        "default_authority": "denied"
+        "default_authority": "denied",
+        "implementation_status": "observed",
+        "availability_status": "not-exercised",
+        "evidence_status": "static",
+        "transition_owner": "BODY",
+        "limitations": []
       },
       {
-        "capability_id": "hermes.tool-dispatch",
+        "capability_id": "host.tool-dispatch",
         "host_symbol": "agent.tool_executor",
-        "description": "Dispatch a registered Hermes tool",
+        "description": "Dispatch a registered host tool through native authority",
         "effect": "external-effect",
-        "input_schema": "mantle.hermes-tool-input.v2",
+        "input_schema": "mantle.host-tool-input.v2",
         "verifier": "native-tool-result",
-        "default_authority": "denied"
+        "default_authority": "denied",
+        "implementation_status": "observed",
+        "availability_status": "not-exercised",
+        "evidence_status": "static",
+        "transition_owner": "BODY",
+        "limitations": []
       }
     ],
-    "unknowns": [],
+    "coverage": {
+      "tier": "mapping-blocked",
+      "source_files": 8140,
+      "states": {
+        "blocked": 61,
+        "complete": 5124,
+        "partial": 2955
+      },
+      "ownership": {
+        "first-party": 11321,
+        "vendored": 2
+      },
+      "artifact_kinds": {
+        "build": 20,
+        "documentation": 1595,
+        "other": 1502,
+        "resource": 64,
+        "source": 8142
+      },
+      "loops": {
+        "total": 16700,
+        "blocked": 10657,
+        "undispositioned_major_arteries": 8864,
+        "dispositions": {
+          "blocked-insufficient-evidence": 10657,
+          "local-utility-no-direct-nerve": 6043
+        }
+      },
+      "limitations": []
+    },
+    "behavior_baseline": {
+      "execution": "not-run",
+      "requires_foreign_execution_approval": true,
+      "entrypoints": [
+        "acp_adapter/__main__.py",
+        "acp_adapter/server.py",
+        "agent/lsp/cli.py",
+        "apps/bootstrap-installer/index.html",
+        "apps/desktop/electron/main.ts",
+        "apps/desktop/index.html",
+        "apps/desktop/src/app/chat/right-rail/index.ts",
+        "apps/desktop/src/app/chat/sidebar/projects/index.ts",
+        "apps/desktop/src/app/contrib/index.ts",
+        "apps/desktop/src/app/session/hooks/use-message-stream/gateway-event/index.ts",
+        "apps/desktop/src/app/session/hooks/use-message-stream/index.ts",
+        "apps/desktop/src/app/session/hooks/use-prompt-actions/index.ts",
+        "apps/desktop/src/app/session/hooks/use-session-actions/index.ts",
+        "apps/desktop/src/components/assistant-ui/embeds/index.ts",
+        "apps/desktop/src/components/assistant-ui/embeds/providers/index.ts",
+        "apps/desktop/src/components/assistant-ui/tool/fallback-model/index.ts",
+        "apps/desktop/src/components/pane-shell/index.ts",
+        "apps/desktop/src/contrib/index.ts",
+        "apps/desktop/src/debug/index.ts",
+        "apps/desktop/src/i18n/index.ts",
+        "apps/desktop/src/lib/chat-messages/index.ts",
+        "apps/desktop/src/lib/preview-annotate/index.ts",
+        "apps/desktop/src/lib/tour/index.ts",
+        "apps/desktop/src/sdk/index.ts",
+        "apps/desktop/src/themes/index.ts",
+        "apps/shared/src/index.ts",
+        "cli.py",
+        "docs/design/kanban-dialogs/index.html",
+        "hermes_cli/main.py",
+        "hermes_cli/proxy/cli.py",
+        "hermes_cli/proxy/server.py",
+        "optional-skills/creative/tldraw-offline/scripts/main.js",
+        "plugins/google_meet/cli.py",
+        "plugins/google_meet/node/cli.py",
+        "plugins/google_meet/node/server.py",
+        "plugins/memory/honcho/cli.py",
+        "plugins/platforms/photon/cli.py",
+        "plugins/teams_pipeline/cli.py",
+        "tui_gateway/server.py",
+        "ui-tui/packages/hermes-ink/index.js",
+        "ui-tui/packages/hermes-ink/src/native-ts/yoga-layout/index.ts",
+        "ui-tui/src/sdk/apps/index.ts",
+        "ui-tui/src/sdk/index.ts",
+        "web/index.html",
+        "web/src/i18n/index.ts",
+        "web/src/plugins/index.ts",
+        "web/src/themes/index.ts"
+      ],
+      "candidate_commands": [
+        {
+          "purpose": "tests",
+          "argv": [
+            "python",
+            "-m",
+            "pytest"
+          ]
+        },
+        {
+          "purpose": "tests",
+          "argv": [
+            "npm",
+            "test"
+          ]
+        }
+      ],
+      "limitations": [
+        "commands are discovery evidence until approved and isolated"
+      ]
+    },
+    "unknowns": [
+      "2955 first-party source files have partial parser coverage",
+      "61 first-party source files are blocked",
+      "10657 discovered loops require exact-parser disposition",
+      "8864 major arteries remain undispositioned"
+    ],
     "schema": "mantle.body-map.v2",
-    "map_sha256": "967e6a595eeff0f4d44768c003e49af1ffc89cf04c5153e2096c7faddfef3022"
+    "genome_schema": "mantle.body-genome.v2",
+    "map_sha256": "0c07dc3f4058b530c0db3d80fd44704d4b445e3db32a20fb8cbf6bbffcd0fcaf",
+    "evidence_files": {
+      "file_coverage": "maps/FILE_COVERAGE.json.gz",
+      "arteries": "maps/ARTERY_MAP.json.gz",
+      "symbols": "maps/SYMBOL_GRAPH.json.gz",
+      "calls": "maps/CALL_GRAPH.json.gz",
+      "events": "maps/EVENT_GRAPH.json.gz",
+      "seams": "maps/SEAM_MAP.json.gz"
+    }
   },
   "nerve_map": [
     {
@@ -501,8 +659,8 @@
     }
   ],
   "target": {
-    "kind": "hermes",
-    "mapping": "built-in-language-map",
+    "kind": "reference-candidate",
+    "mapping": "mapping-blocked",
     "traditional_plugin": false
   },
   "primer_candidate": {
@@ -534,11 +692,62 @@
   "gates": {
     "source_identified": "verified",
     "read_only_census": "verified",
-    "innervation": "staged",
+    "innervation": "staged-requires-coverage-reconciliation",
     "host_behavior": "awaiting-explicit-sandbox-tests",
     "primer": "awaiting-developmental-mind",
     "public_delta": "verified-at-construction",
     "birth": "not-authorized"
+  },
+  "execution_plan": {
+    "schema": "mantle.foreign-execution-plan.v2",
+    "source_commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
+    "source_tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
+    "body_map_sha256": "0c07dc3f4058b530c0db3d80fd44704d4b445e3db32a20fb8cbf6bbffcd0fcaf",
+    "commands": [
+      {
+        "purpose": "tests",
+        "argv": [
+          "python",
+          "-m",
+          "pytest"
+        ],
+        "working_directory": ".",
+        "timeout_seconds": 900
+      },
+      {
+        "purpose": "tests",
+        "argv": [
+          "npm",
+          "test"
+        ],
+        "working_directory": ".",
+        "timeout_seconds": 900
+      }
+    ],
+    "shell": false,
+    "network": {
+      "default": "disabled",
+      "allowed_domains": [],
+      "dependency_fetch_requires_reapproval": true
+    },
+    "resources": {
+      "max_command_seconds": 900,
+      "max_output_bytes": 2000000,
+      "max_artifact_bytes": 1000000000
+    },
+    "sandbox": {
+      "required": true,
+      "acceptable_backends": [
+        "docker",
+        "podman",
+        "externally-attested"
+      ],
+      "run_as_non_admin": true,
+      "source_mount": "read-only-for-baseline",
+      "generated_output": "outside-source-tree"
+    },
+    "approval": "required-before-any-command",
+    "plan_sha256": "3fd611a6ccc553ace3cc60e4e7badbebee67e5f204cf3360151feb23b64407df"
   },
   "delta": {
     "paths": [
@@ -546,19 +755,77 @@
       "mantle/README.md",
       "mantle/__init__.py",
       "mantle/__main__.py",
+      "mantle/maps/ARTERY_MAP.json.gz",
+      "mantle/maps/BEHAVIOR_BASELINE.json",
       "mantle/maps/BODY_MAP.json",
+      "mantle/maps/CALL_GRAPH.json.gz",
+      "mantle/maps/CAPABILITY_MAP.json",
+      "mantle/maps/COVERAGE.json",
+      "mantle/maps/EVENT_GRAPH.json.gz",
+      "mantle/maps/EXECUTION_PLAN.json",
+      "mantle/maps/FILE_COVERAGE.json.gz",
       "mantle/maps/NERVE_MAP.json",
+      "mantle/maps/SEAM_MAP.json.gz",
+      "mantle/maps/SYMBOL_GRAPH.json.gz",
       "mantle/nerves.py",
-      "mantle/primer/COMMANDMENTS.md"
+      "mantle/primer/COMMANDMENTS.md",
+      "mantle/runtime/__init__.py",
+      "mantle/runtime/mantleos/__init__.py",
+      "mantle/runtime/mantleos/__main__.py",
+      "mantle/runtime/mantleos/assimilate.py",
+      "mantle/runtime/mantleos/cli.py",
+      "mantle/runtime/mantleos/constitution.py",
+      "mantle/runtime/mantleos/construction.py",
+      "mantle/runtime/mantleos/contracts.py",
+      "mantle/runtime/mantleos/delta.py",
+      "mantle/runtime/mantleos/mapping.py",
+      "mantle/runtime/mantleos/nerves.py",
+      "mantle/runtime/mantleos/nutrition.py",
+      "mantle/runtime/mantleos/organs.py",
+      "mantle/runtime/mantleos/primer.py",
+      "mantle/runtime/mantleos/public_audit.py",
+      "mantle/runtime/mantleos/resident.py",
+      "mantle/runtime/mantleos/runtime.py",
+      "mantle/runtime/mantleos/targets/__init__.py",
+      "mantle/runtime/mantleos/targets/hermes.py"
     ],
     "sha256": {
       "mantle/README.md": "c4c53fe00144fa4d14570c96053d66244e722e2a8f018f7978354052a3bc390c",
-      "mantle/__init__.py": "b9b7388d4eb4f581a54ed9f6710e459135ae51b5b97117b75ab2d6831094a52f",
-      "mantle/__main__.py": "1c69b7345b54f1b54f6c002249b6bc73f60b3fc103a2d1b2ac207d4b78032232",
-      "mantle/maps/BODY_MAP.json": "e30ab074c554bce1230bea7b315801b97eb9de23dfcc34ded40c938097c8a471",
+      "mantle/__init__.py": "8aaba502d628e11f5e754186d8574e3c7d97789e692079d951aa9fd905a6a2a7",
+      "mantle/__main__.py": "d9887cf604a721c98ac402e146fa5da97e59d987d2976ad307a5da918199a226",
+      "mantle/maps/ARTERY_MAP.json.gz": "e6c1fb3f45479a0cee445d94efbefeb22f4695603c2c0177bd7eea8aa99cc5fb",
+      "mantle/maps/BEHAVIOR_BASELINE.json": "8965f7d923df11368ab773dbf18f4024f4bb1078d375e327e1dda379f3dea9f2",
+      "mantle/maps/BODY_MAP.json": "f1f8cb3ba643e2d51fcb97a012d2f7d8d8facdd08469b9a24f15f5831e9c5197",
+      "mantle/maps/CALL_GRAPH.json.gz": "4891e654690702d2f472050777816b44347ab1e52c2a189a620349cf0fec1373",
+      "mantle/maps/CAPABILITY_MAP.json": "1a5c1c3b46bdebfc1094d961f22ac350fc81de145d9af505ed3cabfd3747e1c2",
+      "mantle/maps/COVERAGE.json": "a06772d6ecfd3615a7c0df0cdd63a57039d31c2386000b19dd32f5f27bc3fdf5",
+      "mantle/maps/EVENT_GRAPH.json.gz": "a6d7b6fb9e4947bda216150c26e7c6f69db0070886f0a45796a930cdf5a05017",
+      "mantle/maps/EXECUTION_PLAN.json": "9455d9b7979bdaed450d7010921bce7385b247fe099bcbbf47af7d3e9441332c",
+      "mantle/maps/FILE_COVERAGE.json.gz": "815d1ca343a7c8460ea0aba166b49039fa1f6d282e148e37d4c4b4ab4575b774",
       "mantle/maps/NERVE_MAP.json": "fed98e32193d556f7893335a219d0dc16c2a93dcdebd753280dc2939e6c1b69e",
-      "mantle/nerves.py": "4ad4312a37cf8172bd7903bc35f7de259812ebb1cf631ff6469733c13f2411f2",
-      "mantle/primer/COMMANDMENTS.md": "4ff12af6206c83047ec605e52bb5d6bcdfb7520cf515d373bb5298f7e68613b9"
+      "mantle/maps/SEAM_MAP.json.gz": "c1d42a03bc3fa237a43871b868759eb17c11b9d1437e5668648a1705d218ea33",
+      "mantle/maps/SYMBOL_GRAPH.json.gz": "7dc8f5f755fbf66d59b1b44a8ac8ac8a659295131338e7d5889b8c5b0b6b3685",
+      "mantle/nerves.py": "e0a0ae69499d06630683b2d1bcdcfd8dba9e8aa6f7efbc3142656c82a7c5808a",
+      "mantle/primer/COMMANDMENTS.md": "4ff12af6206c83047ec605e52bb5d6bcdfb7520cf515d373bb5298f7e68613b9",
+      "mantle/runtime/__init__.py": "c8772c69aad0c4293a910ade7237516484fdff9c7908346e08a8946b19465703",
+      "mantle/runtime/mantleos/__init__.py": "e9edec26a4efad1c8c1f345383ad6ff05238f30e50f97b2843c429e805c4ad5f",
+      "mantle/runtime/mantleos/__main__.py": "76fa916e93e0ae1a6c1bb51dcc0bcf289c014e9f760a47165f8a84401ccf41d7",
+      "mantle/runtime/mantleos/assimilate.py": "76df1f940179401c08273da682ffa5165f5f808019125b1ebb7c7bce372ae5da",
+      "mantle/runtime/mantleos/cli.py": "9274038c88cd8c781ed300a3abaaf4e169e878e7ff90f8fab9cb040b52d7963a",
+      "mantle/runtime/mantleos/constitution.py": "fd27111ae120b61b95805a8ca2c49596820a598978ecf50746c7ca06d8786eca",
+      "mantle/runtime/mantleos/construction.py": "032479dfb75f6d26876c0876f6c150fa7c88a665cb382c035809473519c8fc4b",
+      "mantle/runtime/mantleos/contracts.py": "55adb96664acf6284a502906758d2c79ed02f530dcc36138caab23821d636b43",
+      "mantle/runtime/mantleos/delta.py": "4607896b1012fc47da533c98bb0e5798df14ef709645abea1fb8bbe728df774e",
+      "mantle/runtime/mantleos/mapping.py": "b14ce453b087fe8da50adff0fbf8e47719726b9719d551ac279cac939ed50206",
+      "mantle/runtime/mantleos/nerves.py": "f5840a52400180d2b52b02bae8ec78e348bac7cd143c5a6194df2793667146a3",
+      "mantle/runtime/mantleos/nutrition.py": "c5503367b4dab97acf3ab319e8a7bb9a7907587c86ebced9a32bda3071e9087e",
+      "mantle/runtime/mantleos/organs.py": "310c7b6350e7129404797c9df00014cb828c9718c5c2a0ff7e0b1738e341e0a8",
+      "mantle/runtime/mantleos/primer.py": "9be97da54a038d6dd1a4321b8a5aedfa3078f4d1f35f400c1653ddb0b634f8c0",
+      "mantle/runtime/mantleos/public_audit.py": "d1f2b5d0532df1af49437194c800be226eb53c1d1230aae26a96fb382f7624e9",
+      "mantle/runtime/mantleos/resident.py": "85560e7a55ec6be43a0eb3dd3f35011f3d9ee109133d688633033283769dabd7",
+      "mantle/runtime/mantleos/runtime.py": "5c793db52dae2e30db62332e25fa0117eaaafef3fcb9316a6c1b52d90a65e3a6",
+      "mantle/runtime/mantleos/targets/__init__.py": "936f338c8be6e9e37ca076c7d7e0f92bbf4ea50fbdb39a30e29771a14f69e082",
+      "mantle/runtime/mantleos/targets/hermes.py": "9b9284e904825ee1fd6a4e7bdf3c03f51b4901a06c0d5ef63a7203f1e85a3d72"
     }
   }
 }

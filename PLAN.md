@@ -98,6 +98,11 @@ be certified. Unknown substrates receive useful inventory and a truthful
 blocked report. A developmental MIND may propose interpretations from bounded
 evidence but may not declare coverage, execute code, or authorize insertion.
 
+Cache individual parser results by content hash in private construction state.
+Resumed work and upstream refreshes must reuse unchanged evidence while still
+recomputing the aggregate map binding; a cache hit never upgrades coverage or
+authority.
+
 Each NEST contains versioned public organ code under `mantle/`, private state
 under ignored `.mantle/`, ignored `COMMUNICATION.TXT`, and reproducible maps,
 manifests, rewrite ledger, patch, checksums, and reversal evidence. Direct
