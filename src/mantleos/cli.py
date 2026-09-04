@@ -7,7 +7,12 @@ from pathlib import Path
 from . import __version__
 from .assimilate import AssimilationError, assimilate_source
 from .delta import DeltaError, apply_seed, build_seed, reverse_seed, verify_seed
-from .primer import PrimerError, approve_personality, generate_personality
+from .primer import (
+    PrimerError,
+    approve_personality,
+    generate_personality,
+    load_distillation_contract,
+)
 from .resident import ResidentError, install_resident, remove_resident, resident_status
 from .runtime import MantleBody, MantleError
 
@@ -58,6 +63,10 @@ def build_parser() -> argparse.ArgumentParser:
     generate = primer_commands.add_parser("generate", help="Use an explicitly allowed developmental MIND")
     generate.add_argument("--food", required=True, help="OpenRouter Food file used only for this call")
     generate.add_argument("--context", default="", help="Additional user-approved role context")
+    generate.add_argument(
+        "--distillation-prompt",
+        help="Optional reviewed text-to-Persona prompt; its source placeholder receives Body evidence",
+    )
     approve = primer_commands.add_parser("approve", help="Approve the reviewed Personality candidate")
     approve.add_argument("--approve-primer", action="store_true")
     speak = commands.add_parser("speak", help="Send one message through the universal AppAI route")
@@ -97,7 +106,15 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "primer":
             nest = Path(args.nest)
             if args.primer_command == "generate":
-                result = generate_personality(nest, Path(args.food), approved_context=args.context)
+                contract = None
+                if args.distillation_prompt:
+                    contract = load_distillation_contract(Path(args.distillation_prompt))
+                result = generate_personality(
+                    nest,
+                    Path(args.food),
+                    approved_context=args.context,
+                    distillation_contract=contract,
+                )
             else:
                 result = approve_personality(nest, approved=args.approve_primer)
         elif args.command == "delta":
