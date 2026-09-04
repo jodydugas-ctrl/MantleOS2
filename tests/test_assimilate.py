@@ -53,6 +53,20 @@ def test_non_github_source_is_refused():
         normalize_github_source("https://example.com/owner/repo")
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        "https://example.com/github.com/owner/repo",
+        "https://github.com.evil.example/owner/repo",
+        "https://github.com/owner/repo?ref=unsafe",
+        "https://user@github.com/owner/repo",
+    ],
+)
+def test_github_lookalikes_and_ambiguous_urls_are_refused(source: str):
+    with pytest.raises(AssimilationError):
+        normalize_github_source(source)
+
+
 def test_read_only_census_is_stable(tmp_path: Path):
     root = _host(tmp_path)
     before = census_repository(root)

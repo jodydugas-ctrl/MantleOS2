@@ -58,16 +58,24 @@ def sha256_file(path: Path) -> str:
 
 def normalize_github_source(source: str) -> tuple[str, str]:
     """Return canonical HTTPS URL and repository name for a GitHub source."""
-    raw = source.strip().rstrip("/")
-    if raw.startswith("git@github.com:"):
-        raw = raw.removeprefix("git@github.com:")
-    elif raw.startswith("github.com/"):
-        raw = raw.removeprefix("github.com/")
-    elif raw.startswith("https://github.com/") or raw.startswith("http://github.com/"):
-        parsed = urlparse(raw)
-        raw = parsed.path.strip("/")
+    candidate = source.strip().rstrip("/")
+    if candidate.startswith("git@github.com:"):
+        raw = candidate.split(":", 1)[1]
     else:
-        raise AssimilationError("The alpha constructor accepts only github.com repositories")
+        if candidate.startswith("github.com/"):
+            candidate = "https://" + candidate
+        parsed = urlparse(candidate)
+        if (
+            parsed.scheme not in {"http", "https"}
+            or (parsed.hostname or "").lower() != "github.com"
+            or parsed.username
+            or parsed.password
+            or parsed.port
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise AssimilationError("The alpha constructor accepts only github.com repositories")
+        raw = parsed.path.strip("/")
     raw = raw.removesuffix(".git")
     if not GITHUB_REPOSITORY.fullmatch(raw):
         raise AssimilationError("GitHub source must identify exactly one owner/repository")
