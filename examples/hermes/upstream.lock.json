@@ -1,6 +1,6 @@
 {
   "schema": "mantle.upstream-lock.v1",
-  "repository": "https://github.com/NousResearch/hermes-agent",
+  "repository": "https://github.com/nousresearch/hermes-agent",
   "ref": "main",
   "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
   "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",

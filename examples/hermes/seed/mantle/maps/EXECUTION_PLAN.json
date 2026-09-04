@@ -2,7 +2,7 @@
   "schema": "mantle.foreign-execution-plan.v2",
   "source_commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
   "source_tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
-  "body_map_sha256": "edb5ac014ff3e5b7cb7b31c56480a1cb116cfd21897156c3feaef62b195432b9",
+  "body_map_sha256": "4976ab2a394adecf9b6e7b4bc2050f69aa93d7f3ca97a4f3c74bfd34933c866d",
   "commands": [
     {
       "purpose": "tests",
@@ -47,5 +47,5 @@
     "generated_output": "outside-source-tree"
   },
   "approval": "required-before-any-command",
-  "plan_sha256": "2f024b56ad2b5fe4748ec86bcf60c3a71b1a4e58b2c330b7f06a72740f08b829"
+  "plan_sha256": "2d9cdb8543b61a6f09e36c805cb82ba6512d2233f3ebb22597d2786a275b5792"
 }

@@ -1,5 +1,5 @@
 {
-  "source_uri": "https://github.com/NousResearch/hermes-agent",
+  "source_uri": "https://github.com/nousresearch/hermes-agent",
   "source_fingerprint": "sha256:37662fc34e51ed3ddf3c0a6e631b7de6b5c5d6f8271579d6f69a17b644642fa8",
   "default_body": "NEST",
   "logical_layer": 0,
@@ -251,7 +251,7 @@
   ],
   "schema": "mantle.body-map.v2",
   "genome_schema": "mantle.body-genome.v2",
-  "map_sha256": "edb5ac014ff3e5b7cb7b31c56480a1cb116cfd21897156c3feaef62b195432b9",
+  "map_sha256": "4976ab2a394adecf9b6e7b4bc2050f69aa93d7f3ca97a4f3c74bfd34933c866d",
   "evidence_files": {
     "file_coverage": "maps/FILE_COVERAGE.json.gz",
     "arteries": "maps/ARTERY_MAP.json.gz",

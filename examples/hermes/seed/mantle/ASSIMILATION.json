@@ -1,9 +1,9 @@
 {
   "schema": "mantle.assimilation.v2",
   "status": "constructed-not-born",
-  "constructed_at": "2026-09-04T18:07:32.521440Z",
+  "constructed_at": "2026-09-04T18:17:05.170902Z",
   "source": {
-    "canonical_url": "https://github.com/NousResearch/hermes-agent",
+    "canonical_url": "https://github.com/nousresearch/hermes-agent",
     "branch": "main",
     "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
     "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
@@ -242,7 +242,7 @@
   "identity_suggestion": "The Compiler",
   "declared_purpose": "Create an AppAI while preserving native Body behavior",
   "body_map": {
-    "source_uri": "https://github.com/NousResearch/hermes-agent",
+    "source_uri": "https://github.com/nousresearch/hermes-agent",
     "source_fingerprint": "sha256:37662fc34e51ed3ddf3c0a6e631b7de6b5c5d6f8271579d6f69a17b644642fa8",
     "default_body": "NEST",
     "logical_layer": 0,
@@ -494,7 +494,7 @@
     ],
     "schema": "mantle.body-map.v2",
     "genome_schema": "mantle.body-genome.v2",
-    "map_sha256": "edb5ac014ff3e5b7cb7b31c56480a1cb116cfd21897156c3feaef62b195432b9",
+    "map_sha256": "4976ab2a394adecf9b6e7b4bc2050f69aa93d7f3ca97a4f3c74bfd34933c866d",
     "evidence_files": {
       "file_coverage": "maps/FILE_COVERAGE.json.gz",
       "arteries": "maps/ARTERY_MAP.json.gz",
@@ -702,7 +702,7 @@
     "schema": "mantle.foreign-execution-plan.v2",
     "source_commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
     "source_tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",
-    "body_map_sha256": "edb5ac014ff3e5b7cb7b31c56480a1cb116cfd21897156c3feaef62b195432b9",
+    "body_map_sha256": "4976ab2a394adecf9b6e7b4bc2050f69aa93d7f3ca97a4f3c74bfd34933c866d",
     "commands": [
       {
         "purpose": "tests",
@@ -747,7 +747,7 @@
       "generated_output": "outside-source-tree"
     },
     "approval": "required-before-any-command",
-    "plan_sha256": "2f024b56ad2b5fe4748ec86bcf60c3a71b1a4e58b2c330b7f06a72740f08b829"
+    "plan_sha256": "2d9cdb8543b61a6f09e36c805cb82ba6512d2233f3ebb22597d2786a275b5792"
   },
   "delta": {
     "paths": [
@@ -795,12 +795,12 @@
       "mantle/__main__.py": "d9887cf604a721c98ac402e146fa5da97e59d987d2976ad307a5da918199a226",
       "mantle/maps/ARTERY_MAP.json.gz": "22ec3fb3813dbade62f58889735583423ac855199ca80ce881747c0b25f02b71",
       "mantle/maps/BEHAVIOR_BASELINE.json": "8965f7d923df11368ab773dbf18f4024f4bb1078d375e327e1dda379f3dea9f2",
-      "mantle/maps/BODY_MAP.json": "76052440e8ae369944d62b86e5c5af653569029bd1a249d26fcee54c6774d64f",
+      "mantle/maps/BODY_MAP.json": "9746a73ecb225a5eab1a1599cede5025ab6036437df2919f33f3558fcb395fe4",
       "mantle/maps/CALL_GRAPH.json.gz": "480bc05d730f227a115bd552fb9d6971f2e12326880c55d892ce573766a3c9c0",
       "mantle/maps/CAPABILITY_MAP.json": "1a5c1c3b46bdebfc1094d961f22ac350fc81de145d9af505ed3cabfd3747e1c2",
       "mantle/maps/COVERAGE.json": "a06772d6ecfd3615a7c0df0cdd63a57039d31c2386000b19dd32f5f27bc3fdf5",
       "mantle/maps/EVENT_GRAPH.json.gz": "14c9e70b80b01b094eed8b32ef3fac094e157db21f8f8b9a7b0a5e733427b83f",
-      "mantle/maps/EXECUTION_PLAN.json": "4b0860859239fbdeec9c75c366dfac4d412396bd2a538e613af3770599e64749",
+      "mantle/maps/EXECUTION_PLAN.json": "460388e833fc19b46c72ac5f8f7435c8369efbd9e5cef20c8acae7913d99bca6",
       "mantle/maps/FILE_COVERAGE.json.gz": "0e5fbf07a3f2d32b0053262aeeb68d64e9594da04977dcc1350cffc91354444e",
       "mantle/maps/NERVE_MAP.json": "fed98e32193d556f7893335a219d0dc16c2a93dcdebd753280dc2939e6c1b69e",
       "mantle/maps/SEAM_MAP.json.gz": "b16ab8391e1b3ea86d07993a3640da2339ce874884e9422a7b466c44afa47276",
@@ -810,7 +810,7 @@
       "mantle/runtime/__init__.py": "c8772c69aad0c4293a910ade7237516484fdff9c7908346e08a8946b19465703",
       "mantle/runtime/mantleos/__init__.py": "e9edec26a4efad1c8c1f345383ad6ff05238f30e50f97b2843c429e805c4ad5f",
       "mantle/runtime/mantleos/__main__.py": "76fa916e93e0ae1a6c1bb51dcc0bcf289c014e9f760a47165f8a84401ccf41d7",
-      "mantle/runtime/mantleos/assimilate.py": "ce03621e70a41647e9f6236f7862353c90c3928454c311fbf736d670d73a3730",
+      "mantle/runtime/mantleos/assimilate.py": "eb09c3491eac7e6575fbf0a7c874bb45a6bae8f7faabff294e20c674ffb1da05",
       "mantle/runtime/mantleos/cli.py": "9274038c88cd8c781ed300a3abaaf4e169e878e7ff90f8fab9cb040b52d7963a",
       "mantle/runtime/mantleos/constitution.py": "fd27111ae120b61b95805a8ca2c49596820a598978ecf50746c7ca06d8786eca",
       "mantle/runtime/mantleos/construction.py": "032479dfb75f6d26876c0876f6c150fa7c88a665cb382c035809473519c8fc4b",

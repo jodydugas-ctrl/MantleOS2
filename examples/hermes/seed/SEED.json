@@ -1,7 +1,7 @@
 {
   "schema": "mantle.delta-seed.v2",
   "source": {
-    "canonical_url": "https://github.com/NousResearch/hermes-agent",
+    "canonical_url": "https://github.com/nousresearch/hermes-agent",
     "branch": "main",
     "commit": "63279301bcbdc185c1b07b98a9312eb0c862f26d",
     "tree": "76916e0b347843b922d5d113e05e41d7777ff0ca",

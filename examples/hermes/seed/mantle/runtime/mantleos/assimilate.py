@@ -77,6 +77,8 @@ def normalize_github_source(source: str) -> tuple[str, str]:
     if not GITHUB_REPOSITORY.fullmatch(raw):
         raise AssimilationError("GitHub source must identify exactly one owner/repository")
     owner, repository = raw.split("/", 1)
+    owner = owner.lower()
+    repository = repository.lower()
     return f"https://github.com/{owner}/{repository}", repository
 
 
@@ -488,7 +490,11 @@ def assimilate_source(
             raise AssimilationError("A local Body source must be a Git checkout")
         clone_source = str(local_source)
         repository = local_source.name
-        canonical_url = canonical_source or local_source.as_uri()
+        canonical_url = (
+            normalize_github_source(canonical_source)[0]
+            if canonical_source
+            else local_source.as_uri()
+        )
     else:
         canonical_url, repository = normalize_github_source(source)
         clone_source = canonical_url

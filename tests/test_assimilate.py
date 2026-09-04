@@ -41,7 +41,7 @@ def _host(tmp_path: Path) -> Path:
     ("source", "expected"),
     [
         ("github.com/nousresearch/hermes-agent", "https://github.com/nousresearch/hermes-agent"),
-        ("https://github.com/NousResearch/hermes-agent.git", "https://github.com/NousResearch/hermes-agent"),
+        ("https://github.com/NousResearch/Hermes-Agent.git", "https://github.com/nousresearch/hermes-agent"),
         ("git@github.com:nousresearch/hermes-agent.git", "https://github.com/nousresearch/hermes-agent"),
     ],
 )
@@ -175,3 +175,13 @@ def test_local_git_source_is_cloned_without_execution(tmp_path: Path):
     assert manifest["gates"]["innervation"] == "awaiting-nerve-synthesis"
     assert manifest["execution_plan"]["approval"] == "required-before-any-command"
     assert not (destination / "would-run.txt").exists()
+
+
+def test_local_source_canonicalizes_public_github_identity(tmp_path: Path):
+    source = _host(tmp_path)
+    manifest = assimilate_source(
+        str(source),
+        destination=tmp_path / "candidate",
+        canonical_source="https://github.com/Example/Native-Body.git",
+    )
+    assert manifest["source"]["canonical_url"] == "https://github.com/example/native-body"
