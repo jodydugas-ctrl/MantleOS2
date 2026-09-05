@@ -4,6 +4,11 @@ Status: current implementation contract for the 2.0 alpha line. Newer explicit
 operator decisions take precedence over older examples. Historical material may
 fill detail only after it conforms to this contract.
 
+The updated manual's edition 2.1/M2-P1 requirements are mapped in
+[the reconciliation record](MANUAL_21_RECONCILIATION.md). Candidate profile
+examples do not adopt tissue, establish production proof, alter existing
+semantic/wire editions, or override direct creator decisions.
+
 ## 1. System model
 
 MantleOS is an autonomic nervous system. When combined with a software or
@@ -90,6 +95,13 @@ MIND may receive Body-selected context and typed requests and return proposals.
 It does not receive root identity keys, write canonical VCW directly, grant
 authority, execute Limbs, change Heart scheduling, or approve its own tissue.
 
+Provider ingress is bounded before parsing. Ambiguous JSON, incomplete output
+and unsupported tool requests cannot become a completed text response. Current
+OpenRouter transport refuses redirects and only admits declared text/identity
+and numeric usage fields through its adapter boundary. Missing usage remains
+unknown. Full provider-neutral request lifecycle, asynchronous scheduling and
+durable budget accounting remain implementation gates, not current guarantees.
+
 ## 5. Default Body, layers, Books, and VCW
 
 The NEST is Layer 0, the Default Body. This makes the first host special without
@@ -151,6 +163,14 @@ commands, network policy, and resource limits. A changed plan invalidates
 approval. If an adequate isolated runner is unavailable, construction stops at
 `sandbox-unavailable`.
 
+Static anatomy and exercised runtime circulation are distinct evidence. A
+windowed trace proves only its observed route; idle branches and uncorrelated
+cross-process flows remain unknown. Observation bindings must not confer Limb
+authority. Their production gate includes bounded nonblocking queues with loss
+counters, current grants at collection and consumption, schema/host drift
+suspension, and bounded action-feedback routing. Existing nerves do not yet
+establish all of these guarantees.
+
 ## 7. Communication
 
 Every AppAI must have a two-way user communication path. The universal fallback
@@ -180,6 +200,13 @@ unresolved limits. Failed or interrupted work remains visible. No requested
 effect is reported as successful without observation and applicable proof.
 Construction proof is checked again at use time: evidence recorded when a
 candidate was built is not evidence that its bytes remained unchanged.
+
+Durable command reservation must precede effects; uncertain dispatch cannot be
+blindly repeated. A verifier's negative finding is retained, and a missing or
+inconclusive verifier leaves success UNKNOWN. Durable memory publication must
+expose a complete prior or next revision with its admission receipt and reject
+stale writers. These stronger production storage/effect gates remain open;
+current lock, append and digest checks prove only their tested scope.
 
 ## 10. Current open contracts
 
