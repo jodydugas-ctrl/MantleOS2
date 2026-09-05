@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Reconcile the updated edition 2.1 manual without changing constitutional
+  wording, permanent Personality, completed host proofs or release scope.
+- Bound OpenRouter response bytes; reject redirects, ambiguous JSON, incomplete
+  replies and unsupported tool responses; retain only declared receipt metadata.
+- Add offline provider-boundary failure tests and track the manual's stronger
+  writer, admission, command, circulation and Pseudopod gates explicitly.
+
 - Launch the resident Heart from its NEST-local organ runtime with isolated
   Python imports. Missing local organs now stop before OS registration.
 - Exercise startup, MIND-less communication, pending host receipt recovery,

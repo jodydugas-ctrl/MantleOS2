@@ -118,5 +118,7 @@ separately gated.
 
 The active implementation compass and remaining gates are recorded in
 [PLAN.md](PLAN.md).
+The updated manual's requirements, preserved decisions and evidence gaps are
+mapped in [the edition 2.1 reconciliation](docs/MANUAL_21_RECONCILIATION.md).
 
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).

@@ -15,9 +15,16 @@ two-component Primer, and stops for explicit birth approval.
 Every repository can be safely acquired and inventoried. Automatic complete
 assimilation is claimed only for certified substrates. Unsupported or
 incompletely understood Bodies stop with exact parser, nerve, build, test, and
-verification gaps. Hermes and NotepadNext are the first two certified Bodies.
+verification gaps. Hermes and NotepadNext are the first two certification
+targets; neither is claimed fully production-certified yet.
 
 ## Governing decisions
+
+The 55-page updated manual (cover edition 2.1, candidate M2-P1) has been
+reconciled in [MANUAL_21_RECONCILIATION.md](docs/MANUAL_21_RECONCILIATION.md).
+That record maps requirements to current modules, tests, remaining gates and
+creator clarifications. It is an incremental update, not blanket adoption of
+the profile, a restart of completed work, or a change to release scope.
 
 - Creator clarification outranks the current contract; the current contract
   outranks compatible newer implementation evidence; older material is used
@@ -98,10 +105,20 @@ be certified. Unknown substrates receive useful inventory and a truthful
 blocked report. A developmental MIND may propose interpretations from bounded
 evidence but may not declare coverage, execute code, or authorize insertion.
 
-Cache individual parser results by content hash in private construction state.
+Cache individual parser results by content hash plus exact parser/compiler,
+dependency/semantic editions and view parameters in private construction state.
 Resumed work and upstream refreshes must reuse unchanged evidence while still
 recomputing the aggregate map binding; a cache hit never upgrades coverage or
 authority.
+
+Static maps describe possible structure; runtime circulation evidence records
+only authorized observations within a declared window. Add configuration-bound
+nodes, edges, causal trace links and cross-process/scheduled loops without
+guessing from timing. Include low-volume validation, authorization and commit
+arteries. Bind nerves to versioned schemas, permitted fields, current observation
+grants, target Books and separate Limb authority. Require nonblocking bounded
+ingress with loss counters, revalidation at consumption, drift suspension and
+bounded action-origin feedback handling before claiming full live coverage.
 
 Each NEST contains versioned public organ code under `mantle/`, private state
 under ignored `.mantle/`, ignored `COMMUNICATION.TXT`, and reproducible maps,
@@ -120,6 +137,14 @@ installation, automatic process restart, graceful stop and removal still need
 native certification for issue #16. Python and cryptography remain runtime
 prerequisites; this does not yet provide a standalone interpreter bundle.
 
+Manual-driven progress: the existing OpenRouter adapter now bounds response
+bytes, refuses redirects/ambiguous JSON/incomplete text results and filters
+receipt metadata. Offline transport failure tests extend the existing matrix.
+The full asynchronous Pseudopod, overall deadlines, durable request/attempt
+tracking, cancellation, duplicate completion handling and conservative cost
+reservations remain open; no strict spending or remote-cancellation guarantee
+is implied. Use existing Body/Heart ports rather than duplicating authority.
+
 - Split Body, SELF, Heart, VCW/Memory, Books, Senses, Nerves, Limbs, Immune,
   physiology, MIND boundary, and communication responsibilities cleanly.
 - Create a real prebirth VCW whose Layer 0 records NEST state and use; seed
@@ -128,8 +153,15 @@ prerequisites; this does not yet provide a standalone interpreter bundle.
 - Complete authenticated encryption, hash chains, atomic Heartbeat commits,
   append extension, locking, reconstruction, and corruption/replay/wrong-key
   detection.
+- Add storage-enforced writer fencing and atomic root/index/admission-receipt
+  publication; reject stale writers and prove before/after-crash visibility.
+  File locks and individually encrypted appends alone do not prove this gate.
 - Complete capability discovery, quarantine, grants, revocation, ActionFrames,
   Body-owned execution, independent verification, and safe receipts.
+- Reserve command IDs with exact argument digests before invocation. Preserve
+  uncertain effects as UNKNOWN without blind retries; retain negative verifier
+  results, and require verified success for dependent work. Revalidate scoped
+  grants, expiry and revocation at execution; external atomic groups are unsupported.
 - Monitor text at submit/save/blur/readback boundaries, never per keystroke.
 - Make `COMMUNICATION.TXT` robust to concurrent writes, duplicate events,
   save/replace behavior, watcher failure, and polling fallback.

@@ -818,7 +818,7 @@
       "mantle/runtime/mantleos/delta.py": "4607896b1012fc47da533c98bb0e5798df14ef709645abea1fb8bbe728df774e",
       "mantle/runtime/mantleos/mapping.py": "1700f58ae24fe704d1bb3f8093faeaaa76a538baeabd1a9caf23df628a9115a2",
       "mantle/runtime/mantleos/nerves.py": "f5840a52400180d2b52b02bae8ec78e348bac7cd143c5a6194df2793667146a3",
-      "mantle/runtime/mantleos/nutrition.py": "c5503367b4dab97acf3ab319e8a7bb9a7907587c86ebced9a32bda3071e9087e",
+      "mantle/runtime/mantleos/nutrition.py": "ab82b59695a977fbe97109b5e0466e42cbbd6c78b84bfd29a9d4908432d32820",
       "mantle/runtime/mantleos/organs.py": "310c7b6350e7129404797c9df00014cb828c9718c5c2a0ff7e0b1738e341e0a8",
       "mantle/runtime/mantleos/primer.py": "9be97da54a038d6dd1a4321b8a5aedfa3078f4d1f35f400c1653ddb0b634f8c0",
       "mantle/runtime/mantleos/public_audit.py": "d1f2b5d0532df1af49437194c800be226eb53c1d1230aae26a96fb382f7624e9",
