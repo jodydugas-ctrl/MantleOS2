@@ -10,6 +10,7 @@ import base64
 import csv
 import hashlib
 import json
+import math
 import os
 import secrets
 import subprocess
@@ -1445,35 +1446,57 @@ class MantleBody:
         """Run the resident Heart and wake immediately on committed communication.
 
         ``interval`` is the inexpensive file-observation cadence. Scheduled
-        Heartbeats use their own longer cadence. The stop callback is primarily
-        for graceful host shutdown and deterministic certification.
+        Heartbeats use their own longer cadence. Stop is cooperative: finish a
+        started Heartbeat, then start no further work. Idle stop checks run at
+        most 100 ms apart, independently of file-observation cadence. This is
+        not a deadline for synchronous storage or provider work already running.
         """
         if not self.is_born:
             raise MantleError("Communication watch cannot start before birth")
-        if interval <= 0:
-            raise MantleError("Communication watch interval must be positive")
-        if heartbeat_interval <= 0:
-            raise MantleError("Scheduled Heartbeat interval must be positive")
+        if not math.isfinite(interval) or interval <= 0:
+            raise MantleError("Communication watch interval must be finite and positive")
+        if not math.isfinite(heartbeat_interval) or heartbeat_interval <= 0:
+            raise MantleError("Scheduled Heartbeat interval must be finite and positive")
         should_stop = stop_requested or (lambda: False)
+        if should_stop():
+            return
         self.recover_host_heartbeats()
         self._ensure_communication_file()
-        initial = self.paths.communication.stat()
-        observed = (initial.st_mtime_ns, initial.st_size)
+        if should_stop():
+            return
         self.heartbeat(reason="resident-startup")
         last_heartbeat = time.monotonic()
+        try:
+            initial = self.paths.communication.stat()
+            observed = (initial.st_mtime_ns, initial.st_size)
+        except OSError:
+            observed = None
+        last_observation = last_heartbeat
+        idle_slice = min(0.1, max(0.05, min(interval, heartbeat_interval)))
         while not should_stop():
-            time.sleep(max(0.05, interval))
-            try:
-                state = self.paths.communication.stat()
-                current = (state.st_mtime_ns, state.st_size)
-            except OSError:
-                continue
-            if current != observed:
-                observed = current
-                self.heartbeat(reason="communication-file-save")
-                state = self.paths.communication.stat()
-                observed = (state.st_mtime_ns, state.st_size)
+            time.sleep(idle_slice)
+            if should_stop():
+                break
+            now = time.monotonic()
+            changed = False
+            if now - last_observation >= interval:
+                last_observation = now
+                try:
+                    state = self.paths.communication.stat()
+                    changed = (state.st_mtime_ns, state.st_size) != observed
+                except OSError:
+                    # Save/replace and temporary absence must not starve Heart.
+                    pass
+            scheduled = now - last_heartbeat >= heartbeat_interval
+            if (scheduled or changed) and not should_stop():
+                # One full scheduled beat also services any simultaneous message.
+                reason = "resident-scheduled" if scheduled else "communication-file-save"
+                self.heartbeat(reason=reason)
                 last_heartbeat = time.monotonic()
-            elif time.monotonic() - last_heartbeat >= heartbeat_interval:
-                self.heartbeat(reason="resident-scheduled")
-                last_heartbeat = time.monotonic()
+                last_observation = last_heartbeat
+                try:
+                    state = self.paths.communication.stat()
+                    observed = (state.st_mtime_ns, state.st_size)
+                except OSError:
+                    # Retain the last successful observation for a later retry.
+                    pass

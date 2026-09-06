@@ -2,13 +2,21 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 import sys
 from unittest import mock
 
 import pytest
 
-from mantleos.resident import ResidentError, _runner_text, install_resident, remove_resident, resident_status
+from mantleos.resident import (
+    ResidentError,
+    _runner_text,
+    install_resident,
+    remove_resident,
+    resident_status,
+    watch_with_signals,
+)
 
 
 def local_organs(nest):
@@ -111,3 +119,65 @@ def test_linux_registration_uses_isolated_local_runner(tmp_path, monkeypatch):
         assert run.call_args.args[0] == ["systemctl", "--user", "enable", "--now", unit.name]
         assert remove_resident(tmp_path, approved=True)["removed"]
         assert not unit.exists()
+
+
+@pytest.mark.parametrize("failure", [False, True])
+def test_signal_watch_restores_prior_handlers_and_preserves_failure(monkeypatch, failure):
+    prior = {sig: object() for sig in (signal.SIGINT, signal.SIGTERM)}
+    if hasattr(signal, "SIGBREAK"):
+        prior[signal.SIGBREAK] = object()
+    installed = dict(prior)
+
+    def replace(sig, handler):
+        old = installed[sig]
+        installed[sig] = handler
+        return old
+
+    monkeypatch.setattr("mantleos.resident.signal.signal", replace)
+    body = mock.Mock()
+
+    def watch(**kwargs):
+        assert not kwargs["stop_requested"]()
+        installed[signal.SIGTERM](signal.SIGTERM, None)
+        assert kwargs["stop_requested"]()
+        installed[signal.SIGINT](signal.SIGINT, None)
+        if failure:
+            raise ResidentError("in-flight failure")
+
+    body.watch.side_effect = watch
+    if failure:
+        with pytest.raises(ResidentError, match="in-flight failure"):
+            watch_with_signals(body, interval=60, heartbeat_interval=300)
+    else:
+        result = watch_with_signals(body, interval=60, heartbeat_interval=300)
+        assert result["reason"] == "SIGTERM"
+        assert result["status"] == "stopped"
+    assert installed == prior
+
+
+def test_signal_watch_refuses_non_main_thread_before_installing_handlers(monkeypatch):
+    monkeypatch.setattr("mantleos.resident.threading.current_thread", lambda: object())
+    body = mock.Mock()
+    with mock.patch("mantleos.resident.signal.signal") as install:
+        with pytest.raises(ResidentError, match="main thread"):
+            watch_with_signals(body, interval=1, heartbeat_interval=300)
+        install.assert_not_called()
+    body.watch.assert_not_called()
+
+
+def test_partial_signal_installation_failure_restores_earlier_handler(monkeypatch):
+    prior = object()
+    calls = []
+
+    def replace(sig, handler):
+        calls.append((sig, handler))
+        if sig == signal.SIGTERM:
+            raise ValueError("signal unavailable")
+        return prior
+
+    monkeypatch.setattr("mantleos.resident.signal.signal", replace)
+    body = mock.Mock()
+    with pytest.raises(ValueError, match="signal unavailable"):
+        watch_with_signals(body, interval=1, heartbeat_interval=300)
+    assert calls[-1] == (signal.SIGINT, prior)
+    body.watch.assert_not_called()

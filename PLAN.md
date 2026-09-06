@@ -132,10 +132,21 @@ Resident Heart progress: the generated launcher now imports the NEST-local
 organ bundle using isolated Python. A real disposable process test covers
 startup, a committed communication wake without MIND, forced stop and restart,
 pending host receipt recovery, and unchanged sealed Primer/native Body bytes.
+Cooperative CLI shutdown now checks stop requests before new Heartbeats and
+between bounded idle slices, finishes an already-started Heartbeat, and restores
+prior signal handlers. A dedicated Linux subprocess test exercises real SIGTERM;
+Windows forced termination remains a distinct test, not graceful-stop evidence.
+Scheduled maintenance is considered even when file observation fails; a due
+scheduled/message collision services both through one full scheduled Heartbeat.
 OS registration remains mocked in unit tests: actual Task Scheduler/systemd
 installation, automatic process restart, graceful stop and removal still need
 native certification for issue #16. Python and cryptography remain runtime
 prerequisites; this does not yet provide a standalone interpreter bundle.
+
+The [resident lifecycle evidence record](docs/RESIDENT_HEART.md) distinguishes
+cooperative idle stop from bounded cancellation of synchronous provider/storage
+work, native registration/removal and storage-enforced writer fencing. Those
+remaining gates are not closed by the process tests.
 
 Manual-driven progress: the existing OpenRouter adapter now bounds response
 bytes, refuses redirects/ambiguous JSON/incomplete text results and filters

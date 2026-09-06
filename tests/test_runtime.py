@@ -432,6 +432,7 @@ class GateTests(unittest.TestCase):
                         wraps=body.recover_host_heartbeats,
                     ) as recover,
                     mock.patch("mantleos.runtime.time.sleep", side_effect=commit_message),
+                    mock.patch("mantleos.runtime.time.monotonic", side_effect=lambda: float(slept)),
                 ):
                     body.watch(
                         interval=0.05,

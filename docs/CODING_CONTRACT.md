@@ -180,6 +180,15 @@ wake an unscheduled full Heartbeat, record one semantic user event, and append
 the response. Host-native terminal, messaging, Help/About, or GUI surfaces may
 provide a more polished additional Face.
 
+If scheduled maintenance and a communication save are due together, one full
+scheduled Heartbeat services both; the communication phase is not skipped.
+Temporary file-observation failure cannot suppress consideration of due work.
+Storage or Heartbeat failure itself must still surface instead of being marked
+successful. Cooperative stop prevents subsequent Heartbeats and lets an already
+started one finish; it does not promise interruption or a hard exit deadline for
+synchronous provider/storage work. Native force termination remains possible
+and carries no graceful-checkpoint claim.
+
 ## 8. Food and secrets
 
 Foreign files are OTHER until classified. A supported `Food.txt` delivery may

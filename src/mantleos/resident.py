@@ -6,8 +6,10 @@ import hashlib
 import json
 import os
 import shlex
+import signal
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +20,48 @@ PLATFORM = os.name
 
 class ResidentError(MantleError):
     pass
+
+
+def watch_with_signals(
+    body: MantleBody, *, interval: float, heartbeat_interval: float
+) -> dict[str, Any]:
+    """CLI-only cooperative stop; embedded hosts retain their own handlers.
+
+    The handler changes one flag only: no locks, storage, provider calls or
+    exceptions in a potentially interrupted Heartbeat. OS force termination
+    remains distinct from this best-effort between-Heartbeat exit.
+    """
+    if threading.current_thread() is not threading.main_thread():
+        raise ResidentError("Signal-managed watch requires the main thread")
+    requested_signal: int | None = None
+    previous = {}
+
+    def request_stop(signum, _frame):
+        nonlocal requested_signal
+        if requested_signal is None:
+            requested_signal = signum
+
+    signals = [signal.SIGINT, signal.SIGTERM]
+    if hasattr(signal, "SIGBREAK"):
+        signals.append(signal.SIGBREAK)
+    try:
+        for signum in signals:
+            previous[signum] = signal.signal(signum, request_stop)
+        body.watch(
+            interval=interval,
+            heartbeat_interval=heartbeat_interval,
+            stop_requested=lambda: requested_signal is not None,
+        )
+        return {
+            "status": "stopped",
+            "reason": (
+                signal.Signals(requested_signal).name if requested_signal is not None else "watch-returned"
+            ),
+            "shutdown": "cooperative-between-heartbeats",
+        }
+    finally:
+        for signum, handler in previous.items():
+            signal.signal(signum, handler)
 
 
 def _registration_id(nest: Path) -> str:
