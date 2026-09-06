@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 
+import pytest
 from test_runtime import prepare_unborn_nest
 
 from mantleos.assimilate import _runtime_payloads
@@ -38,7 +39,7 @@ def _stop(process):
     process.communicate(timeout=10)
 
 
-def test_real_resident_start_communication_and_restart_with_local_organs(tmp_path):
+def _prepare_resident(tmp_path):
     nest = (tmp_path / "disposable Body").resolve()
     nest.mkdir()
     prepare_unborn_nest(nest)
@@ -63,13 +64,18 @@ def test_real_resident_start_communication_and_restart_with_local_organs(tmp_pat
     prebirth_path.write_text(json.dumps(prebirth), encoding="utf-8")
     native = nest / "body.py"
     native.write_text("print(6 * 7)\n", encoding="utf-8")
-    native_before = native.read_bytes()
     body = MantleBody(nest)
     body.birth("Disposable resident process test", approved=True)
-    primer_before = body.paths.primer.read_bytes()
     runner = nest / ".mantle" / "resident" / "run-heart.py"
     runner.parent.mkdir(parents=True)
     runner.write_text(_runner_text(nest), encoding="utf-8")
+    return body, runner, native
+
+
+def test_real_resident_start_communication_and_restart_with_local_organs(tmp_path):
+    body, runner, native = _prepare_resident(tmp_path)
+    native_before = native.read_bytes()
+    primer_before = body.paths.primer.read_bytes()
 
     def starts():
         events, _ = body._vcw().events_after(limit=1000)
@@ -120,3 +126,37 @@ def test_real_resident_start_communication_and_restart_with_local_organs(tmp_pat
         [sys.executable, "-I", str(native)], capture_output=True, text=True, timeout=10, check=True
     )
     assert native_result.stdout.strip() == "42"
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows terminate() is a forced kill, not SIGTERM delivery")
+def test_real_sigterm_stops_idle_resident_without_extra_heartbeat(tmp_path):
+    body, runner, native = _prepare_resident(tmp_path)
+    primer_before = body.paths.primer.read_bytes()
+    native_before = native.read_bytes()
+    process = subprocess.Popen(
+        [sys.executable, "-I", str(runner)], cwd=tmp_path,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    try:
+        _wait_for(process, lambda: any(
+            e["kind"] == "heartbeat.completed" and e["data"]["reason"] == "resident-startup"
+            for e in body._vcw().events_after(limit=1000)[0]
+        ))
+        before, _ = body._vcw().events_after(limit=1000)
+        process.terminate()
+        stdout, stderr = process.communicate(timeout=5)
+        assert process.returncode == 0, stderr
+        assert json.loads(stdout) == {
+            "status": "stopped", "reason": "SIGTERM", "shutdown": "cooperative-between-heartbeats",
+        }
+    finally:
+        _stop(process)
+    after, _ = body._vcw().events_after(limit=1000)
+    assert after == before
+    assert body.verify()["ok"]
+    assert body.paths.primer.read_bytes() == primer_before
+    assert native.read_bytes() == native_before
+    result = subprocess.run(
+        [sys.executable, "-I", str(native)], capture_output=True, text=True, timeout=10, check=True,
+    )
+    assert result.stdout.strip() == "42"

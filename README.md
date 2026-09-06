@@ -90,6 +90,10 @@ runs a full startup Heartbeat, recovers interrupted host Heartbeats, and also
 runs scheduled full Heartbeats every five minutes by default. File observation
 and scheduled cadence can be set independently with `--interval` and
 `--heartbeat-interval`.
+CLI stop signals request a cooperative exit between full Heartbeats. File
+observation failures do not suppress due maintenance, and simultaneous scheduled
+and message wakes share one full Heartbeat. See [resident lifecycle evidence](docs/RESIDENT_HEART.md)
+for platform coverage and the remaining shutdown/storage limitations.
 
 ## Constitutional boundaries
 

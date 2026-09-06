@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add cooperative CLI Heart shutdown with restored signal handlers and no new
+  Heartbeat after an observed stop request; keep in-flight failure visible.
+- Preserve scheduled maintenance during communication-file observation failure,
+  coalesce simultaneous due/message wakes, and reject non-finite cadences.
+- Add deterministic shutdown/scheduling tests and a real Linux SIGTERM process
+  gate; Windows forced-stop evidence remains explicitly distinct.
+
 - Reconcile the updated edition 2.1 manual without changing constitutional
   wording, permanent Personality, completed host proofs or release scope.
 - Bound OpenRouter response bytes; reject redirects, ambiguous JSON, incomplete

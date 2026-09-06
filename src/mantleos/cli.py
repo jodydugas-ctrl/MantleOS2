@@ -14,7 +14,7 @@ from .primer import (
     generate_personality,
     load_distillation_contract,
 )
-from .resident import ResidentError, install_resident, remove_resident, resident_status
+from .resident import ResidentError, install_resident, remove_resident, resident_status, watch_with_signals
 from .runtime import MantleBody, MantleError
 
 
@@ -162,11 +162,11 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "speak":
                 result = body.speak(args.message)
             else:
-                body.watch(
+                result = watch_with_signals(
+                    body,
                     interval=args.interval,
                     heartbeat_interval=args.heartbeat_interval,
                 )
-                return 0
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
     except (
