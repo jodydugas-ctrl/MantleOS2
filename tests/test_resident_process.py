@@ -39,7 +39,7 @@ def _stop(process):
     process.communicate(timeout=10)
 
 
-def _prepare_resident(tmp_path):
+def _prepare_resident(tmp_path, *, create_runner=True):
     nest = (tmp_path / "disposable Body").resolve()
     nest.mkdir()
     prepare_unborn_nest(nest)
@@ -67,8 +67,9 @@ def _prepare_resident(tmp_path):
     body = MantleBody(nest)
     body.birth("Disposable resident process test", approved=True)
     runner = nest / ".mantle" / "resident" / "run-heart.py"
-    runner.parent.mkdir(parents=True)
-    runner.write_text(_runner_text(nest), encoding="utf-8")
+    if create_runner:
+        runner.parent.mkdir(parents=True)
+        runner.write_text(_runner_text(nest), encoding="utf-8")
     return body, runner, native
 
 

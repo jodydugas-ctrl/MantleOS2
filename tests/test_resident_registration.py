@@ -26,7 +26,8 @@ def registration(tmp_path, monkeypatch):
         mock.patch.object(r, "_verify_registration"),
     ):
         receipt = r.install_resident(tmp_path, approved=True)
-        assert "/F" not in run.call_args.args[0]
+        assert "/F" not in run.call_args_list[0].args[0]
+        assert run.call_args.args[0][1] == "/Run"
     return tmp_path, receipt
 
 
@@ -48,6 +49,26 @@ def test_windows_live_shape_is_checked_before_stop_and_delete(registration, monk
         assert r.remove_resident(nest, approved=True)["removed"]
     assert [call.args[0][1] for call in run.call_args_list] == ["/Query", "/user", "/End", "/Delete"]
     assert not r._paths(nest)[0].exists()
+
+
+@pytest.mark.parametrize("level", [None, "", "HighestAvailable", "unknown"])
+def test_windows_omitted_default_privilege_but_not_explicit_invalid_values(registration, level):
+    nest, receipt = registration
+    task = ET.fromstring(task_xml(nest, receipt))
+    principal = task.find("{*}Principals/{*}Principal")
+    element = principal.find("{*}RunLevel")
+    if level is None:
+        principal.remove(element)
+    else:
+        element.text = level
+    with mock.patch.object(r, "_run", side_effect=[
+        ET.tostring(task, encoding="unicode"), '"user","S-1-5-21-123"',
+    ]):
+        if level is None:
+            r._verify_registration(receipt, nest)
+        else:
+            with pytest.raises(r.ResidentError, match="does not match"):
+                r._verify_registration(receipt, nest)
 
 
 @pytest.mark.parametrize("change", ["command", "arguments", "owner", "privilege", "extra-action"])
@@ -143,6 +164,37 @@ def test_failed_registration_preserves_pending_evidence(registration):
     assert status["installed"] is False
     assert status["runner_available"] is True
     assert status["running"] == "unknown"
+
+
+def test_failed_windows_start_retains_intent_after_verified_creation(registration):
+    nest, _ = registration
+    for path in r._paths(nest):
+        path.unlink()
+    with (
+        mock.patch.object(r.MantleBody, "is_born", new_callable=mock.PropertyMock, return_value=True),
+        mock.patch.object(r, "_verify_registration") as verify,
+        mock.patch.object(r, "_run", side_effect=["", r.ResidentError("start failed")]) as run,
+        pytest.raises(r.ResidentError, match="start failed"),
+    ):
+        r.install_resident(nest, approved=True)
+    verify.assert_called_once()
+    assert [call.args[0][1] for call in run.call_args_list] == ["/Create", "/Run"]
+    assert r.resident_status(nest)["state"] == "registration-pending"
+
+
+def test_windows_verification_failure_prevents_start(registration):
+    nest, _ = registration
+    for path in r._paths(nest):
+        path.unlink()
+    with (
+        mock.patch.object(r.MantleBody, "is_born", new_callable=mock.PropertyMock, return_value=True),
+        mock.patch.object(r, "_verify_registration", side_effect=r.ResidentError("verification failed")),
+        mock.patch.object(r, "_run", return_value="") as run,
+        pytest.raises(r.ResidentError, match="verification failed"),
+    ):
+        r.install_resident(nest, approved=True)
+    assert run.call_count == 1 and run.call_args.args[0][1] == "/Create"
+    assert r.resident_status(nest)["state"] == "registration-pending"
 
 
 def test_legacy_receipt_remains_readable_and_missing_runner_does_not_hide_registration(registration):
