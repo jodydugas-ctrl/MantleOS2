@@ -149,6 +149,15 @@ installation, automatic process restart, graceful stop and removal still need
 native certification for issue #16. Python and cryptography remain runtime
 prerequisites; this does not yet provide a standalone interpreter bundle.
 
+A new dedicated hosted-runner workflow exercises real Task Scheduler/systemd
+registration, startup, committed communication, stop/restart and already-stopped
+removal with a freshly generated disposable encrypted Body. It is opt-in and
+refuses ordinary local/self-hosted execution; only its test report is retained.
+Linux additionally exercises `Restart=on-failure` after SIGKILL and verifies a
+zero-status cooperative stop. Windows exercises explicit forced stop/start,
+not automatic restart or graceful shutdown. The gate must pass before these
+specific native paths become evidence; full issue #16 remains open.
+
 The [resident lifecycle evidence record](docs/RESIDENT_HEART.md) distinguishes
 cooperative idle stop from bounded cancellation of synchronous provider/storage
 work, native registration/removal and storage-enforced writer fencing. Those

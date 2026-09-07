@@ -115,6 +115,34 @@ tests must also establish already-stopped task behavior and actual task XML.
 
 ## Remaining acceptance gates
 
+### Disposable native workflow
+
+`native-resident.yml` runs `test_resident_native.py` on GitHub-hosted Windows
+and Linux with Python 3.12. Ordinary unit runs skip this test. An explicit flag,
+hosted-runner environment check and RUNNER_TEMP containment check prevent
+accidental local registration; environment variables are not a security boundary
+against a malicious caller. No provider secrets or foreign repository code are
+used. Linux starts the disposable runner's user service manager; this is test
+environment preparation, not a constructor privilege escalation.
+
+The test uses the production installer and remover with actual OS replies. It
+requires an OS-managed full startup Heartbeat, a committed communication reply,
+another startup after restart, and removal of an already-stopped registration.
+Primer, native Body bytes, encrypted VCW verification and native output remain
+checked. Only the JUnit result is uploaded, never the disposable NEST.
+
+Linux injects SIGKILL into the service's main process to test the declared
+`Restart=on-failure` policy, then verifies exit status zero after `systemctl stop`.
+Windows uses explicit [task run/end operations](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-end),
+not automatic failure recovery or graceful shutdown. Linux restart semantics
+follow the [systemd service reference](https://github.com/systemd/systemd/blob/main/man/systemd.service.xml).
+No reboot, user-login session transition, in-flight provider cancellation or
+mid-transaction kill is covered. A failed test attempts ownership-checked removal;
+it never bypasses those checks. Hosted VMs are discarded even if cleanup fails.
+
+Native evidence is established only by successful workflow runs, not by the
+presence of this harness. The broader certification requirements below remain.
+
 1. Native Task Scheduler and systemd installation/start, automatic restart,
    graceful stop, failed-registration recovery and safe removal in disposable
    platform environments, including exact registration ownership/path checks.
