@@ -138,6 +138,12 @@ prior signal handlers. A dedicated Linux subprocess test exercises real SIGTERM;
 Windows forced termination remains a distinct test, not graceful-stop evidence.
 Scheduled maintenance is considered even when file observation fails; a due
 scheduled/message collision services both through one full scheduled Heartbeat.
+Registration now refuses existing artifacts instead of forcing replacement,
+records pending intent before OS changes, and validates NEST-derived targets
+and current OS ownership/configuration before removal. Linux loaded-unit and
+override checks run before service start. Receipt-only status explicitly leaves
+running state unknown. Adversarial fixture tests cover drift, altered receipts,
+collisions and partial failure; these do not prove native service recovery.
 OS registration remains mocked in unit tests: actual Task Scheduler/systemd
 installation, automatic process restart, graceful stop and removal still need
 native certification for issue #16. Python and cryptography remain runtime

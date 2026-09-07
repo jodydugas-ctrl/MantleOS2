@@ -1,6 +1,6 @@
 # Resident Heart lifecycle evidence
 
-Scope: issue #16, incremental progress after PRs #30 and #31. This document
+Scope: issue #16, incremental progress after PRs #30–#32. This document
 records actual boundaries, not complete native service certification.
 
 ## Runtime and scheduling
@@ -61,6 +61,7 @@ claims that guarantee nor installs anything to resist OS termination.
 | --- | --- | --- |
 | `test_watch_shutdown.py` with controlled clock/state | Pre-start/idle/in-flight stop ordering; failed beat remains failed; finite intervals; cadence; unavailable file; collision and response-echo behavior | Real OS scheduling, storage durability or provider cancellation |
 | `test_resident.py` | Explicit installation gates, NEST-local runner, mocked Windows/Linux registration; signal-handler restoration and main-thread boundary | Actual Task Scheduler/systemd installation or console signal delivery |
+| `test_resident_registration.py` | Collision refusal, strict NEST-bound receipts, task owner/action checks, loaded-unit/override checks before Linux start, pending evidence, stop-before-delete and drift refusal using OS fixtures | Native task XML variants, service-manager timing, interrupted removal recovery or adversarial concurrent OS changes |
 | `test_resident_process.py` existing cross-platform process test | Real encrypted disposable VCW; startup, communication, forced stop/restart, pending host receipt recovery, unchanged Primer and native Body | Crash during admission, OS-managed automatic restart or fenced canonical writer |
 | `test_real_sigterm_stops_idle_resident_without_extra_heartbeat` (Linux) | Real SIGTERM delivery, exit code zero with stop result, no extra VCW event/Heartbeat, preserved Primer/native bytes and usable native Body | Windows graceful stop; termination during provider I/O; native systemd service lifecycle |
 
@@ -68,6 +69,49 @@ These tests run in the existing Windows/Linux Python 3.11–3.13 matrix. The rea
 SIGTERM case is explicitly skipped on Windows instead of fabricating evidence.
 Fixtures birth only disposable test organisms; no real Compiler SELF or creator
 machine service registration is changed.
+
+## Registration ownership and failure boundaries
+
+Installation requires explicit approval and birth, and creates only the known
+NEST-local runner/receipt plus the user-level OS registration. Existing local
+artifacts or unit files are refused, not overwritten. Windows task creation no
+longer uses the force-replacement flag; command input is closed so a collision
+cannot be accepted interactively. See Microsoft's [task creation reference](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-create).
+
+A `registration-pending` receipt is persisted before OS changes. Only successful
+registration and configuration verification allow `registered`. Failures retain
+intent and artifacts for inspection, with no automatic rollback that might
+delete somebody else's registration. Repeating installation refuses the pending
+construction. This is evidence retention, not yet an automatic recovery protocol.
+
+Removal rederives the identifier, runner, organ location and (on Linux) unit path
+from this NEST and current user configuration. It rejects redirected paths,
+oversized/ambiguous receipts and changed runner bytes. Missing runners do not
+hide a remaining registration. Legacy v2 receipts without a state field remain
+readable, without automatic rewriting. Status is explicitly `receipt-only` and
+reports `running=unknown`; it is not live process or OS-registration proof.
+
+- Windows: inspect task XML for exactly one expected executable action, isolated
+  runner arguments, the current user's SID and least privilege. Only then request
+  task stop followed by deletion; a stop error prevents deletion. Deletion alone
+  does not stop the program, as Microsoft's [task deletion reference](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/schtasks-delete)
+  explains. Task stop is not claimed to be a graceful Heartbeat checkpoint.
+- Linux: require exact unit bytes, the expected loaded fragment and no drop-ins.
+  Installation checks these after reload and before `enable --now`; removal checks
+  before `disable --now`. Relative configuration roots and unsupported expansion
+  characters in interpreter/runner paths are refused pending a certified escaping
+  profile. Existing simple-path unit formatting is retained for compatibility.
+- OS commands use no shell, accept no interactive input, have a 30-second timeout,
+  and return error classes rather than echoing command output into diagnostics.
+
+If an operation fails, retain the receipt and inspect both it and the actual task
+or user unit before taking any further approved recovery action. Do not delete
+the receipt to bypass ownership checks or repeatedly retry an uncertain install.
+An interrupted removal (for example, OS deletion succeeded but local cleanup did
+not) still needs a verified recovery procedure. These preflight checks are not a
+transaction with the OS and do not claim protection against a concurrent actor
+replacing files or registrations between validation and mutation. Native service
+tests must also establish already-stopped task behavior and actual task XML.
 
 ## Remaining acceptance gates
 

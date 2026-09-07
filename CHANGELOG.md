@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Refuse resident registration collisions, record pending installation intent,
+  and verify NEST-bound task ownership or exact loaded unit configuration.
+- Validate removal receipts and launchers before OS actions, stop Windows tasks
+  before deletion, and preserve partial-failure evidence without blind rollback.
+- Add hostile registration fixtures; actual native service lifecycle and
+  interrupted-removal recovery remain certification gates, not claimed results.
+
 - Add cooperative CLI Heart shutdown with restored signal handlers and no new
   Heartbeat after an observed stop request; keep in-flight failure visible.
 - Preserve scheduled maintenance during communication-file observation failure,

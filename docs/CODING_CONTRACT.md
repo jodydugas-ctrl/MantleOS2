@@ -207,6 +207,13 @@ Receipts identify the input, source and parent state, scope, authority, attempt,
 observed outcome, verifier, proof, before/after fingerprints, changed paths, and
 unresolved limits. Failed or interrupted work remains visible. No requested
 effect is reported as successful without observation and applicable proof.
+
+Resident OS registration requires separate explicit approval, collision refusal,
+NEST-derived targets and current ownership/configuration checks before removal.
+A receipt is not proof of a running Heart. Partial registration failure retains
+inspection evidence; it must not trigger blind replacement, cleanup or success.
+Preflight validation alone is not an atomic OS transaction or native lifecycle
+certification; see [RESIDENT_HEART.md](RESIDENT_HEART.md).
 Construction proof is checked again at use time: evidence recorded when a
 candidate was built is not evidence that its bytes remained unchanged.
 

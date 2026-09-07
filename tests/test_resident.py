@@ -45,6 +45,7 @@ def test_windows_resident_is_user_level_nest_contained_and_reversible(tmp_path, 
     with (
         mock.patch("mantleos.resident.MantleBody.is_born", new_callable=mock.PropertyMock) as born,
         mock.patch("mantleos.resident.subprocess.run") as run,
+        mock.patch("mantleos.resident._verify_registration"),
     ):
         born.return_value = True
         run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
@@ -110,6 +111,7 @@ def test_linux_registration_uses_isolated_local_runner(tmp_path, monkeypatch):
     with (
         mock.patch("mantleos.resident.MantleBody.is_born", new_callable=mock.PropertyMock) as born,
         mock.patch("mantleos.resident._run") as run,
+        mock.patch("mantleos.resident._verify_registration"),
     ):
         born.return_value = True
         receipt = install_resident(tmp_path, approved=True)
