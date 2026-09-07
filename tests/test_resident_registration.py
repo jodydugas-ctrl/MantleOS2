@@ -50,6 +50,26 @@ def test_windows_live_shape_is_checked_before_stop_and_delete(registration, monk
     assert not r._paths(nest)[0].exists()
 
 
+@pytest.mark.parametrize("level", [None, "", "HighestAvailable", "unknown"])
+def test_windows_omitted_default_privilege_but_not_explicit_invalid_values(registration, level):
+    nest, receipt = registration
+    task = ET.fromstring(task_xml(nest, receipt))
+    principal = task.find("{*}Principals/{*}Principal")
+    element = principal.find("{*}RunLevel")
+    if level is None:
+        principal.remove(element)
+    else:
+        element.text = level
+    with mock.patch.object(r, "_run", side_effect=[
+        ET.tostring(task, encoding="unicode"), '"user","S-1-5-21-123"',
+    ]):
+        if level is None:
+            r._verify_registration(receipt, nest)
+        else:
+            with pytest.raises(r.ResidentError, match="does not match"):
+                r._verify_registration(receipt, nest)
+
+
 @pytest.mark.parametrize("change", ["command", "arguments", "owner", "privilege", "extra-action"])
 def test_windows_registration_drift_never_stops_or_deletes(registration, change):
     nest, receipt = registration

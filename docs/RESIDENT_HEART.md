@@ -143,6 +143,14 @@ it never bypasses those checks. Hosted VMs are discarded even if cleanup fails.
 Native evidence is established only by successful workflow runs, not by the
 presence of this harness. The broader certification requirements below remain.
 
+The first native run passed Linux and exposed an overly strict Windows XML
+check: the optional RunLevel element can be absent for the default least-privilege
+setting. The verifier now accepts absence, but rejects explicit empty, unknown or
+elevated values. This follows Microsoft's [optional principal schema](https://learn.microsoft.com/en-us/windows/win32/taskschd/taskschedulerschema-principaltype-complextype)
+and [default low-privilege task context](https://learn.microsoft.com/en-us/windows/win32/taskschd/security-contexts-for-running-tasks).
+The setting does not prove effective token isolation when UAC is disabled or an
+account ignores that setting; ordinary non-admin client certification remains open.
+
 1. Native Task Scheduler and systemd installation/start, automatic restart,
    graceful stop, failed-registration recovery and safe removal in disposable
    platform environments, including exact registration ownership/path checks.

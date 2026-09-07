@@ -184,7 +184,9 @@ def _verify_registration(receipt: dict[str, Any], nest: Path) -> None:
             sid = rows[0][1]
             if not sid.startswith("S-1-") or principals[0].findtext("{*}UserId") != sid:
                 raise ValueError("task owner drift")
-            if principals[0].findtext("{*}RunLevel") != "LeastPrivilege":
+            # Windows may omit the optional default-valued element on export.
+            # Only absence defaults; explicit empty/unknown/elevated values fail.
+            if principals[0].findtext("{*}RunLevel", "LeastPrivilege") != "LeastPrivilege":
                 raise ValueError("task privilege drift")
         except (ValueError, IndexError, ET.ParseError) as exc:
             raise ResidentError("Resident task does not match this NEST and current owner") from exc

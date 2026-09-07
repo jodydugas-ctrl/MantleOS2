@@ -5,6 +5,8 @@
 - Add opt-in, disposable hosted-runner tests of real Windows Task Scheduler and
   Linux user-service registration, communication, restart and removal. Keep
   Windows forced restart distinct from Linux automatic failure recovery.
+- Accept omitted default least-privilege task XML while still rejecting explicit
+  elevated/unknown/empty values, fixing a failure exposed by real Windows testing.
 
 - Refuse resident registration collisions, record pending installation intent,
   and verify NEST-bound task ownership or exact loaded unit configuration.
