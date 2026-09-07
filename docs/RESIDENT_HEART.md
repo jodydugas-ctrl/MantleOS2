@@ -64,6 +64,7 @@ claims that guarantee nor installs anything to resist OS termination.
 | `test_resident_registration.py` | Collision refusal, strict NEST-bound receipts, task owner/action checks, loaded-unit/override checks before Linux start, pending evidence, stop-before-delete and drift refusal using OS fixtures | Native task XML variants, service-manager timing, interrupted removal recovery or adversarial concurrent OS changes |
 | `test_resident_process.py` existing cross-platform process test | Real encrypted disposable VCW; startup, communication, forced stop/restart, pending host receipt recovery, unchanged Primer and native Body | Crash during admission, OS-managed automatic restart or fenced canonical writer |
 | `test_real_sigterm_stops_idle_resident_without_extra_heartbeat` (Linux) | Real SIGTERM delivery, exit code zero with stop result, no extra VCW event/Heartbeat, preserved Primer/native bytes and usable native Body | Windows graceful stop; termination during provider I/O; native systemd service lifecycle |
+| `test_resident_native.py` on disposable hosted runners | Real installation, startup, communication, restart, already-stopped removal, preserved Primer/native bytes and VCW validity; Linux automatic restart after SIGKILL and zero-status stop | Windows automatic restart/graceful stop; login/reboot transitions; non-admin Windows 11; mid-transaction failure |
 
 These tests run in the existing Windows/Linux Python 3.11–3.13 matrix. The real
 SIGTERM case is explicitly skipped on Windows instead of fabricating evidence.
@@ -141,7 +142,9 @@ mid-transaction kill is covered. A failed test attempts ownership-checked remova
 it never bypasses those checks. Hosted VMs are discarded even if cleanup fails.
 
 Native evidence is established only by successful workflow runs, not by the
-presence of this harness. The broader certification requirements below remain.
+presence of this harness. [Run 34157324647](https://github.com/jodydugas-ctrl/MantleOS2/actions/runs/34157324647)
+passed both jobs on Ubuntu 24.04.4 and Windows Server 2025 with Python 3.12,
+using source commit `30647be`. The broader certification requirements below remain.
 
 The first native run passed Linux and exposed an overly strict Windows XML
 check: the optional RunLevel element can be absent for the default least-privilege
@@ -151,9 +154,10 @@ and [default low-privilege task context](https://learn.microsoft.com/en-us/windo
 The setting does not prove effective token isolation when UAC is disabled or an
 account ignores that setting; ordinary non-admin client certification remains open.
 
-1. Native Task Scheduler and systemd installation/start, automatic restart,
-   graceful stop, failed-registration recovery and safe removal in disposable
-   platform environments, including exact registration ownership/path checks.
+1. Extend observed native startup/removal to user-login/reboot transitions,
+   non-admin Windows 11, Windows automatic restart/graceful stop, registration
+   interruption and partial-removal recovery. Repeat the exact ownership/path
+   checks in those environments; current hosted service tests do not close them.
 2. A single serialized Body mutation port and storage-enforced writer epochs;
    current process/file locks must not be described as stale-writer fencing.
 3. Crash-atomic admission/root/receipt publication and durable unfinished-work

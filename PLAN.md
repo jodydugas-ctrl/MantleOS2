@@ -144,9 +144,9 @@ and current OS ownership/configuration before removal. Linux loaded-unit and
 override checks run before service start. Receipt-only status explicitly leaves
 running state unknown. Adversarial fixture tests cover drift, altered receipts,
 collisions and partial failure; these do not prove native service recovery.
-OS registration remains mocked in unit tests: actual Task Scheduler/systemd
-installation, automatic process restart, graceful stop and removal still need
-native certification for issue #16. Python and cryptography remain runtime
+Unit registration tests remain mocked; the dedicated native gate below adds
+real OS lifecycle evidence. Broader restart, login/reboot and failure-recovery
+certification remains open for issue #16. Python and cryptography remain runtime
 prerequisites; this does not yet provide a standalone interpreter bundle.
 
 A new dedicated hosted-runner workflow exercises real Task Scheduler/systemd
@@ -155,8 +155,10 @@ removal with a freshly generated disposable encrypted Body. It is opt-in and
 refuses ordinary local/self-hosted execution; only its test report is retained.
 Linux additionally exercises `Restart=on-failure` after SIGKILL and verifies a
 zero-status cooperative stop. Windows exercises explicit forced stop/start,
-not automatic restart or graceful shutdown. The gate must pass before these
-specific native paths become evidence; full issue #16 remains open.
+not automatic restart or graceful shutdown. Both native jobs passed in
+[run 34157324647](https://github.com/jodydugas-ctrl/MantleOS2/actions/runs/34157324647)
+on Ubuntu 24.04.4 and Windows Server 2025. These are narrow observed lifecycle
+proofs, not Windows 11 non-admin, login/reboot or complete issue #16 certification.
 
 The [resident lifecycle evidence record](docs/RESIDENT_HEART.md) distinguishes
 cooperative idle stop from bounded cancellation of synchronous provider/storage
