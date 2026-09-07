@@ -266,6 +266,7 @@ def install_resident(nest: str | Path, *, approved: bool) -> dict[str, Any]:
             ]
         )
         _verify_registration(receipt, nest)
+        _run(["schtasks.exe", "/Run", "/TN", registration_id])
     else:
         unit = Path(external)
         _new_file(unit, unit_text.encode("utf-8"))

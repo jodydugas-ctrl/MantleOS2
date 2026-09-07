@@ -26,7 +26,8 @@ def registration(tmp_path, monkeypatch):
         mock.patch.object(r, "_verify_registration"),
     ):
         receipt = r.install_resident(tmp_path, approved=True)
-        assert "/F" not in run.call_args.args[0]
+        assert "/F" not in run.call_args_list[0].args[0]
+        assert run.call_args.args[0][1] == "/Run"
     return tmp_path, receipt
 
 
@@ -163,6 +164,37 @@ def test_failed_registration_preserves_pending_evidence(registration):
     assert status["installed"] is False
     assert status["runner_available"] is True
     assert status["running"] == "unknown"
+
+
+def test_failed_windows_start_retains_intent_after_verified_creation(registration):
+    nest, _ = registration
+    for path in r._paths(nest):
+        path.unlink()
+    with (
+        mock.patch.object(r.MantleBody, "is_born", new_callable=mock.PropertyMock, return_value=True),
+        mock.patch.object(r, "_verify_registration") as verify,
+        mock.patch.object(r, "_run", side_effect=["", r.ResidentError("start failed")]) as run,
+        pytest.raises(r.ResidentError, match="start failed"),
+    ):
+        r.install_resident(nest, approved=True)
+    verify.assert_called_once()
+    assert [call.args[0][1] for call in run.call_args_list] == ["/Create", "/Run"]
+    assert r.resident_status(nest)["state"] == "registration-pending"
+
+
+def test_windows_verification_failure_prevents_start(registration):
+    nest, _ = registration
+    for path in r._paths(nest):
+        path.unlink()
+    with (
+        mock.patch.object(r.MantleBody, "is_born", new_callable=mock.PropertyMock, return_value=True),
+        mock.patch.object(r, "_verify_registration", side_effect=r.ResidentError("verification failed")),
+        mock.patch.object(r, "_run", return_value="") as run,
+        pytest.raises(r.ResidentError, match="verification failed"),
+    ):
+        r.install_resident(nest, approved=True)
+    assert run.call_count == 1 and run.call_args.args[0][1] == "/Create"
+    assert r.resident_status(nest)["state"] == "registration-pending"
 
 
 def test_legacy_receipt_remains_readable_and_missing_runner_does_not_hide_registration(registration):

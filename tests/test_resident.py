@@ -53,7 +53,9 @@ def test_windows_resident_is_user_level_nest_contained_and_reversible(tmp_path, 
         assert receipt["privilege"] == "user-level"
         assert receipt["mechanism"] == "windows-user-logon-task"
         assert receipt["isolated_python"] is True
-        assert "-I" in run.call_args.args[0][run.call_args.args[0].index("/TR") + 1]
+        creation = run.call_args_list[0].args[0]
+        assert "-I" in creation[creation.index("/TR") + 1]
+        assert run.call_args.args[0][1] == "/Run"
         registration = tmp_path / ".mantle" / "resident" / "registration.json"
         assert json.loads(registration.read_text(encoding="utf-8"))["nest"] == str(
             tmp_path.resolve()

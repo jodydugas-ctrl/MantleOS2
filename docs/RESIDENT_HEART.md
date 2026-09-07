@@ -145,6 +145,11 @@ Native evidence is established only by successful workflow runs, not by the
 presence of this harness. [Run 34157324647](https://github.com/jodydugas-ctrl/MantleOS2/actions/runs/34157324647)
 passed both jobs on Ubuntu 24.04.4 and Windows Server 2025 with Python 3.12,
 using source commit `30647be`. The broader certification requirements below remain.
+That run issued an explicit initial Windows task start from the test. The final
+gate is stricter: production installation now starts the task after ownership
+verification, and the test must observe startup without issuing that command.
+Failed initial starts retain pending installation evidence. The logon trigger is
+retained for later sessions; it is not claimed tested by the on-demand start.
 
 The first native run passed Linux and exposed an overly strict Windows XML
 check: the optional RunLevel element can be absent for the default least-privilege

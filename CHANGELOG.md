@@ -7,6 +7,8 @@
   Windows forced restart distinct from Linux automatic failure recovery.
 - Accept omitted default least-privilege task XML while still rejecting explicit
   elevated/unknown/empty values, fixing a failure exposed by real Windows testing.
+- Start the verified Windows resident task immediately on installation, matching
+  Linux, and retain pending evidence when the start request fails.
 
 - Refuse resident registration collisions, record pending installation intent,
   and verify NEST-bound task ownership or exact loaded unit configuration.

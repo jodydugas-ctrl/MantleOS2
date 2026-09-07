@@ -159,6 +159,9 @@ not automatic restart or graceful shutdown. Both native jobs passed in
 [run 34157324647](https://github.com/jodydugas-ctrl/MantleOS2/actions/runs/34157324647)
 on Ubuntu 24.04.4 and Windows Server 2025. These are narrow observed lifecycle
 proofs, not Windows 11 non-admin, login/reboot or complete issue #16 certification.
+That run exposed a workflow gap: Windows needed a test-issued initial start.
+Installation now starts the verified task immediately, matching Linux, and the
+native test requires startup without issuing its own initial start command.
 
 The [resident lifecycle evidence record](docs/RESIDENT_HEART.md) distinguishes
 cooperative idle stop from bounded cancellation of synchronous provider/storage

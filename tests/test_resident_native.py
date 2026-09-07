@@ -65,9 +65,7 @@ def test_native_registration_start_communication_stop_restart_and_removal(tmp_pa
         assert receipt["state"] == "registered"
         assert runner.is_file()
         r._verify_registration(receipt, nest)  # Actual OS replies, no mock.
-        if os.name == "nt":
-            print("native-phase: task-run")
-            r._run(["schtasks.exe", "/Run", "/TN", registration_id])
+        # Installation itself must start the Heart on both platforms.
         wait_for(lambda: starts(body) == 1, "No first OS-managed full Heartbeat")
 
         print("native-phase: communication")
