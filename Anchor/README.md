@@ -11,9 +11,9 @@ The Markdown files in this directory are synchronized repository copies. Updates
 ## Current checkpoint
 
 - SCAN Engine: v0.20
-- Project documentation: v0.27
+- Project documentation: v0.28
 - Status: production-hardened pre-v1
-- PR5 NotepadNext calibration: blocked / not passed pending complete verified specimen bytes
+- PR5 NotepadNext calibration: acquisition pass; cold scan not passed pending authentic v0.20 execution artifacts
 - PR7 reconstruction proof: partial; M5 and M6A mechanisms pass, external-agent M6B remains open
 - H-001 blind holdout: frozen and source-uninspected
 
@@ -23,6 +23,7 @@ The Markdown files in this directory are synchronized repository copies. Updates
 - [`SCAN_PROTOCOL.md`](SCAN_PROTOCOL.md) — operational scanning, certification, promotion, and reconstruction protocol.
 - [`SCAN_REPORT.md`](SCAN_REPORT.md) — executed evidence, specimen findings, calibration history, and honest coverage state.
 - [`SCAN_CREATION_PLAN.md`](SCAN_CREATION_PLAN.md) — engineering roadmap and PR1-PR8 certification ledger.
+- [`evidence/pr5/PR5_ACQUISITION_RECEIPT.md`](evidence/pr5/PR5_ACQUISITION_RECEIPT.md) — exact pinned-source acquisition and archive digest evidence.
 
 ## Synchronization rules
 

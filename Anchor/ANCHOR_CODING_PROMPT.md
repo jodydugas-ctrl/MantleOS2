@@ -1,8 +1,15 @@
 # ANCHOR CODING PROMPT
-Version: 0.27
+Version: 0.28
 Project: SCAN
 Purpose: Governing primer for any coding agent working on this project
-Anchor set status: A1-A8 remain the active set in v0.27. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording Engine v0.20 M6A source-blind reconstruction-trial packaging, static fidelity scoring, and failure attribution under the existing anchors.
+Anchor set status: A1-A8 remain the active set in v0.28. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording verified acquisition of the exact PR5 NotepadNext source tree. Acquisition is evidence of specimen identity and bytes, not evidence that Engine v0.20 scanned or certified them.
+
+
+## v0.28 PR5 pinned-specimen acquisition checkpoint
+
+The exact NotepadNext PR5 specimen is now locally materialized at commit `f57db52d6760a2ce4149a37190c3adaa586845f5` with Git tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The checkout is clean, `git fsck --full` passes, no submodules are present, and a `git archive` ZIP is sealed at SHA-256 `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+
+This crosses the byte-transport boundary under A1-A4 but does not cross the cold-scan boundary. No oracle conclusion may be injected into SCAN before the Engine v0.20 evidence package is produced and sealed. The authentic v0.20 wheel/runner/release bundle must be recovered and verified before execution; substituting a reimplementation would invalidate the intended calibration lineage. H-001 remains frozen and source-uninspected.
 
 
 ## v0.27 M6A blind-reconstruction proof checkpoint
