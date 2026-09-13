@@ -125,4 +125,8 @@ The active implementation compass and remaining gates are recorded in
 The updated manual's requirements, preserved decisions and evidence gaps are
 mapped in [the edition 2.1 reconciliation](docs/MANUAL_21_RECONCILIATION.md).
 
+The related SCAN evidence-first software reverse-engineering project is tracked
+under [`Anchor/`](Anchor/README.md), including its governing anchors, protocol,
+evidence report, and production-readiness roadmap.
+
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).
