@@ -1581,6 +1581,16 @@ On `2026-09-13T18:21:51.2836955Z`, the PR5 NotepadNext repository was cloned wit
 
 The former external byte-transport condition is closed. PR5 itself remains NOT PASSED: the authentic v0.20 wheel, release package, and cold runner referenced by the prior release handoff are absent from the current workspace, so no replacement engine was invented and no scan claim was made. The next admissible action is exact artifact recovery and hash verification, followed by the cold LLM-disabled run and sealing before oracle comparison.
 
+The original Engine v0.20 / Project v0.27 release message supplies authoritative recovery checksums:
+
+- project handoff SHA-256: `f9590271c0c8cca16993e548667dcf9536c4a04c2be33590e83d302bac7cddb0`;
+- engine ZIP SHA-256: `6dce99a4ed924d9e370a29367e7a59845f2eefac5414cb3403e873b8577f9af1`;
+- wheel SHA-256: `573ce1c0a0ea7e5bc0039ce954209e983ba3d373e73b9301baf282fd559076fa`;
+- public challenge SHA-256: `ccd806213189e2b0bf0f7ec47bf3f608c41132ce6f16af7b04147ec9afdb5eee`;
+- sealed M6A trial SHA-256: `d1052f9a46e666f1f538fda9f6ac8cdd5aa00d39bfaa688c6c2553516e27f737`.
+
+The cold runner `RUN_PR5_NOTEPADNEXT_COLD_v020.ps1` must be recovered inside, and verified through, the authentic project handoff manifest. A filename match alone is insufficient.
+
 ---
 
 ## Project Tooling Checkpoint: Engine v0.20 / Project v0.27
