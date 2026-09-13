@@ -24,6 +24,7 @@ The Markdown files in this directory are synchronized repository copies. Updates
 - [`SCAN_REPORT.md`](SCAN_REPORT.md) — executed evidence, specimen findings, calibration history, and honest coverage state.
 - [`SCAN_CREATION_PLAN.md`](SCAN_CREATION_PLAN.md) — engineering roadmap and PR1-PR8 certification ledger.
 - [`evidence/pr5/PR5_ACQUISITION_RECEIPT.md`](evidence/pr5/PR5_ACQUISITION_RECEIPT.md) — exact pinned-source acquisition and archive digest evidence.
+- [`evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json`](evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json) — authoritative v0.20 release hashes and cold-run admission policy.
 
 ## Synchronization rules
 
