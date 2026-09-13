@@ -1,5 +1,5 @@
 # SCAN PROTOCOL
-Version: 0.27
+Version: 0.28
 Mode: Progressive / Read-Only by default
 Primary test specimen: NotepadNext
 Companion governance file: ANCHOR_CODING_PROMPT.md
@@ -21,6 +21,20 @@ The LLM's primary role is to help build or improve deterministic scanner tooling
 SCAN is not intended to birth an AppAI or migrate an agent into a host. Prior AppAI/NEST examples are useful because they expose the importance of substrate and environment, but SCAN's goal is software radiology and evidence-backed reconstruction fidelity.
 
 Before beginning, read and obey every active anchor in `ANCHOR_CODING_PROMPT.md`.
+
+## v0.28 PR5 acquisition-to-cold-scan boundary
+
+The pinned NotepadNext specimen has been acquired and sealed independently of the manual oracle. Required identity is commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`; the current source archive SHA-256 is `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+
+Before any calibration comparison, the operator must:
+
+1. recover and hash-verify the authentic Engine v0.20 wheel, engine package, and `RUN_PR5_NOTEPADNEXT_COLD_v020.ps1` lineage;
+2. run the cold, LLM-disabled mechanical certification against the complete pinned checkout;
+3. seal the scan outputs, logs, receipts, package manifest, engine/wheel identities, commit, tree, and source-archive digest;
+4. independently verify the sealed package;
+5. only then expose the preserved manual NotepadNext oracle for discrepancy classification.
+
+The acquisition receipt is not a scan receipt. Until steps 1-4 complete, PR5 remains NOT PASSED. Generic scanner corrections may follow post-seal comparison; NotepadNext-specific recognizers remain prohibited.
 
 ## v0.20 Stage 1 architecture contract
 
@@ -1142,7 +1156,7 @@ This roadmap governs development of SCAN itself. It is intentionally ordered so 
 
 Maintain A1-A8, pinned specimen identity, evidence classes, read-only default operation, progressive depth, and explicit experimental authorization.
 
-## M1 — Acquisition and Stage 1 mechanical substrate — IMPLEMENTED BASELINE / CALIBRATION BLOCKED BY CURRENT LIVE TRANSPORT
+## M1 — Acquisition and Stage 1 mechanical substrate — IMPLEMENTED BASELINE / PR5 SOURCE ACQUISITION PASS
 
 Reusable local/manifest/GitHub acquisition, hashing, stable file IDs, extraction cache, SQLite index, Qt/C++/CMake adapters, coverage gaps, and graph basics exist. Continue expanding language/framework adapters instead of replacing misses with manual LLM inspection.
 
@@ -1167,7 +1181,7 @@ R1 integrity refinement now provides the measurement framework for this mileston
 
 Use denominator-driven closure rather than raw node counts. Every recurring miss becomes reusable scanner machinery.
 
-## M4 — NotepadNext calibration convergence — WAITING FOR COMPLETE VERIFIED SPECIMEN BYTES
+## M4 — NotepadNext calibration convergence — EXACT BYTES ACQUIRED / WAITING ON AUTHENTIC v0.20 EXECUTION BUNDLE
 
 Run the full pinned body mechanically and compare against the preserved manual calibration set. Require independent rediscovery of known action counts, helper-mediated dispatch, dynamic surfaces, anomalies, timers, lifecycle routes, and NEST boundaries. New machine findings are retained even when the manual baseline missed them.
 

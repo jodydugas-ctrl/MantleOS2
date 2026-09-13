@@ -1,10 +1,10 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.27
-SCAN Protocol: 0.27
+Working Report Version: 0.28
+SCAN Protocol: 0.28
 Status: BASELINE / PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Project-state note (not NotepadNext specimen evidence):** project v0.27 retains the Stage 1 Scanner Architecture contract and frozen H-001 holdout, and records SCAN Engine v0.20 as the current packaged checkpoint. v0.20 adds M6A source-blind public/private reconstruction-trial splitting, source-free scoring requirements, static candidate rescanning, mismatch attribution, deterministic challenge bundles, and sealed trial verification. These project changes do not upgrade NotepadNext coverage; this report remains BASELINE / PARTIAL until the complete pinned NotepadNext bytes are scanned mechanically.
+**Project-state note (not scan-result evidence):** project v0.28 retains the Stage 1 Scanner Architecture contract and frozen H-001 holdout, and records SCAN Engine v0.20 as the current packaged checkpoint. The exact PR5 NotepadNext commit/tree has now been acquired, verified, and archived, crossing the former byte-transport blocker. No Engine v0.20 cold scan has yet been executed in this workspace because the authentic v0.20 wheel/runner/release package is not locally available. This report remains BASELINE / PARTIAL.
 
 ## 1. Specimen Identity
 
@@ -35,7 +35,8 @@ Evidence status:
 - Source observations below: DIRECT
 - Structural conclusions: INFERRED where explicitly labeled
 - Reusable scanner engine: IMPLEMENTED v0.18 / MECHANICALLY TESTED
-- Full deterministic whole-repository NotepadNext scanner run: ATTEMPTED; BLOCKED AT WHOLE-REPOSITORY BYTE ACQUISITION
+- Exact whole-repository NotepadNext acquisition: PASS; clean pinned tree and sealed source archive
+- Full deterministic whole-repository NotepadNext scanner run: NOT YET RUN; WAITING ON AUTHENTIC ENGINE v0.20 PACKAGE/RUNNER
 - Full-body coverage claim: NOT MADE
 
 This is therefore a real working scan record, but not yet a completed full-body scan.
@@ -241,7 +242,7 @@ CR-002 therefore closes the **scanner design gap** identified by CR-001, but it 
 | Manual-vs-machine anatomy discrepancy run | WAITING | requires full machine extraction |
 | Calibration convergence | OPEN | no completeness claim |
 
-**Next resume condition:** run the current acquisition command in an execution environment with outbound GitHub access, or supply the exact pinned repository archive/folder as scanner-readable bytes. Once exact bytes are available, run `scan-manifest` immediately and compare its machine results against the preserved NotepadNext calibration baseline.
+**Historical resume condition (satisfied in project v0.28):** acquire or supply the exact pinned repository archive/folder as scanner-readable bytes. The source is now materialized and sealed; the remaining resume condition is recovery and verification of the authentic Engine v0.20 execution bundle, followed by cold scanning and sealing before comparison.
 
 ### 2.6 Evidence Graph Milestone EG-001
 
@@ -1441,9 +1442,9 @@ The creation plan has been revised around **evidence-graph traceability before b
 
 **EVIDENCE GRAPH BASELINE -> EXTRACTION BREADTH -> FULL NOTEPADNEXT CALIBRATION -> SEMANTIC OBJECT SYNTHESIS -> ANCHOR TRACEABILITY -> BLIND RECONSTRUCTION EXPERIMENT**
 
-The evidence graph has passed R1, M3A denominator breadth, M3B deep/compiler/type/framework baselines, the M3C NEST/persistence/extension/error baseline, transferability refinements TR-001/TR-002/TR-002B, and qView development-oracle refinement O-003 in scanner v0.13. The next specimen milestone is **M4 full pinned NotepadNext calibration** as soon as exact verified bytes are locally parser-eligible. While that external acquisition gate remains blocked, engineering work may continue against PR2/PR3/PR4 gaps on controlled and transferability specimens, especially whole-program CFG/data flow, generated Qt resolution, exact persistence/value paths, platform/error semantics, and deeper Scintilla/Lexilla surface-to-framework behavior. That supporting work must not be reported as a substitute for M4.
+The evidence graph has passed R1, M3A denominator breadth, M3B deep/compiler/type/framework baselines, the M3C NEST/persistence/extension/error baseline, transferability refinements TR-001/TR-002/TR-002B, and qView development-oracle refinement O-003 in scanner v0.13. The exact verified NotepadNext bytes are now locally parser-eligible. The next specimen milestone is **M4 full pinned NotepadNext calibration**, pending recovery and verification of the authentic Engine v0.20 wheel/release/runner. Supporting PR2/PR3/PR4 work must not be reported as a substitute for M4.
 
-The full NotepadNext calibration remains blocked until the exact pinned repository bytes are locally parser-eligible. When that gate opens, SCAN must independently rediscover the preserved manual baseline rather than receiving those facts as hints.
+The source gate is open, but the full NotepadNext calibration has not run. Once the authentic v0.20 execution artifacts are restored, SCAN must independently rediscover the preserved manual baseline and seal its output before receiving those facts as comparison input.
 
 After machine calibration, every promoted NotepadNext Reconstruction Anchor must become a canonical `RECONSTRUCTION_ANCHOR` object whose `why` traversal reaches supporting source evidence. The inverse `impact` query must reveal which semantic claims and anchors depend on evidence so later contradictions or corrected extraction can propagate visibly.
 
@@ -1560,6 +1561,28 @@ This advances M5 and part of PR7's infrastructure. It does **not** count as the 
 
 ---
 
+## Project Acquisition Checkpoint: PR5 exact bytes / Project v0.28
+
+**This section is acquisition evidence, not SCAN output and not oracle comparison.**
+
+On `2026-09-13T18:21:51.2836955Z`, the PR5 NotepadNext repository was cloned without checkout, detached at the required commit, verified, and archived without consulting the preserved oracle:
+
+- repository: `https://github.com/dail8859/NotepadNext.git`;
+- commit: `f57db52d6760a2ce4149a37190c3adaa586845f5` — MATCH;
+- Git tree: `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b` — MATCH;
+- tracked files: `1,928`;
+- working tree: clean;
+- object integrity: `git fsck --full` PASS;
+- submodules: none;
+- source archive: `NotepadNext-f57db52d6760a2ce4149a37190c3adaa586845f5.zip`;
+- archive bytes: `7,353,730`;
+- archive entries: `2,106`;
+- archive SHA-256: `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+
+The former external byte-transport condition is closed. PR5 itself remains NOT PASSED: the authentic v0.20 wheel, release package, and cold runner referenced by the prior release handoff are absent from the current workspace, so no replacement engine was invented and no scan claim was made. The next admissible action is exact artifact recovery and hash verification, followed by the cold LLM-disabled run and sealing before oracle comparison.
+
+---
+
 ## Project Tooling Checkpoint: Engine v0.20 / Project v0.27
 
 **This section is SCAN tooling evidence, not NotepadNext specimen evidence.**
@@ -1587,4 +1610,4 @@ Measured v0.20 release evidence:
 - deterministic public challenge ZIP generation is regression-tested;
 - deliberate evaluator/trial tampering and challenge/source-isolation violations are detected by regression tests.
 
-This advances PR7 to **PARTIAL / M5 + M6A mechanism pass**. The controlled challenge-only generator is an infrastructure probe, not a capable external coding agent, and no reconstructed application was executed. Full PR7 still requires complete calibrated real-specimen evidence, a genuinely source-blind external coding agent, and behavior-level M6B fidelity evaluation. PR5 NotepadNext therefore remains BLOCKED / NOT PASSED, and H-001 remains frozen and uninspected.
+This advances PR7 to **PARTIAL / M5 + M6A mechanism pass**. The controlled challenge-only generator is an infrastructure probe, not a capable external coding agent, and no reconstructed application was executed. Full PR7 still requires complete calibrated real-specimen evidence, a genuinely source-blind external coding agent, and behavior-level M6B fidelity evaluation. As of project v0.28, PR5 source acquisition passes but the cold scan remains NOT PASSED pending the authentic v0.20 execution bundle; H-001 remains frozen and uninspected.
