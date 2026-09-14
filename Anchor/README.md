@@ -11,9 +11,9 @@ The Markdown files in this directory are synchronized repository copies. Updates
 ## Current checkpoint
 
 - SCAN Engine: v0.20
-- Project documentation: v0.28
-- Status: production-hardened pre-v1
-- PR5 NotepadNext calibration: acquisition pass; cold scan not passed pending authentic v0.20 execution artifacts
+- Project documentation: v0.29
+- Status: production-hardened pre-v1; calibration loop active
+- PR5 NotepadNext calibration: cold scan PASS; calibration PARTIAL
 - PR7 reconstruction proof: partial; M5 and M6A mechanisms pass, external-agent M6B remains open
 - H-001 blind holdout: frozen and source-uninspected
 
@@ -25,6 +25,8 @@ The Markdown files in this directory are synchronized repository copies. Updates
 - [`SCAN_CREATION_PLAN.md`](SCAN_CREATION_PLAN.md) — engineering roadmap and PR1-PR8 certification ledger.
 - [`evidence/pr5/PR5_ACQUISITION_RECEIPT.md`](evidence/pr5/PR5_ACQUISITION_RECEIPT.md) — exact pinned-source acquisition and archive digest evidence.
 - [`evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json`](evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json) — authoritative v0.20 release hashes and cold-run admission policy.
+- [`evidence/pr5/PR5_COLD_SCAN_RECEIPT.json`](evidence/pr5/PR5_COLD_SCAN_RECEIPT.json) — sealed cold-run identity, coverage, and bundle digests.
+- [`evidence/pr5/PR5_CALIBRATION_REPORT.md`](evidence/pr5/PR5_CALIBRATION_REPORT.md) — post-seal machine-versus-oracle comparison and generic corrective backlog.
 
 ## Synchronization rules
 
