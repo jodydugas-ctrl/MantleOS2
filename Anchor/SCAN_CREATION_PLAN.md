@@ -1,14 +1,14 @@
 # SCAN CREATION PLAN
-Version: 0.28
+Version: 0.29
 Status: ACTIVE LIVING ROADMAP
 Canonical project: Google Drive `AI Systems/ANCHORCODING`
 Companion files: `ANCHOR_CODING_PROMPT.md`, `SCAN_PROTOCOL.md`, `SCAN_REPORT.md`
 
-## v0.28 PR5 acquisition checkpoint
+## v0.29 PR5 cold-calibration checkpoint
 
-The exact pinned NotepadNext repository is now acquired and verified at commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. A clean `git archive` ZIP is sealed at SHA-256 `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`; the checkout is clean, object verification passes, and no submodules are present.
+The exact pinned NotepadNext repository is acquired and verified at commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The accepted acquisition package preserves all 1,928 provider blobs byte-for-byte and is sealed at SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
 
-This closes the prior specimen-byte transport blocker. M4/PR5 is still NOT PASSED because the authentic Engine v0.20 wheel/release/cold-runner artifacts must be recovered and hash-verified before the cold LLM-disabled scan. After that scan is sealed and independently verified, the preserved oracle may be used for discrepancy classification and only generic scanner improvements.
+The authentic Engine v0.20 wheel/release/cold-runner lineage was recovered and verified. A cold LLM-disabled scan completed over 1,928/1,928 files, its 213,474,077-byte certification package independently verified 12/12 files, and the package is sealed at SHA-256 `6c0d476e2dd7a63481cf388e6d654798ffa26f8c72ce9760a8bd60667b075ce3`. Oracle comparison advances M4/PR5 to **COLD SCAN PASS / CALIBRATION PARTIAL**. The next loop admits only generic scanner improvements followed by a new sealed rerun.
 
 ## Purpose
 
@@ -208,9 +208,9 @@ Measured v0.18 release evidence:
 
 This closes a major inter-agent trust/handoff mechanism. It does not replace PR5 calibration, the PR6 blind holdout, PR7 reconstruction proof, or the remaining real large-repository / cross-platform release matrix.
 
-### M4 — Full pinned NotepadNext calibration — EXACT BYTES ACQUIRED / WAITING ON AUTHENTIC v0.20 RUNNER PACKAGE
+### M4 — Full pinned NotepadNext calibration — COLD SCAN PASS / CALIBRATION PARTIAL
 
-Run Stage 1 across the now-verified whole body only after the authentic v0.20 wheel/release/runner lineage is recovered. Seal and verify the cold result before comparing machine discoveries against the preserved manual baseline; do not feed those answers into extraction.
+The authentic v0.20 wheel/release/runner lineage was recovered, Stage 1 ran across the verified whole body, and the cold package was sealed and verified before comparison with the preserved manual baseline. The exact QAction denominator/routes and key anomalies generalized; compiler context, persistence, lifecycle, dynamic-route closure, NEST classification, Windows identity semantics, receipt population, and large-project performance remain generic calibration work.
 
 Calibration questions include independent recovery of the known QAction denominator, helper-mediated editor dispatch, dynamic controls, platform/NEST boundaries, recurrence, lifecycle paths, and known anomalies. Machine-only discoveries are equally important and remain in the body map.
 
@@ -339,17 +339,16 @@ Use D0-D5 depth selectively. If static evidence cannot resolve purpose and the u
 
 ## Current route to the v1 quality gate
 
-As of engine v0.20, the strongest implemented areas are the deterministic/evidence substrate, graph integrity, acquisition semantics, denominator-driven human-surface discovery, deep call/effect closure, compiler/type/framework-aware evidence, and the first NEST/persistence/extension/error-capability layer. The largest remaining engineering risk is no longer the absence of a mechanism family; it is **PR2/PR3/PR4 depth and closure on complete real C++/Qt applications**, followed by full NotepadNext calibration, transferability, and the blind reconstruction proof.
+As of engine v0.20 / project v0.29, the strongest implemented areas are the deterministic/evidence substrate, graph integrity, acquisition semantics, denominator-driven human-surface discovery, deep call/effect closure, and sealed certification. The full NotepadNext cold run confirms those strengths and makes the largest remaining engineering risk concrete: **PR2/PR3/PR4 compiler, persistence, lifecycle, dynamic-route, and capability closure on a complete real C++/Qt application**, followed by convergence, reconstruction proof, and holdout certification.
 
 The recommended order from here is:
 
-1. recover and verify the authentic v0.20 wheel/release/runner, then execute M4 full pinned NotepadNext calibration against the acquired exact bytes;
-2. while M4 is externally blocked, continue only evidence-driven PR2/PR3/PR4 depth and qView regression work; do not substitute it for M4;
-3. use the established M5 promotion gate on complete calibrated specimen evidence and promote only source-traceable reconstruction contracts;
-4. use the established M6A split/scoring infrastructure with a capable external source-blind coding agent, then add separately authorized M6B behavior evaluation and close scanner/semantic-IR/anchor-caused mismatches;
-5. complete PR1/PR8 security, malformed-input, resource-limit, install, schema/rebuild, load/resume, mechanical-independence, and operator-documentation gates;
-6. freeze the v1 candidate, then run PR6 H-001 (`sqlitebrowser/sqlitebrowser`) cold with no manual source-answer seeding;
-7. execute the final packaged-byte certification sweep across release fixtures/specimens.
+1. implement the highest-value generic v0.21 corrections exposed by PR5, then repeat the sealed cold calibration until the agreed convergence threshold is met;
+2. use the established M5 promotion gate on calibrated specimen evidence and promote only source-traceable reconstruction contracts;
+3. use the M6A split/scoring infrastructure with a capable external source-blind coding agent, then add separately authorized M6B behavior evaluation and close scanner/semantic-IR/anchor-caused mismatches;
+4. complete PR1/PR8 security, malformed-input, resource-limit, install, schema/rebuild, load/resume, cross-platform, performance, mechanical-independence, and operator-documentation gates;
+5. freeze the v1 candidate, then run PR6 H-001 (`sqlitebrowser/sqlitebrowser`) cold with no manual source-answer seeding;
+6. execute the final packaged-byte certification sweep across release fixtures/specimens.
 
 The project remains deliberately below the v1 claim until all PR1-PR8 gates pass.
 
@@ -419,7 +418,7 @@ Current status: **PARTIAL**. TR-001 and TR-002B prove transferability-driven ref
 
 Only after PR1-PR8 pass should SCAN v1 be called "production-ready" in the project's quoted sense. Later language/framework adapters can expand scope without weakening the v1 C++/Qt quality claim.
 
-## Current production-grade assessment at v0.20 / project v0.28
+## Current production-grade assessment at v0.20 / project v0.29
 
 The architecture is mature enough that the remaining work is mostly **certification, depth closure, and release hardening**, not invention of the basic SCAN model. However, the highest-consequence proof gates are still open, so the project must not yet be called production-grade.
 
@@ -429,12 +428,12 @@ Current gate assessment:
 - **PR2 C++/Qt structural depth: STRONG PARTIAL.** Compiler-assisted extraction, fallback structure, overload/type/receiver resolution, semantic QAction identity, payload dispatch, generated-code contracts, and deep effect closure exist. Remaining: stronger whole-program CFG/data flow, macro/generated-code closure, more template/virtual dispatch cases, and more exact value propagation.
 - **PR3 Human surface/framework closure: PARTIAL TO STRONG PARTIAL.** Designer/programmatic widgets, actions, shortcuts, events, dialogs, dynamic families, CLI, drag/drop and several framework routes are represented. Remaining: accessibility-relevant surfaces where exposed, broader native/framework behavior, exact alternate-route equivalence, and stronger Scintilla/Lexilla user-behavior closure.
 - **PR4 NEST/persistence/extensions: STRONG PARTIAL.** Typed boundaries, persistence, guards, error/cancel/retry, platform conditions, extension receptors and capability states exist. Remaining: more exact cross-platform configured-build semantics and end-to-end provider/effect closure on full real applications.
-- **PR5 Full pinned NotepadNext calibration: ACQUISITION PASS / COLD SCAN NOT PASSED.** Exact commit/tree bytes are locally materialized and hash-sealed. The authentic Engine v0.20 wheel/release/runner package is the remaining execution dependency; no substitute implementation is accepted for the cold lineage.
+- **PR5 Full pinned NotepadNext calibration: COLD SCAN PASS / CALIBRATION PARTIAL.** Exact commit/tree bytes were verified, the authenticated v0.20 engine completed a source-blind LLM-disabled full scan, and the sealed result independently verifies. Exact action-denominator/route/anomaly checks pass; generic compiler, persistence, lifecycle, dynamic-route, capability, performance, Windows-platform, and receipt gaps remain before convergence.
 - **PR6 Transferability: PARTIAL, HOLDOUT FROZEN.** Multiple unrelated specimens have improved the scanner. qView remains a development oracle. H-001 (DB Browser for SQLite) is now frozen before source analysis and reserved for the final blind candidate scan.
 - **PR7 Reconstruction proof: PARTIAL / M5 + M6A MECHANISM PASS.** Evidence-gated behavior/anchor promotion, fidelity-test contracts, contradiction/coverage discipline, immutable certification lineage, deterministic public/private blind-trial splitting, source-free scoring requirements, candidate rescanning, mismatch attribution, sealed trial verification, and installed-wheel challenge-only controlled reconstruction scoring are working. Remaining: apply the pipeline to complete calibrated real-specimen evidence, use a capable external coding agent under genuine source isolation, and complete behavior-level M6B fidelity evaluation.
 - **PR8 Release engineering: VERY STRONG PARTIAL.** Deterministic package/projection byte audits, clean-package tests, wheel build/install validation on Python 3.13.5, aggregate budgets/cancellation, resume regression, LLM-disabled mechanical qualification, the 12-query acceptance surface, sealed specimen/reconstruction/trial certification and verification, deterministic challenge bundles, immutable read-only inspection, and a 321-file cold/warm load checkpoint are working. Remaining: real large-repository performance/load evidence, broader supported Python/platform matrix, final operator/schema documentation sweep, and final candidate certification after PR5/PR7 and the frozen PR6 holdout.
 
-A useful way to state readiness is: **the scanner architecture is advanced, but certification is not yet advanced enough for the v1 production-grade label.** PR5 and the external-agent/M6B portions of PR7 are the two largest proof gates; real-world PR1/PR8 qualification depth and the frozen PR6 holdout are the other release blockers.
+A useful way to state readiness is: **the scanner architecture and cold-certification mechanics are advanced, but calibration has not converged enough for the v1 production-grade label.** PR5 generic convergence and the external-agent/M6B portions of PR7 are the two largest proof gates; real-world PR1/PR8 qualification depth and the frozen PR6 holdout are the other release blockers.
 
 ## Product acceptance principle
 

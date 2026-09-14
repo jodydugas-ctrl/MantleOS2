@@ -1,5 +1,5 @@
 # SCAN PROTOCOL
-Version: 0.28
+Version: 0.29
 Mode: Progressive / Read-Only by default
 Primary test specimen: NotepadNext
 Companion governance file: ANCHOR_CODING_PROMPT.md
@@ -22,19 +22,19 @@ SCAN is not intended to birth an AppAI or migrate an agent into a host. Prior Ap
 
 Before beginning, read and obey every active anchor in `ANCHOR_CODING_PROMPT.md`.
 
-## v0.28 PR5 acquisition-to-cold-scan boundary
+## v0.29 PR5 cold-scan and calibration boundary
 
-The pinned NotepadNext specimen has been acquired and sealed independently of the manual oracle. Required identity is commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`; the current source archive SHA-256 is `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+The pinned NotepadNext specimen was acquired and sealed independently of the manual oracle. Required identity is commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. All 1,928 provider blobs were verified and preserved in the accepted exact acquisition package, SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
 
-Before any calibration comparison, the operator must:
+The operator completed the required cold sequence:
 
 1. recover and hash-verify the authentic Engine v0.20 wheel, engine package, and `RUN_PR5_NOTEPADNEXT_COLD_v020.ps1` lineage;
 2. run the cold, LLM-disabled mechanical certification against the complete pinned checkout;
 3. seal the scan outputs, logs, receipts, package manifest, engine/wheel identities, commit, tree, and source-archive digest;
 4. independently verify the sealed package;
-5. only then expose the preserved manual NotepadNext oracle for discrepancy classification.
+5. only then exposed the preserved manual NotepadNext oracle for discrepancy classification.
 
-The acquisition receipt is not a scan receipt. Until steps 1-4 complete, PR5 remains NOT PASSED. Generic scanner corrections may follow post-seal comparison; NotepadNext-specific recognizers remain prohibited.
+The authenticated v0.20 run completed with LLM access disabled, 1,928/1,928 materialized files, zero unavailable content files, zero parser failures, and a mechanically valid certification package at SHA-256 `6c0d476e2dd7a63481cf388e6d654798ffa26f8c72ce9760a8bd60667b075ce3`. Independent verification passed 12/12 files with zero issues. Post-seal comparison therefore advances PR5 to **COLD SCAN PASS / CALIBRATION PARTIAL**. Generic scanner corrections may follow; NotepadNext-specific recognizers remain prohibited.
 
 ## v0.20 Stage 1 architecture contract
 
@@ -1156,7 +1156,7 @@ This roadmap governs development of SCAN itself. It is intentionally ordered so 
 
 Maintain A1-A8, pinned specimen identity, evidence classes, read-only default operation, progressive depth, and explicit experimental authorization.
 
-## M1 — Acquisition and Stage 1 mechanical substrate — IMPLEMENTED BASELINE / PR5 SOURCE ACQUISITION PASS
+## M1 — Acquisition and Stage 1 mechanical substrate — IMPLEMENTED BASELINE / PR5 EXACT ACQUISITION PASS
 
 Reusable local/manifest/GitHub acquisition, hashing, stable file IDs, extraction cache, SQLite index, Qt/C++/CMake adapters, coverage gaps, and graph basics exist. Continue expanding language/framework adapters instead of replacing misses with manual LLM inspection.
 
@@ -1181,9 +1181,9 @@ R1 integrity refinement now provides the measurement framework for this mileston
 
 Use denominator-driven closure rather than raw node counts. Every recurring miss becomes reusable scanner machinery.
 
-## M4 — NotepadNext calibration convergence — EXACT BYTES ACQUIRED / WAITING ON AUTHENTIC v0.20 EXECUTION BUNDLE
+## M4 — NotepadNext calibration convergence — COLD SCAN PASS / CALIBRATION PARTIAL
 
-Run the full pinned body mechanically and compare against the preserved manual calibration set. Require independent rediscovery of known action counts, helper-mediated dispatch, dynamic surfaces, anomalies, timers, lifecycle routes, and NEST boundaries. New machine findings are retained even when the manual baseline missed them.
+The authenticated v0.20 engine scanned the full pinned body mechanically before the preserved manual calibration set was opened. It independently recovered the 139 MainWindow QAction denominator, 137 routed actions, the two known anomalies, and the 60-second auto-save recurrence. It also preserved explicit gaps: 394 parser gaps, unavailable compiler AST context, incomplete dynamic/lifecycle/persistence closure, and noisy/partial NEST capability classification. M4 remains active until generic improvements converge on a fresh sealed rerun. New machine findings are retained even when the manual baseline missed them.
 
 ## M5 — Evidence-backed semantic synthesis and reconstruction anchors
 

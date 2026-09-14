@@ -1,10 +1,22 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.28
-SCAN Protocol: 0.28
-Status: BASELINE / PARTIAL
+Working Report Version: 0.29
+SCAN Protocol: 0.29
+Status: COLD SCAN PASS / CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Project-state note (not scan-result evidence):** project v0.28 retains the Stage 1 Scanner Architecture contract and frozen H-001 holdout, and records SCAN Engine v0.20 as the current packaged checkpoint. The exact PR5 NotepadNext commit/tree has now been acquired, verified, and archived, crossing the former byte-transport blocker. No Engine v0.20 cold scan has yet been executed in this workspace because the authentic v0.20 wheel/runner/release package is not locally available. This report remains BASELINE / PARTIAL.
+**Current project-state note:** project v0.29 retains the Stage 1 Scanner Architecture contract and frozen H-001 holdout. The authentic Engine v0.20 lineage completed a cold LLM-disabled scan over the exact pinned NotepadNext body before the manual oracle was opened. The sealed certification is mechanically valid; post-seal comparison is PARTIAL rather than converged. Historical blocked-attempt sections below remain as chronology and are superseded by the v0.29 result where their status language conflicts.
+
+## 0. Authoritative PR5 cold result
+
+- Exact identity: commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`.
+- Acquisition: 1,928/1,928 provider blobs, 20,875,384 verified bytes, zero unavailable files; exact acquisition SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
+- Cold execution: authenticated SCAN Engine 0.20.0, LLM disabled, oracle unused, no budget stop, zero parser failures.
+- Sealed certification: 213,474,077 bytes; SHA-256 `6c0d476e2dd7a63481cf388e6d654798ffa26f8c72ce9760a8bd60667b075ce3`; independent verification 12/12 PASS with zero issues.
+- Mechanical body: 101,138 nodes, 109,282 edges, 109,072 evidence records, 326,026 semantic objects, 808,588 semantic relations.
+- Oracle comparison: exact 139 MainWindow QActions and 137 routed actions; both known unrouted/disabled anomalies match; 60-second auto-save recurrence maps.
+- Honest gaps: 394 parser gaps, no compiler AST coverage for 394 translation units, lifecycle UNKNOWN, persistence 1 provider/0 operations, 82 unresolved and 59 partial human routes, noisy/partial NEST classification, long runtime, Windows manifest identity incompatibility, and missing commit population in the native receipt.
+
+Gate decision: **mechanical certification PASS; PR5 calibration PARTIAL**. Only generic corrections followed by fresh sealed reruns may advance this gate. See `evidence/pr5/PR5_CALIBRATION_REPORT.md` and `evidence/pr5/PR5_COLD_SCAN_RECEIPT.json`.
 
 ## 1. Specimen Identity
 
@@ -24,9 +36,9 @@ Commit message: `Update translation files`
 
 Default branch observed: `master`
 
-SCAN boundary for this report: repository-visible static evidence only. No NotepadNext code was executed or modified during preparation of this baseline.
+SCAN boundary for the authoritative v0.29 result: read-only static scanning of verified repository bytes. No NotepadNext code was executed or modified.
 
-Current progressive depth: approximately D2 for selected lifecycle/human-surface regions, D0-D1 for much of the remaining repository, and only preliminary candidate identification for the NEST boundary. No D5 experimental mode has been authorized or performed.
+Current progressive depth is mechanically expressed by the sealed completeness vector. Human surfaces and several Qt routes are mapped or partial; compiler-assisted structure is blocked, lifecycle is unknown, and persistence/NEST closure remains partial. No D5 experimental mode has been authorized or performed.
 
 Evidence status:
 
@@ -35,11 +47,12 @@ Evidence status:
 - Source observations below: DIRECT
 - Structural conclusions: INFERRED where explicitly labeled
 - Reusable scanner engine: IMPLEMENTED v0.18 / MECHANICALLY TESTED
-- Exact whole-repository NotepadNext acquisition: PASS; clean pinned tree and sealed source archive
-- Full deterministic whole-repository NotepadNext scanner run: NOT YET RUN; WAITING ON AUTHENTIC ENGINE v0.20 PACKAGE/RUNNER
+- Exact whole-repository NotepadNext acquisition: PASS; 1,928/1,928 provider blobs verified
+- Full deterministic whole-repository NotepadNext scanner run: PASS for cold mechanical certification
+- Manual-vs-machine calibration: PARTIAL; generic convergence work remains
 - Full-body coverage claim: NOT MADE
 
-This is therefore a real working scan record, but not yet a completed full-body scan.
+This is therefore a sealed full-body mechanical scan record, but not a claim of complete semantic or behavioral reconstruction.
 
 ---
 
@@ -78,9 +91,9 @@ Evidence already examined includes:
 
 Important limitation:
 
-A reusable deterministic Stage 1 scanner now exists, but the complete pinned NotepadNext repository has not yet been materialized as a local scanner-owned specimen and passed through that engine. Therefore full file counts, symbol counts, graph metrics, loop counts, complete GUI coverage, complete artery coverage, and hidden-function coverage remain UNKNOWN.
+The complete pinned repository has now passed through the engine, but the cold completeness vector retains explicit PARTIAL, BLOCKED, and UNKNOWN dimensions. Mechanical enumeration is not semantic convergence; compiler/type dispatch, lifecycle, persistence, dynamic families, effect/capability classification, and some human routes remain incomplete.
 
-This limitation is intentional. Missing measurement is not being replaced with an estimate.
+This limitation is intentional. Missing understanding is not being replaced with an estimate.
 
 ### 2.1 Scanner Engine Implementation Checkpoint
 
@@ -1492,7 +1505,7 @@ These candidates demonstrate the intended downstream use of SCAN. They must rema
 
 ---
 
-## 14. Anchor Gate: Working Baseline
+## 14. Historical Anchor Gate: Working Baseline (superseded by v0.29)
 
 ### A1 Preserve the specimen
 PASS for work performed so far.
@@ -1561,7 +1574,7 @@ This advances M5 and part of PR7's infrastructure. It does **not** count as the 
 
 ---
 
-## Project Acquisition Checkpoint: PR5 exact bytes / Project v0.28
+## Historical Project Acquisition Checkpoint: PR5 exact bytes / Project v0.28
 
 **This section is acquisition evidence, not SCAN output and not oracle comparison.**
 
@@ -1574,12 +1587,11 @@ On `2026-09-13T18:21:51.2836955Z`, the PR5 NotepadNext repository was cloned wit
 - working tree: clean;
 - object integrity: `git fsck --full` PASS;
 - submodules: none;
-- source archive: `NotepadNext-f57db52d6760a2ce4149a37190c3adaa586845f5.zip`;
-- archive bytes: `7,353,730`;
-- archive entries: `2,106`;
-- archive SHA-256: `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+- historical Windows checkout/archive: `NotepadNext-f57db52d6760a2ce4149a37190c3adaa586845f5.zip`, SHA-256 `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`;
+- later calibration discovered that checkout filters transformed line endings in that historical archive, so it was rejected for the accepted cold lineage;
+- accepted exact provider-blob acquisition: `NotepadNext_exact_acquisition.zip`, SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
 
-The former external byte-transport condition is closed. PR5 itself remains NOT PASSED: the authentic v0.20 wheel, release package, and cold runner referenced by the prior release handoff are absent from the current workspace, so no replacement engine was invented and no scan claim was made. The next admissible action is exact artifact recovery and hash verification, followed by the cold LLM-disabled run and sealing before oracle comparison.
+This section records the earlier acquisition-only checkpoint. Its execution status is superseded by the authoritative v0.29 cold result at the top of this report.
 
 The original Engine v0.20 / Project v0.27 release message supplies authoritative recovery checksums:
 
@@ -1620,4 +1632,42 @@ Measured v0.20 release evidence:
 - deterministic public challenge ZIP generation is regression-tested;
 - deliberate evaluator/trial tampering and challenge/source-isolation violations are detected by regression tests.
 
-This advances PR7 to **PARTIAL / M5 + M6A mechanism pass**. The controlled challenge-only generator is an infrastructure probe, not a capable external coding agent, and no reconstructed application was executed. Full PR7 still requires complete calibrated real-specimen evidence, a genuinely source-blind external coding agent, and behavior-level M6B fidelity evaluation. As of project v0.28, PR5 source acquisition passes but the cold scan remains NOT PASSED pending the authentic v0.20 execution bundle; H-001 remains frozen and uninspected.
+This advances PR7 to **PARTIAL / M5 + M6A mechanism pass**. The controlled challenge-only generator is an infrastructure probe, not a capable external coding agent, and no reconstructed application was executed. Full PR7 still requires converged calibrated real-specimen evidence, a genuinely source-blind external coding agent, and behavior-level M6B fidelity evaluation. As of project v0.29, PR5 cold mechanical certification passes but calibration remains PARTIAL; H-001 remains frozen and uninspected.
+
+---
+
+## 15. Anchor Gate: Project v0.29 / PR5 cold result
+
+### A1 Preserve the specimen
+
+PASS for the cold operation. The exact provider blobs were verified, SCAN remained read-only, and no NotepadNext code was executed or modified.
+
+### A2 Scanning engine discovers; AI interprets
+
+PASS for the cold boundary / PARTIAL for convergence. Engine v0.20 completed mechanically with LLM access disabled. Oracle comparison occurred only after sealing. Generic extraction and closure gaps remain.
+
+### A3 Account for the whole visible body
+
+PARTIAL. All 1,928 provider blobs are accounted for and materialized, but the completeness vector retains 33 PARTIAL, 4 UNKNOWN, and 1 BLOCKED dimensions, including 394 parser gaps.
+
+### A4 Implementation evidence outranks description
+
+PASS for certification integrity / PARTIAL for semantics. The sealed package independently verifies 12/12 files, while unsupported compiler, persistence, lifecycle, dynamic-route, and capability claims remain explicitly weak or unknown.
+
+### A5 Biology is analytical
+
+PASS. Anatomical language continues to organize mechanically traceable evidence without inventing unsupported organs or abilities.
+
+### A6 Map circulation and nerves
+
+PARTIAL. The engine emits a large evidence/call/effect graph and maps recurrence, but compiler/type dispatch, lifecycle, persistence, and several effect routes remain incomplete.
+
+### A7 Map the complete human interaction surface
+
+PARTIAL with a strong Qt-action checkpoint. The machine independently matches 139 MainWindow QActions and 137 routed actions, including both known anomalies. Across the wider human-surface denominator, 347 are bound, 59 partial, and 82 unresolved.
+
+### A8 Map the NEST and effective capability boundary
+
+PARTIAL. The cold run finds 4,232 candidate boundaries and 112 effects, but capability provenance is PARTIAL, typed effects are absent, and build/workflow/vendor URL noise remains.
+
+Overall status: **PR5 COLD SCAN PASS / CALIBRATION PARTIAL. SCAN v1 NOT YET COMPLETE.**

@@ -1,15 +1,15 @@
 # ANCHOR CODING PROMPT
-Version: 0.28
+Version: 0.29
 Project: SCAN
 Purpose: Governing primer for any coding agent working on this project
-Anchor set status: A1-A8 remain the active set in v0.28. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording verified acquisition of the exact PR5 NotepadNext source tree. Acquisition is evidence of specimen identity and bytes, not evidence that Engine v0.20 scanned or certified them.
+Anchor set status: A1-A8 remain the active set in v0.29. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording the sealed PR5 NotepadNext cold certification and honest PARTIAL calibration result.
 
 
-## v0.28 PR5 pinned-specimen acquisition checkpoint
+## v0.29 PR5 cold-certification checkpoint
 
-The exact NotepadNext PR5 specimen is now locally materialized at commit `f57db52d6760a2ce4149a37190c3adaa586845f5` with Git tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The checkout is clean, `git fsck --full` passes, no submodules are present, and a `git archive` ZIP is sealed at SHA-256 `d808933bb774f7258750100ea5902ba0b06d1dc30ca8075b7d5c829f4290988e`.
+The exact NotepadNext PR5 specimen is materialized at commit `f57db52d6760a2ce4149a37190c3adaa586845f5` with Git tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The accepted acquisition package contains all 1,928 provider blobs exported byte-for-byte from the verified Git object database and is sealed at SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`. The earlier Windows checkout/archive digest is retained only as rejected historical evidence because checkout filters transformed line endings.
 
-This crosses the byte-transport boundary under A1-A4 but does not cross the cold-scan boundary. No oracle conclusion may be injected into SCAN before the Engine v0.20 evidence package is produced and sealed. The authentic v0.20 wheel/runner/release bundle must be recovered and verified before execution; substituting a reimplementation would invalidate the intended calibration lineage. H-001 remains frozen and source-uninspected.
+The authenticated Engine v0.20 release ran cold with LLM access disabled and without oracle input. Its 213,474,077-byte certification bundle independently verifies 12/12 files with zero issues and is sealed at SHA-256 `6c0d476e2dd7a63481cf388e6d654798ffa26f8c72ce9760a8bd60667b075ce3`. Mechanical certification is PASS; calibration is PARTIAL because compiler context, persistence, lifecycle, dynamic-route closure, capability classification, performance, and platform robustness remain incomplete. Only generic engine corrections are admissible. H-001 remains frozen and source-uninspected.
 
 
 ## v0.27 M6A blind-reconstruction proof checkpoint
