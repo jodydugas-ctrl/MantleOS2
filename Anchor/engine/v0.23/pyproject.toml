@@ -10,7 +10,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = []
 
 [project.scripts]
-scan-body = "scan.cli:main"
+scan-body = "scan.adaptive_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
