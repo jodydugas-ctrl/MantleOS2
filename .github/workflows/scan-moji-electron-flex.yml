@@ -146,21 +146,22 @@ jobs:
           }
           out["determinism"] = "PASS"
           Path("results/FLEXIBILITY_COMPARISON.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
-          print(json.dumps(out["delta"], indent=2))
+          print(json.dumps(out, indent=2))
           PY
 
-          scan-body query results/adapted-a/scan_index.sqlite surfaces-without-handlers --limit 200 > results/query_surfaces_without_handlers.json
+          scan-body query results/adapted-a/scan_index.sqlite surface-without-handler --limit 200 > results/query_surface_without_handler.json
           scan-body query results/adapted-a/scan_index.sqlite external-writes --limit 200 > results/query_external_writes.json
           scan-body query results/adapted-a/scan_index.sqlite nest-dependent-actions --limit 200 > results/query_nest_dependent_actions.json
           scan-body query results/adapted-a/scan_index.sqlite unknown-routes --limit 200 > results/query_unknown_routes.json
 
       - name: Add experiment receipt and patch snapshot
+        if: always()
         shell: bash
         run: |
           mkdir -p results/scanner-patch
           cp Anchor/engine/v0.23/scan/adapters/typescript_electron.py results/scanner-patch/
           cp Anchor/engine/v0.23/scan/adapters/ts_probe.cjs results/scanner-patch/
-          cp specimen_identity.json results/
+          cp specimen_identity.json results/ 2>/dev/null || true
           cat > results/EXPERIMENT_RECEIPT.md <<'EOF'
           # SCAN Moji Electron flexibility experiment
 
@@ -175,6 +176,7 @@ jobs:
           EOF
 
       - name: Upload full evidence package
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: moji-anchor-scan-flex-test
