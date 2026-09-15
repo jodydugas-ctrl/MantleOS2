@@ -6,7 +6,7 @@ import shutil
 
 import pytest
 
-from scan.adapters.typescript_electron_precise import TypeScriptElectronAdapter
+from scan.adapters.typescript_electron_final import TypeScriptElectronAdapter
 from scan.inventory import record_from_bytes
 from scan.model import Edge, Evidence, ExtractionResult, Node, stable_id
 
@@ -55,20 +55,48 @@ def test_repeated_call_sites_do_not_merge_channels(tmp_path: Path):
     }
 
 
+def test_same_label_physical_surfaces_keep_distinct_source_identity(tmp_path: Path):
+    adapter = TypeScriptElectronAdapter()
+    rec = record_from_bytes("sample.tsx", b"a\nb\n")
+    old = stable_id("human_surface", rec.id, "Save")
+    ev1 = Evidence("S1", rec.id, rec.path, 1, 1, "MEASURED", "test", "button one")
+    ev2 = Evidence("S2", rec.id, rec.path, 2, 2, "MEASURED", "test", "button two")
+    s1 = Node(old, "human_surface", "Save", rec.id, rec.path, "MAPPED", {"surface_type": "react_jsx:button", "tag": "button"}, ["S1"])
+    s2 = Node(old, "human_surface", "Save", rec.id, rec.path, "MAPPED", {"surface_type": "react_jsx:button", "tag": "button"}, ["S2"])
+    h1 = Node("H1", "handler_reference", "first", rec.id, rec.path, "PARTIAL", {}, ["S1"])
+    h2 = Node("H2", "handler_reference", "second", rec.id, rec.path, "PARTIAL", {}, ["S2"])
+    result = ExtractionResult(
+        nodes=[s1, s2, h1, h2],
+        edges=[
+            Edge("SE1", old, "H1", "dispatches_to", "MAPPED", {}, ["S1"]),
+            Edge("SE2", old, "H2", "dispatches_to", "MAPPED", {}, ["S2"]),
+        ],
+        evidence=[ev1, ev2],
+    )
+
+    out = adapter._preserve_surface_site_identity(rec, result)
+    surfaces = [n for n in out.nodes if n.kind == "human_surface"]
+    assert len(surfaces) == 2
+    assert len({n.id for n in surfaces}) == 2
+    assert {e.dst for e in out.edges if e.src == surfaces[0].id} != {e.dst for e in out.edges if e.src == surfaces[1].id}
+
+
 @pytest.mark.skipif(
     not (shutil.which("node") and os.environ.get("SCAN_TYPESCRIPT_MODULE")),
     reason="scanner-owned TypeScript parser is not installed in this environment",
 )
 def test_react_wrappers_keep_component_and_hook_assigned_identity(tmp_path: Path):
     source = r'''
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 
 const Child = memo(function Child(props: { onOpen: () => void }) {
   return <button onClick={props.onOpen}>Open</button>
 })
 
 export function App() {
+  const [open, setOpen] = useState(false)
   const openFile = useCallback(async () => {
+    setOpen(true)
     await window.api.openDialog()
   }, [])
   return <Child onOpen={openFile} />
@@ -94,3 +122,7 @@ export function App() {
     preload = [n for n in result.nodes if n.kind == "handler_reference" and n.name == "preload:api.openDialog"]
     assert preload
     assert any(e.dst == preload[0].id and e.kind == "routes_to" for e in result.edges)
+
+    state_changes = [n for n in result.nodes if n.kind == "state_change" and (n.attributes or {}).get("setter") == "setOpen"]
+    assert len(state_changes) == 1
+    assert state_changes[0].coverage == "MAPPED"
