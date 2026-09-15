@@ -8,7 +8,16 @@ from .qt_ui import QtUiAdapter
 from .qt_resource import QtResourceAdapter
 from .qmake import QMakeAdapter
 from .scintilla_lexilla import ScintillaLexillaAdapter
+from .typescript_electron import ElectronMetadataAdapter, TypeScriptElectronAdapter
 
-DEFAULT_ADAPTERS = [QtUiAdapter(), QtResourceAdapter(), CMakeAdapter(), QMakeAdapter(), ClangCppAdapter(), CppQtAdapter(), M3CCppAdapter(), ScintillaLexillaAdapter(), GenericTextAdapter()]
+DEFAULT_ADAPTERS = [
+    QtUiAdapter(), QtResourceAdapter(), CMakeAdapter(), QMakeAdapter(),
+    ClangCppAdapter(), CppQtAdapter(), M3CCppAdapter(), ScintillaLexillaAdapter(),
+    TypeScriptElectronAdapter(), ElectronMetadataAdapter(), GenericTextAdapter(),
+]
 
-__all__ = ["Adapter", "QtUiAdapter", "QtResourceAdapter", "CMakeAdapter", "QMakeAdapter", "ClangCppAdapter", "CppQtAdapter", "ScintillaLexillaAdapter", "M3CCppAdapter", "GenericTextAdapter", "DEFAULT_ADAPTERS"]
+__all__ = [
+    "Adapter", "QtUiAdapter", "QtResourceAdapter", "CMakeAdapter", "QMakeAdapter",
+    "ClangCppAdapter", "CppQtAdapter", "ScintillaLexillaAdapter", "M3CCppAdapter",
+    "TypeScriptElectronAdapter", "ElectronMetadataAdapter", "GenericTextAdapter", "DEFAULT_ADAPTERS",
+]
