@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import sys
 from typing import Sequence
 
 from .assimilation import prepare_assimilation_workbench
+from .assimilation_candidate import validate_assimilation_candidate
 from .cli import main as canonical_main
 
 
@@ -55,14 +57,37 @@ def _post_scan_assimilation(args: list[str]) -> dict | None:
     return status
 
 
-def main(argv=None):
-    """Run the canonical CLI, then prepare an inert assimilation workbench when scan gaps warrant it.
+def _validate_assimilation_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body validate-assimilation",
+        description="mechanically compare one explicit candidate scanner adapter against the trusted baseline",
+    )
+    parser.add_argument("specimen_root", type=Path)
+    parser.add_argument("candidate_adapter", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--specimen-id", default=None)
+    ns = parser.parse_args(args[1:])
+    report = validate_assimilation_candidate(
+        specimen_root=ns.specimen_root,
+        candidate_path=ns.candidate_adapter,
+        output=ns.out,
+        specimen_id=ns.specimen_id,
+    )
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    return 0 if report.get("mechanical_gate") == "PASS" else 2
 
-    Canonical scanning remains deterministic and LLM-free. This wrapper does not change the evidence graph,
-    does not execute generated candidate code, and delegates every non-scan command unchanged. Assimilation
-    files are secondary engineering artifacts created only after the canonical scan has completed.
+
+def main(argv=None):
+    """Run canonical SCAN plus the post-scan adaptive-assimilation engineering layer.
+
+    Canonical scanning remains deterministic and LLM-free. Ordinary scanning never executes generated
+    candidate code. `validate-assimilation` is an explicit engineering command that loads candidate scanner
+    code and mechanically compares it with the trusted baseline without promoting it.
     """
     args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] == "validate-assimilation":
+        return _validate_assimilation_command(args)
+
     result = canonical_main(args)
     status = _post_scan_assimilation(args)
     if status is not None:
