@@ -29,12 +29,12 @@ class _FakeBody:
 def test_unborn_or_absent_body_is_native_noop(monkeypatch, tmp_path):
     monkeypatch.setenv("MANTLE_NEST", str(tmp_path))
     result = nerves.before_mind(
-        user_message="ordinary Hermes turn",
+        user_message="ordinary host turn",
         session_id="s",
         turn_id="t",
         surface="cli",
     )
-    assert result == {"direct": False, "context": "", "message": "ordinary Hermes turn"}
+    assert result == {"direct": False, "context": "", "message": "ordinary host turn"}
 
 
 def test_explicit_route_is_not_inferred_from_agentic_body():

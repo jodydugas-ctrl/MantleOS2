@@ -24,6 +24,7 @@ remained `constructed-not-born`. This establishes behavioral equivalence for
 the focused mapped seams; it is not a claim that every optional Hermes feature
 or provider has been exercised.
 
-GitHub's `Hermes assimilation` workflow reproduces this comparison on every
-change to the repository. The test selection and minimal upstream-pinned test
+GitHub's `Hermes assimilation` workflow can reproduce this comparison by
+manual dispatch; it does not execute the example on normal PRs or releases.
+The test selection and minimal upstream-pinned test
 dependencies are versioned beside the Hermes seed.

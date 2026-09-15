@@ -32,8 +32,11 @@ jobs:
           commit = json.load(open("examples/hermes/upstream.lock.json", encoding="utf-8"))["commit"]
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write(f"commit={commit}\n")
-      - name: Construct disposable NEST
-        run: mantle assimilate github.com/nousresearch/hermes-agent --ref "${{ steps.lock.outputs.commit }}" --destination "$RUNNER_TEMP/hermes-agent"
+      - name: Construct disposable opt-in example NEST
+        run: |
+          git clone https://github.com/nousresearch/hermes-agent.git "$RUNNER_TEMP/hermes-agent"
+          git -C "$RUNNER_TEMP/hermes-agent" checkout "${{ steps.lock.outputs.commit }}"
+          mantle delta apply examples/hermes/seed --destination "$RUNNER_TEMP/hermes-agent"
       - name: Prepare Food without logging the credential
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}

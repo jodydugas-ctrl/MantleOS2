@@ -1,7 +1,6 @@
 """Small, host-independent MantleOS 2 Body runtime.
 
-The module deliberately does not import Hermes. Hermes is the native NEST and
-remains usable without this runtime or an AppAI MIND.
+The host NEST remains native and usable without this runtime or an AppAI MIND.
 """
 
 from __future__ import annotations
@@ -249,7 +248,7 @@ class BodyCipher:
         except ImportError as exc:
             raise MantleError(
                 "Birth requires the host's cryptography dependency. "
-                "Install Hermes in its supported Python environment before birth."
+                "Install cryptography in the supported host Python environment before birth."
             ) from exc
         return AESGCM
 
@@ -1359,7 +1358,7 @@ class MantleBody:
             "completed_at": utc_now(),
             "phases": ["sense", "record", "communicate", "mind", "verify", "checkpoint"],
             "nest": receipt["nest"],
-            "communication": {"route": "hermes", "turn_id": receipt["turn_id"]},
+            "communication": {"route": "host", "turn_id": receipt["turn_id"]},
             "mind": mind_status,
             "proof": proof,
         }
@@ -1383,7 +1382,7 @@ class MantleBody:
         return recovered
 
     def begin_host_heartbeat(self, session_id: str, turn_id: str) -> dict[str, Any]:
-        """Begin a Heartbeat that spans Hermes's pre/post LLM hook boundary."""
+        """Begin a Heartbeat that spans a host-owned pre/post communication boundary."""
         if not self.is_born:
             raise MantleError("Host-routed Heartbeat cannot begin before birth")
         path = self.paths.host_heartbeats / self._receipt_name(session_id, turn_id)

@@ -1,24 +1,23 @@
 # Hermes Reference Assimilation
 
-Hermes is the first MantleOS 2 reference Default Body. It remains an upstream
-dependency and is never vendored into this repository. Hermes is assimilated as
-a Body, not extended with a traditional plugin.
+Hermes is an optional pinned reference Default Body, not a MantleOS2 package
+dependency or automatic target. Its upstream source is never vendored into this
+repository. The historical direct-innervation demonstration is retained only
+as the checked-in example seed under `examples/hermes/`.
 
 ## Construction
 
-`mantle assimilate github.com/nousresearch/hermes-agent` performs these bounded
-steps:
+Ordinary `mantle assimilate github.com/nousresearch/hermes-agent` performs only
+generic, un-innervated construction:
 
 1. Normalize and clone the GitHub source without submodules.
 2. Record the resolved commit, tree, branch, license evidence, and read-only census.
 3. Build a substrate-neutral Body Map without executing Hermes.
-4. Locate known lifecycle Seams and insert narrow direct nerve calls into the
-   relevant Body source files.
-5. Record every insertion in a Nerve Map with its direction, semantic event,
-   failure mode, and before/after hashes.
-6. Add public Mantle tissue and private-state exclusions, then create an ignored
+4. Leave host-specific source seams and the Nerve Map unresolved; no Hermes
+   adapter is auto-selected and no upstream host file is innervated.
+5. Add public Mantle tissue and private-state exclusions, then create an ignored
    prebirth checkpoint.
-7. Stop without installing dependencies, executing Hermes, creating an identity,
+6. Stop without installing dependencies, executing Hermes, creating an identity,
    creating a live VCW, or starting a Heartbeat.
 
 The unique Personality is deliberately absent from the public delta. A
@@ -28,7 +27,7 @@ that candidate and later gives separate approval for the first full Heartbeat.
 
 ## Direct innervation
 
-The Hermes language map inserts eight direct Nerves: session start, committed
+The optional historical Hermes seed records eight direct Nerves: session start, committed
 user turn with Primer-first context, finalized MIND result, AppAI Limb proposal,
 terminal tool completion, completed-turn status, CLI session shutdown, and
 gateway session shutdown. The Limb proposal is an efferent Nerve at Hermes's
@@ -57,11 +56,12 @@ private Personality, Body key, provider credential, live VCW, or continuity stat
 
 ## Verification claims
 
-The construction gate proves that a clean pinned Hermes checkout receives only
+The optional example construction gate proves that a clean pinned Hermes checkout receives only
 the declared source nerves and Mantle tissue, and every changed host file matches
 the Nerve Map. After explicit local authorization, the same 85 focused upstream
 Hermes lifecycle and authority tests passed in both pristine and constructed
-checkouts. The repository now reproduces that comparison in GitHub Actions; see
+checkouts. The repository can reproduce that comparison by manually dispatching
+the Hermes reference workflow; ordinary PR and release jobs do not invoke it. See
 `examples/hermes/NATIVE_BEHAVIOR_CERTIFICATION.md` for scope and evidence. This
 does not claim a born identity, every optional Hermes feature, migration
 continuity, or production adoption.

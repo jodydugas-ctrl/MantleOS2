@@ -1,6 +1,6 @@
 # SCAN Anchor
 
-This directory is the GitHub home for the SCAN evidence-first software reverse-engineering project within MantleOS2.
+This directory is the GitHub home for the independent SCAN evidence-first software reverse-engineering project. It is stored within MantleOS2 for a possible future integration, but is not part of the MantleOS2 package, release, default tests, or product CodeQL analysis. Integration must be explicit; repository placement alone does not admit scanner code into MantleOS2.
 
 The living canonical documents are maintained in Google Drive at:
 

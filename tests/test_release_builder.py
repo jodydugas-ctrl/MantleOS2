@@ -1,41 +1,34 @@
 from __future__ import annotations
 
-import subprocess
-import zipfile
+import hashlib
+import json
 from pathlib import Path
 
 from scripts import build_release
 
 
-def test_release_bundle_excludes_compiled_and_private_tissue(tmp_path: Path, monkeypatch):
-    nest = tmp_path / "nest"
-    mantle = nest / "mantle"
-    cache = mantle / "__pycache__"
-    private = nest / ".mantle"
-    cache.mkdir(parents=True)
-    private.mkdir()
-    (mantle / "ASSIMILATION.json").write_text("{}", encoding="utf-8")
-    (mantle / "runtime.py").write_text("pass\n", encoding="utf-8")
-    (cache / "runtime.pyc").write_bytes(b"compiled")
-    (private / "identity.key").write_bytes(b"private")
+def test_release_evidence_contains_only_package_artifacts(tmp_path: Path, monkeypatch):
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    wheel = dist / "mantleos2-2.0.0a3-py3-none-any.whl"
+    source = dist / "mantleos2-2.0.0a3.tar.gz"
+    wheel.write_bytes(b"wheel fixture")
+    source.write_bytes(b"source fixture")
+    private = tmp_path / "private.key"
+    private.write_bytes(b"not for release")
+    report = tmp_path / "test-results.xml"
+    report.write_text("<testsuite/>\n", encoding="utf-8")
     output = tmp_path / "out"
-
     monkeypatch.setattr(
-        subprocess,
-        "run",
-        lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, stdout=b"patch"),
-    )
-    monkeypatch.setattr(
-        "sys.argv",
-        ["build_release.py", str(nest), str(output)],
+        "sys.argv", ["build_release.py", str(dist), str(output), "--test-report", str(report)]
     )
     assert build_release.main() == 0
-
-    with zipfile.ZipFile(output / "mantleos2-hermes-delta.zip") as archive:
-        names = set(archive.namelist())
-        patch = archive.read("host-edge.patch")
-    assert "mantle/runtime.py" in names
-    assert "APPLY.md" in names
-    assert patch == b"patch"
-    assert not any("__pycache__" in name or name.endswith(".pyc") for name in names)
-    assert not any(".mantle" in name or name.endswith(".key") for name in names)
+    assert (output / "test-results.xml").read_text(encoding="utf-8") == report.read_text(encoding="utf-8")
+    assert json.loads((output / "sbom.spdx.json").read_text(encoding="utf-8"))["packages"]
+    sums = (output / "SHA256SUMS").read_text(encoding="utf-8")
+    assert f"{hashlib.sha256(wheel.read_bytes()).hexdigest()}  {wheel.name}" in sums
+    assert f"{hashlib.sha256(source.read_bytes()).hexdigest()}  {source.name}" in sums
+    assert "private.key" not in sums
+    assert {path.name for path in output.iterdir()} == {
+        "test-results.xml", "sbom.spdx.json", "SHA256SUMS"
+    }

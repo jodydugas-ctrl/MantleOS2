@@ -40,13 +40,13 @@ def _host(tmp_path: Path) -> Path:
 @pytest.mark.parametrize(
     ("source", "expected"),
     [
-        ("github.com/nousresearch/hermes-agent", "https://github.com/nousresearch/hermes-agent"),
-        ("https://github.com/NousResearch/Hermes-Agent.git", "https://github.com/nousresearch/hermes-agent"),
-        ("git@github.com:nousresearch/hermes-agent.git", "https://github.com/nousresearch/hermes-agent"),
+        ("github.com/example/widget-app", "https://github.com/example/widget-app"),
+        ("https://github.com/Example/Widget-App.git", "https://github.com/example/widget-app"),
+        ("git@github.com:example/widget-app.git", "https://github.com/example/widget-app"),
     ],
 )
 def test_normalize_github_source(source: str, expected: str):
-    assert normalize_github_source(source) == (expected, "hermes-agent")
+    assert normalize_github_source(source) == (expected, "widget-app")
 
 
 def test_non_github_source_is_refused():
@@ -152,6 +152,31 @@ def test_constructs_unborn_delta_without_executing_host(tmp_path: Path):
         text=True,
     )
     assert isolated.returncode == 0, isolated.stderr
+
+
+def test_host_markers_do_not_trigger_builtin_innervation(tmp_path: Path):
+    root = _host(tmp_path)
+    agent = root / "agent"
+    agent.mkdir()
+    markers = {
+        root / "run_agent.py": "def run_agent(): pass\n",
+        agent / "conversation_loop.py": "def run_conversation(): pass\n",
+        agent / "turn_context.py": "def prepare_turn_context(): pass\n",
+        agent / "tool_executor.py": "def execute(): pass\n",
+    }
+    for path, source in markers.items():
+        path.write_text(source, encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "host markers")
+    before = {path: path.read_bytes() for path in markers}
+
+    manifest = construct_nest(root, source_url="https://github.com/example/host", command="test")
+
+    assert manifest["target"]["kind"] == "generic"
+    assert manifest["nerve_map"] == []
+    assert manifest["activation"]["direct_nerves"] is False
+    assert {path: path.read_bytes() for path in markers} == before
+    assert json.loads((root / "mantle" / "maps" / "NERVE_MAP.json").read_text(encoding="utf-8")) == []
 
 
 def test_existing_mantle_tissue_is_not_overwritten(tmp_path: Path):

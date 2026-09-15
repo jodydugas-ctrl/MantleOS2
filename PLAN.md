@@ -6,7 +6,9 @@ move away from the production objective.
 ## Objective
 
 MantleOS2 is a generic autonomic nervous system, not a plugin framework and
-not a Hermes-specific integration. A user points `mantle assimilate` at a
+not a Hermes-specific integration. The current generic `mantle assimilate` does
+not automatically innervate any host; host-specific nerves require separately
+admitted evidence. A user points `mantle assimilate` at a
 GitHub repository; Mantle creates the NEST, acquires and fingerprints the
 Default Body, maps its supported anatomy, proposes and inserts direct nerves,
 installs NEST-local organs, proves native behavior, prepares VCW and the
@@ -15,8 +17,9 @@ two-component Primer, and stops for explicit birth approval.
 Every repository can be safely acquired and inventoried. Automatic complete
 assimilation is claimed only for certified substrates. Unsupported or
 incompletely understood Bodies stop with exact parser, nerve, build, test, and
-verification gaps. Hermes and NotepadNext are the first two certification
-targets; neither is claimed fully production-certified yet.
+verification gaps. Hermes is retained only as an optional historical example;
+it is not a MantleOS2 release prerequisite. NotepadNext and independently
+selected Bodies remain certification targets; none is claimed fully production-certified yet.
 
 ## Governing decisions
 
@@ -205,6 +208,11 @@ is implied. Use existing Body/Heart ports rather than duplicating authority.
 
 ### Hermes / The Compiler
 
+Optional reference only: the pinned seed, adapter, scripts, and focused native
+comparison live under `examples/hermes/`. They do not run in default assimilation,
+product CI, or MantleOS2 release packaging. This section records an example
+research path, not a product gate.
+
 Start from a fresh current checkout. Use the generic mapper and retain only a
 data-only certified profile of expected seams, tests, and hashes. Reconcile the
 existing eight direct nerves against the completed artery map, then cover CLI,
@@ -258,12 +266,13 @@ secret scanning, manual protected OpenRouter calls, SBOM, and provenance.
 
 - `v2.0.0-alpha.3`: deep mapper, coverage tiers, self-contained organs, and
   hashed foreign-execution gate.
-- `v2.0.0-beta.1`: complete Hermes certification and reproducible seed.
+- `v2.0.0-beta.1`: complete generic-host certification and reproducible seed;
+  Hermes may be exercised separately as an optional example.
 - `v2.0.0-rc.1`: fresh NotepadNext C++/Qt certification and second seed.
 - `v2.0.0`: signed reproducible Windows/Linux distribution, recovery and
   threat-model documentation, and all native/security gates green.
 
-Stable acceptance requires clean-machine construction of both reference
+Stable acceptance requires clean-machine construction of independently selected
 Bodies, zero undispositioned major arteries, native parity, reproducible and
 reversible deltas, and birth-ready AppAIs. Real birth remains user-authorized.
 
