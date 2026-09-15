@@ -15,3 +15,6 @@ scan-body = "scan.adaptive_cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["scan*"]
+
+[tool.setuptools.package-data]
+"scan.adapters" = ["ts_probe.cjs"]
