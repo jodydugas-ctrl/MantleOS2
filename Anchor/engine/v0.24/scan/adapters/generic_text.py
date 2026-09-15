@@ -24,6 +24,15 @@ NON_RUNTIME_PARTS = {
     "icon", "icons", "assets",
 }
 REFERENCE_FILE_PREFIXES = ("license", "copying", "notice", "authors", "changelog", "readme")
+DEPENDENCY_METADATA_NAMES = {
+    "package.json", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "pnpm-lock.yaml", "bun.lock", "bun.lockb",
+    "deno.lock", "poetry.lock", "uv.lock", "pdm.lock", "pipfile.lock", "composer.lock", "cargo.lock", "go.sum",
+    "packages.lock.json", "packages.config", "gradle.lockfile",
+}
+BUILD_METADATA_NAMES = {
+    "electron-builder.yml", "electron-builder.yaml", "electron.vite.config.ts", "electron.vite.config.js",
+    "vite.config.ts", "vite.config.js", "webpack.config.js", "webpack.config.ts", "rollup.config.js", "rollup.config.ts",
+}
 C_STYLE_COMMENT_LANGUAGES = {
     "C", "C/C++ Header", "C++", "C++ Header", "C#", "Go", "Java", "JavaScript",
     "Kotlin", "Objective-C", "Rust", "Swift", "TypeScript",
@@ -33,8 +42,13 @@ C_STYLE_COMMENT_LANGUAGES = {
 def reference_context(record: FileRecord) -> str:
     path = Path(record.path)
     parts = {part.lower() for part in path.parts}
-    if path.name.lower().startswith(REFERENCE_FILE_PREFIXES):
+    name = path.name.lower()
+    if name.startswith(REFERENCE_FILE_PREFIXES):
         return "project_documentation"
+    if name in DEPENDENCY_METADATA_NAMES:
+        return "dependency_metadata"
+    if name in BUILD_METADATA_NAMES:
+        return "build_or_workflow_metadata"
     if record.language in BUILD_LANGUAGES or ".github" in parts:
         return "build_or_workflow_metadata"
     if record.language in DOCUMENT_LANGUAGES or parts.intersection({"docs", "doc", "documentation"}):
@@ -101,7 +115,7 @@ def _span_contains(spans: list[tuple[int, int]], starts: list[int], position: in
 
 class GenericTextAdapter(Adapter):
     name = "generic_text"
-    version = "4"
+    version = "5"
 
     def accepts(self, record: FileRecord) -> bool:
         return not record.is_binary
