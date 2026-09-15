@@ -57,8 +57,26 @@ function objectOwnerName(objectLiteral) {
   return null
 }
 
+function assignmentOutsideWrappers(node) {
+  let p = node.parent
+  while (p && (
+    ts.isCallExpression(p) || ts.isParenthesizedExpression(p) || ts.isAsExpression(p) ||
+    ts.isTypeAssertionExpression(p) || ts.isNonNullExpression(p) || ts.isSatisfiesExpression?.(p)
+  )) {
+    p = p.parent
+  }
+  if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name)) return p.name.text
+  if (p && ts.isPropertyAssignment(p)) {
+    const member = propertyName(p.name) || `<property@${lineOf(p)}>`
+    const owner = p.parent && ts.isObjectLiteralExpression(p.parent) ? objectOwnerName(p.parent) : null
+    return owner ? `${owner}.${member}` : member
+  }
+  return null
+}
+
 function functionName(node) {
   if (ts.isFunctionDeclaration(node) && node.name) return node.name.text
+  if (ts.isFunctionExpression(node) && node.name) return node.name.text
   if (ts.isMethodDeclaration(node) || ts.isGetAccessorDeclaration(node) || ts.isSetAccessorDeclaration(node)) {
     const member = propertyName(node.name) || `<method@${lineOf(node)}>`
     const cls = node.parent && ts.isClassLike(node.parent) && node.parent.name ? node.parent.name.text : null
@@ -69,16 +87,10 @@ function functionName(node) {
     return `${cls}.constructor`
   }
   if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+    const assigned = assignmentOutsideWrappers(node)
+    if (assigned) return assigned
     const p = node.parent
-    if (p && ts.isVariableDeclaration(p) && ts.isIdentifier(p.name)) return p.name.text
-    if (p && ts.isPropertyAssignment(p)) {
-      const member = propertyName(p.name) || `<property@${lineOf(p)}>`
-      const owner = p.parent && ts.isObjectLiteralExpression(p.parent) ? objectOwnerName(p.parent) : null
-      return owner ? `${owner}.${member}` : member
-    }
-    if (p && ts.isCallExpression(p)) {
-      return `callback:${nodeText(p.expression, 120)}@${lineOf(node)}`
-    }
+    if (p && ts.isCallExpression(p)) return `callback:${nodeText(p.expression, 120)}@${lineOf(node)}`
     if (p && ts.isJsxExpression(p)) return `<jsx-callback@${lineOf(node)}>`
     return `<anonymous@${lineOf(node)}>`
   }
@@ -136,13 +148,7 @@ function jsxDirectText(opening) {
 
 const result = {
   parser: { kind: 'typescript-compiler-api', module: tsModule, version: ts.version, diagnostics: [] },
-  imports: [],
-  functions: [],
-  calls: [],
-  news: [],
-  jsx: [],
-  objectConstants: [],
-  classes: [],
+  imports: [], functions: [], calls: [], news: [], jsx: [], objectConstants: [], classes: [],
 }
 
 for (const d of source.parseDiagnostics || []) {
@@ -168,13 +174,10 @@ function recordImport(node) {
 
 function recordFunction(node, name) {
   result.functions.push({
-    name,
-    kind: ts.SyntaxKind[node.kind],
-    line: lineOf(node),
-    endLine: endLineOf(node),
+    name, kind: ts.SyntaxKind[node.kind], line: lineOf(node), endLine: endLineOf(node),
     async: !!node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword),
     className: containingClass(node),
-    parameters: (node.parameters || []).map((p) => nodeText(p.name, 120)),
+    parameters: (node.parameters || []).map((p) => nodeText(p.name, 240)),
   })
 }
 
@@ -183,9 +186,7 @@ function recordObjectConstant(node) {
   const props = []
   for (const p of node.initializer.properties) {
     if (ts.isPropertyAssignment(p)) {
-      const name = propertyName(p.name)
-      const literal = stringValue(p.initializer)
-      props.push({ name, literal, value: nodeText(p.initializer, 240), line: lineOf(p) })
+      props.push({ name: propertyName(p.name), literal: stringValue(p.initializer), value: nodeText(p.initializer, 240), line: lineOf(p) })
     } else if (ts.isShorthandPropertyAssignment(p)) {
       props.push({ name: p.name.text, literal: null, value: p.name.text, line: lineOf(p) })
     } else if (ts.isMethodDeclaration(p)) {
@@ -198,47 +199,30 @@ function recordObjectConstant(node) {
 function recordClass(node) {
   if (!ts.isClassDeclaration(node) && !ts.isClassExpression(node)) return
   result.classes.push({
-    name: node.name ? node.name.text : `<class@${lineOf(node)}>`,
-    line: lineOf(node),
-    endLine: endLineOf(node),
+    name: node.name ? node.name.text : `<class@${lineOf(node)}>`, line: lineOf(node), endLine: endLineOf(node),
     extends: (node.heritageClauses || []).flatMap((h) => h.types || []).map((t) => nodeText(t.expression, 160)),
   })
 }
 
 function recordCall(node, currentFn) {
   result.calls.push({
-    callee: nodeText(node.expression, 240),
-    args: node.arguments.map((a) => nodeText(a, 420)),
-    line: lineOf(node),
-    function: currentFn,
-    optional: !!node.questionDotToken,
+    callee: nodeText(node.expression, 240), args: node.arguments.map((a) => nodeText(a, 420)),
+    line: lineOf(node), function: currentFn, optional: !!node.questionDotToken,
   })
 }
 
 function recordNew(node, currentFn) {
-  result.news.push({
-    callee: nodeText(node.expression, 240),
-    args: (node.arguments || []).map((a) => nodeText(a, 800)),
-    line: lineOf(node),
-    function: currentFn,
-  })
+  result.news.push({ callee: nodeText(node.expression, 240), args: (node.arguments || []).map((a) => nodeText(a, 800)), line: lineOf(node), function: currentFn })
 }
 
 function recordJsx(node, currentFn) {
   const tag = jsxTagName(node)
   const attrs = jsxAttributes(node)
   const eventAttrs = {}
-  for (const [k, v] of Object.entries(attrs)) {
-    if (/^on[A-Z]/.test(k)) eventAttrs[k] = v
-  }
+  for (const [k, v] of Object.entries(attrs)) if (/^on[A-Z]/.test(k)) eventAttrs[k] = v
   result.jsx.push({
-    tag,
-    line: lineOf(node),
-    function: currentFn,
-    attributes: attrs,
-    eventAttributes: eventAttrs,
-    text: jsxDirectText(node),
-    customComponent: !!tag && /^[A-Z]/.test(tag),
+    tag, line: lineOf(node), function: currentFn, attributes: attrs, eventAttributes: eventAttrs,
+    text: jsxDirectText(node), customComponent: !!tag && /^[A-Z]/.test(tag),
   })
 }
 
