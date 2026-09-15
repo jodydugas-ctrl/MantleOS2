@@ -9,7 +9,7 @@ from .qt_resource import QtResourceAdapter
 from .qmake import QMakeAdapter
 from .scintilla_lexilla import ScintillaLexillaAdapter
 from .typescript_electron import ElectronMetadataAdapter
-from .typescript_electron_precise import TypeScriptElectronAdapter
+from .typescript_electron_final import TypeScriptElectronAdapter
 
 DEFAULT_ADAPTERS = [
     QtUiAdapter(), QtResourceAdapter(), CMakeAdapter(), QMakeAdapter(),
