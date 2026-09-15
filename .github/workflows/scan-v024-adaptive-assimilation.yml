@@ -161,6 +161,7 @@ jobs:
           assimilation = load("results/adapted-a", "assimilation_status.json")
           assert assimilation["required"] is True
           assert assimilation["state"] == "OPEN"
+          assert assimilation["unknown_runtime_languages"] == []
           out["assimilation"] = assimilation
           Path("results/V024_CALIBRATION_COMPARISON.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
           print(json.dumps(out, indent=2))
@@ -171,10 +172,23 @@ jobs:
           scan-body query results/adapted-a/scan_index.sqlite nest-dependent-actions --limit 200 > results/query_nest_dependent_actions.json
           scan-body query results/adapted-a/scan_index.sqlite unknown-routes --limit 200 > results/query_unknown_routes.json
 
-      - name: Regenerate v0.24 package manifest
+      - name: Regenerate and self-audit clean v0.24 package manifest
         shell: bash
         run: |
+          rm -rf Anchor/engine/v0.24/*.egg-info Anchor/engine/v0.24/*/*.egg-info
+          find Anchor/engine/v0.24 -type d -name __pycache__ -prune -exec rm -rf {} +
           scan-body package-manifest Anchor/engine/v0.24
+          scan-body self-audit Anchor/engine/v0.24 --out results/V024_PACKAGE_SELF_AUDIT.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("Anchor/engine/v0.24/PACKAGE_MANIFEST.json").read_text(encoding="utf-8"))
+          assert manifest["engine_version"] == "0.24.0.dev0"
+          bad = [x["path"] for x in manifest["files"] if ".egg-info/" in x["path"] or "__pycache__/" in x["path"]]
+          assert not bad, bad
+          audit = json.loads(Path("results/V024_PACKAGE_SELF_AUDIT.json").read_text(encoding="utf-8"))
+          assert audit["state"] == "PASS", audit
+          PY
           cp Anchor/engine/v0.24/PACKAGE_MANIFEST.json results/V024_PACKAGE_MANIFEST.json
 
       - name: Add development receipt
@@ -185,6 +199,8 @@ jobs:
           mkdir -p results/scanner-source
           cp Anchor/engine/v0.24/scan/assimilation.py results/scanner-source/ 2>/dev/null || true
           cp Anchor/engine/v0.24/scan/adaptive_cli.py results/scanner-source/ 2>/dev/null || true
+          cp Anchor/engine/v0.24/scan/assimilation_candidate.py results/scanner-source/ 2>/dev/null || true
+          cp Anchor/engine/v0.24/scan/assimilation_context.py results/scanner-source/ 2>/dev/null || true
           cp Anchor/engine/v0.24/scan/adapters/typescript_electron.py results/scanner-source/ 2>/dev/null || true
           cp Anchor/engine/v0.24/scan/adapters/typescript_electron_precise.py results/scanner-source/ 2>/dev/null || true
           cp Anchor/engine/v0.24/scan/adapters/typescript_electron_final.py results/scanner-source/ 2>/dev/null || true
@@ -197,6 +213,7 @@ jobs:
           - LLM credentials are blank during the mechanical scan.
           - `adapted-a` and `adapted-b` are fresh unchanged runs used for byte-level determinism checks.
           - The assimilation workbench is secondary scanner engineering output. It does not mutate canonical evidence and generated candidate code is not auto-executed.
+          - The committed/source package manifest excludes editable-install metadata and other transient Python caches.
           EOF
 
       - name: Upload v0.24 calibration evidence
