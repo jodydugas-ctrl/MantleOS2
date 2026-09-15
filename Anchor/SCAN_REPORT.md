@@ -1,10 +1,10 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.29
+Working Report Version: 0.30
 SCAN Protocol: 0.29
 Status: COLD SCAN PASS / CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Current project-state note:** project v0.29 retains the Stage 1 Scanner Architecture contract and frozen H-001 holdout. The authentic Engine v0.20 lineage completed a cold LLM-disabled scan over the exact pinned NotepadNext body before the manual oracle was opened. The sealed certification is mechanically valid; post-seal comparison is PARTIAL rather than converged. Historical blocked-attempt sections below remain as chronology and are superseded by the v0.29 result where their status language conflicts.
+**Current project-state note (v0.30 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Generic Engine v0.21, v0.22, and frozen v0.23 sealed reruns mechanically passed; the v0.23 specimen certification independently verified 12/12 files, scanned 1,928/1,928 files, and recovered compiler AST evidence for 83 mapped and 74 partial of 394 translation units. Its compiler dimension is still PARTIAL with 311 explicit parser gaps. The post-seal PR5 calibration remains PARTIAL, not converged; human-surface closure is unchanged at 347 bound, 59 partial, 82 unresolved. H-001 is frozen and source-uninspected. The v0.29 result and earlier historical sections below remain chronology, not current gate claims. See `releases/v0.23/PR5_CALIBRATION_REPORT_v023.md` and its receipts/comparison.
 
 ## 0. Authoritative PR5 cold result
 

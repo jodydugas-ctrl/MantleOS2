@@ -1,10 +1,14 @@
 # SCAN CREATION PLAN
-Version: 0.29
+Version: 0.30
 Status: ACTIVE LIVING ROADMAP
 Canonical project: Google Drive `AI Systems/ANCHORCODING`
 Companion files: `ANCHOR_CODING_PROMPT.md`, `SCAN_PROTOCOL.md`, `SCAN_REPORT.md`
 
-## v0.29 PR5 cold-calibration checkpoint
+## v0.30 frozen v0.23 GitHub synchronization checkpoint
+
+Engine v0.23 is frozen and packaged under `engine/v0.23/` and `releases/v0.23/`. The exact pinned NotepadNext compiler-enabled, LLM-disabled v0.23 calibration sealed and independently verified 12/12 manifest files. Compiler AST recovery advanced from 0/394 translation units in v0.22 to 83 mapped plus 74 partial in v0.23, but 237 units remain unavailable or bounded and 311 parser gaps are explicit. Mechanical certification is PASS; PR5 semantic calibration remains PARTIAL. No H-001 source inspection, holdout scan, external-agent reconstruction, or production certification has been performed. Further refinement is paused for this repository synchronization; the next loop remains generic fixes, fresh sealed calibration, second clean determinism/cache run, then candidate freeze and untouched holdout.
+
+## v0.29 PR5 cold-calibration checkpoint (historical baseline)
 
 The exact pinned NotepadNext repository is acquired and verified at commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The accepted acquisition package preserves all 1,928 provider blobs byte-for-byte and is sealed at SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
 
