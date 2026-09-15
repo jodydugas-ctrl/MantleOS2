@@ -1,6 +1,6 @@
 """Substrate-neutral MantleOS 2 contracts.
 
-These records describe an organism without assuming Python, Hermes, or a
+These records describe an organism without assuming Python or a
 particular VCW carrier.  Target-specific code may serialize them differently,
 but it must preserve their semantic fields and version identifiers.
 """

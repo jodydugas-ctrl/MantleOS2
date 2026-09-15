@@ -3,7 +3,7 @@ from __future__ import annotations
 import py_compile
 from pathlib import Path
 
-from mantleos.targets.hermes import INSERTIONS, innervate, is_hermes
+from examples.hermes.adapter import INSERTIONS, innervate, is_hermes
 
 
 def _hermes_fixture(root: Path) -> Path:

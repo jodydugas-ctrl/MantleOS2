@@ -2,23 +2,24 @@
 
 MantleOS is a deterministic autonomic nervous system that can inhabit a software
 or hardware container and help form an entity called an AppAI. The host remains
-usable as itself: a calculator remains a calculator, and Hermes remains Hermes,
+usable as itself: a calculator remains a calculator, and an editor remains an editor,
 even when no AppAI MIND is configured or awake.
 
 This repository is the MantleOS 2 alpha reference implementation. It contains a
 NEST-local Body runtime, a read-first generic Body Genome mapper,
-direct-innervation tools, integrity gates, and a reproducible Hermes reference
-assimilation. It does **not** contain a born organism, private identity material,
-or a copy of Hermes.
+direct-innervation tools, and integrity gates. The pinned Hermes demonstration
+is an optional external-host reference under [`examples/hermes/`](examples/hermes/README.md);
+it is not a built-in target, package dependency, or release gate. This repository
+does **not** contain a born organism, private identity material, or a copy of Hermes.
 
-## Start with Hermes
+## Start with a Git host
 
 Requires Python 3.11-3.13 and Git:
 
 ```console
 python -m pip install -e .
-mantle assimilate github.com/nousresearch/hermes-agent
-cd hermes-agent
+mantle assimilate github.com/owner/repository
+cd repository
 python -m mantle status
 python -m mantle verify
 python -m mantle continue --approve-foreign-execution
@@ -36,7 +37,8 @@ local mirror should retain a public provenance URI. Every Body receives a
 deterministic inventory and coverage report. Fully parsed sources advance to
 nerve synthesis; partial or unsupported languages stop at
 `blocked-by-mapping-coverage` with their exact gaps. The constructor never
-invents source seams or executes repository code during mapping.
+invents source seams or executes repository code during mapping. No host-specific
+source nerves are inserted automatically, including for a Hermes-shaped checkout.
 
 Before any build, test, dependency action, or host launch, Mantle writes a
 shell-free execution plan bound to the source commit and Body Map. `continue`
@@ -80,7 +82,6 @@ python -m mantle verify
 python -m mantle heartbeat --reason manual
 python -m mantle watch
 python -m mantle digest Food.txt
-python -m mantle delta verify examples/hermes/seed --destination /path/to/candidate
 ```
 
 `COMMUNICATION.TXT` is the universal unencrypted fallback after birth. Saving a
@@ -113,11 +114,12 @@ software defaults.
 ## Project status
 
 `v2.0.0-alpha.1` is preserved as historical bootstrap evidence; its
-plugin-shaped Hermes edge is superseded by direct source innervation.
+plugin-shaped Hermes edge and later direct Hermes innervation are reference
+history, not built-in product behavior.
 `v2.0.0-alpha.3` adds the generic Body Genome, explicit coverage tiers, Habitat
 mapping, self-contained NEST organs, and the hash-bound foreign-execution gate.
-Hermes remains the first reference Body, but beta certification still requires
-complete artery coverage and broad native parity. Real successor birth remains
+Hermes remains an optional pinned reference Body, but beta certification still requires
+complete artery coverage and broad native parity on independently selected Bodies. Real successor birth remains
 separately gated.
 
 The active implementation compass and remaining gates are recorded in
@@ -125,8 +127,9 @@ The active implementation compass and remaining gates are recorded in
 The updated manual's requirements, preserved decisions and evidence gaps are
 mapped in [the edition 2.1 reconciliation](docs/MANUAL_21_RECONCILIATION.md).
 
-The related SCAN evidence-first software reverse-engineering project is tracked
-under [`Anchor/`](Anchor/README.md), including its governing anchors, protocol,
-evidence report, and production-readiness roadmap.
+The separate SCAN evidence-first software reverse-engineering project is tracked
+under [`Anchor/`](Anchor/README.md), including its frozen v0.23 scanner source,
+sealed PR5 calibration receipts, governing anchors, protocol, and roadmap. It is
+not installed with MantleOS2; future integration requires an explicit decision.
 
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).

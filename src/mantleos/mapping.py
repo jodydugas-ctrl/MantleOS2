@@ -495,21 +495,6 @@ def map_body(root: Path, *, source_uri: str, source_fingerprint: str) -> dict[st
     if any(language in languages for language in ("qt-ui", "cpp")) and "cmake" in build_systems:
         behavior.add("native-graphical-interface")
 
-    hermes_markers = {"run_agent.py", "agent/conversation_loop.py", "agent/turn_context.py"}
-    if hermes_markers.issubset(relative_paths):
-        capabilities.extend([
-            CapabilitySpec(
-                "host.conversation", "agent.conversation_loop.run_conversation",
-                "Run a native host conversation turn", "communicate",
-                "mantle.host-conversation-input.v2", "native-turn-receipt",
-            ),
-            CapabilitySpec(
-                "host.tool-dispatch", "agent.tool_executor",
-                "Dispatch a registered host tool through native authority", "external-effect",
-                "mantle.host-tool-input.v2", "native-tool-result",
-            ),
-        ])
-
     source_rows = [
         row for row in coverage_rows
         if row.ownership == "first-party" and row.artifact_kind == "source"

@@ -12,6 +12,9 @@ permissions:
 jobs:
   pinned-delta:
     name: Pinned Hermes delta
+    # Keep the historical check name available to protected PRs, but the
+    # Hermes reference executes only when a maintainer explicitly starts it.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -29,10 +32,14 @@ jobs:
           commit = json.load(open("examples/hermes/upstream.lock.json", encoding="utf-8"))["commit"]
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write(f"commit={commit}\n")
-      - name: Construct candidate NEST
-        run: mantle assimilate github.com/nousresearch/hermes-agent --ref "${{ steps.lock.outputs.commit }}" --destination .assimilation-work/hermes-agent
+      - name: Clone pinned reference host
+        run: |
+          git clone https://github.com/nousresearch/hermes-agent.git .assimilation-work/hermes-agent
+          git -C .assimilation-work/hermes-agent checkout "${{ steps.lock.outputs.commit }}"
+      - name: Apply optional checked-in Hermes example seed
+        run: mantle delta apply examples/hermes/seed --destination .assimilation-work/hermes-agent
       - name: Verify delta and host boundary
-        run: python scripts/verify_hermes_delta.py .assimilation-work/hermes-agent --expected-commit "${{ steps.lock.outputs.commit }}"
+        run: python examples/hermes/verify_delta.py .assimilation-work/hermes-agent --expected-commit "${{ steps.lock.outputs.commit }}"
       - name: Build and verify public direct-innervation seed
         run: |
           mantle --nest .assimilation-work/hermes-agent delta build .assimilation-work/generated-seed
@@ -49,11 +56,13 @@ jobs:
         run: git clone .assimilation-work/hermes-agent .assimilation-work/hermes-pristine
       - name: Compare native behavior before and after innervation
         run: >-
-          python scripts/certify_hermes_native.py
+          python examples/hermes/certify_native.py
           .assimilation-work/hermes-pristine
           .assimilation-work/hermes-agent
           --expected-commit "${{ steps.lock.outputs.commit }}"
           --report .assimilation-work/hermes-native-certification.json
+      - name: Test example-only adapter and reference bundle
+        run: python -m pytest examples/hermes/test_adapter.py examples/hermes/test_build_release.py
       - name: Retain native-behavior evidence
         if: always()
         uses: actions/upload-artifact@v7

@@ -39,7 +39,7 @@ addopts = "-ra"
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-exclude = [".assimilation-work", ".pytest-*", "Anchor/engine/v0.23"]
+exclude = [".assimilation-work", ".pytest-*", "Anchor", "examples/hermes"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]

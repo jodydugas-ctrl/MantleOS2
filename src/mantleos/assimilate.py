@@ -25,7 +25,6 @@ from urllib.parse import urlparse
 from .constitution import COMMANDMENTS_VERSION, species_kernel_markdown, species_kernel_sha256
 from .construction import create_execution_plan
 from .mapping import canonical_file_digest, map_body
-from .targets.hermes import HermesInnervationError, innervate, is_hermes
 
 SCHEMA = "mantle.assimilation.v2"
 GITHUB_REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -351,20 +350,12 @@ def construct_nest(
         None,
     )
     host_edge = _append_gitignore(nest)
-    try:
-        nerve_map = innervate(nest) if is_hermes(nest) else []
-    except HermesInnervationError as exc:
-        raise AssimilationError(str(exc)) from exc
-    target_kind = "reference-candidate" if nerve_map else "generic"
+    nerve_map: list[dict[str, Any]] = []
     coverage_tier = body_map["coverage"]["tier"]
     innervation_gate = (
-        "staged-requires-coverage-reconciliation"
-        if nerve_map
-        else (
-            "awaiting-nerve-synthesis"
-            if coverage_tier == "mapping-complete"
-            else "blocked-by-mapping-coverage"
-        )
+        "awaiting-nerve-synthesis"
+        if coverage_tier == "mapping-complete"
+        else "blocked-by-mapping-coverage"
     )
     manifest: dict[str, Any] = {
         "schema": SCHEMA,
@@ -394,7 +385,7 @@ def construct_nest(
         "body_map": _body_map_summary(body_map),
         "nerve_map": nerve_map,
         "target": {
-            "kind": target_kind,
+            "kind": "generic",
             "mapping": coverage_tier,
             "traditional_plugin": False,
         },
@@ -466,7 +457,8 @@ def construct_nest(
         "constraints": [
             "Host-native behavior remains available without a MIND.",
             "No live VCW, identity key, or communication file exists before birth.",
-            "Direct nerves are inserted at mapped host seams; no traditional plugin is used.",
+            "Direct nerves require separately admitted host-specific evidence; "
+            "construction alone does not insert them.",
         ],
     }
     _atomic_text(
