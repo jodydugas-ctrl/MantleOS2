@@ -8,6 +8,7 @@ from typing import Sequence
 
 from .assimilation import prepare_assimilation_workbench
 from .assimilation_candidate import validate_assimilation_candidate
+from .assimilation_context import files_for_assimilation_detection
 from .cli import main as canonical_main
 
 
@@ -43,7 +44,7 @@ def _post_scan_assimilation(args: list[str]) -> dict | None:
     status = prepare_assimilation_workbench(
         output=output,
         specimen=body.get("specimen") or {},
-        files=body.get("files") or [],
+        files=files_for_assimilation_detection(body.get("files") or []),
         nodes=body.get("nodes") or [],
         findings=body.get("findings") or [],
         evidence=body.get("evidence") or [],
