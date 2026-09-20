@@ -1,0 +1,13 @@
+# PR5 v0.24 sealed calibration checkpoint
+
+Input: `dail8859/NotepadNext@f57db52d6760a2ce4149a37190c3adaa586845f5`, provider tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`. The exact reproducible SCAN Engine v0.24 wheel and source package were run with the LLM environment disabled on Python 3.13.13 with Windows Clang 22.1.5. The v0.20 pre-oracle cold certification remains immutable.
+
+The v0.24 certification receipt is mechanical **PASS**: 1,928/1,928 files materialized, 12/12 required queries, zero integrity errors, and zero parser failures. Independent read-only verification passed all 12 manifest files with zero issues. The sealed specimen certification ZIP is 276,698,801 bytes, SHA-256 `53d6aa30a2c24272bc1b5288348a194d4430d964cb432eaf4ebab6eb2d50c972`; it is deliberately not committed because it contains the acquired specimen and is too large for this evidence-index repository.
+
+The generic bounded Clang recovery path raises valid compiler-AST coverage from 157/394 translation units in v0.23 to 378/394 in v0.24: 84 are fully mapped and 294 are explicit partial recoveries. Only 16 translation units remain unavailable, all in vendored/test code; every application translation unit now has compiler evidence. A full-output attempt that crosses either the five-second execution bound or 64,000,000-byte parse bound is retried with one source-derived Clang declaration filter. Filtered evidence is always PARTIAL and fallback extraction remains active.
+
+Two fresh full scans emitted byte-identical canonical JSON/Markdown projections and zero row differences across canonical node, edge, evidence, finding, semantic-object, and semantic-relation tables. A separate cache run produced 4,165 hits and zero misses; all cache-independent projections matched the cold run byte-for-byte. The release ZIP and wheel also reproduced byte-for-byte across two isolated fixed-epoch builds.
+
+Human-surface closure did not advance: 347 bound, 59 partial, and 82 unresolved of 488. Effect closure remains 112 closed, 294 partial, and 82 unresolved. These unchanged values are important: v0.24 increases trustworthy compiler anatomy but does not pretend that compiler breadth alone closes user-visible routes or effective behavior.
+
+Gate decision: **PR5 CALIBRATION PARTIAL**. v0.24 is a genuine generic compiler-coverage and determinism advance, not semantic convergence or production certification. The next generic refinement should correct the human-surface denominator and obvious false-positive surface classifications, then repeat the same clean-scan, determinism, packaging, and sealed-calibration gates. No NotepadNext-specific scanner patch, H-001 source inspection, holdout scan, or external-agent reconstruction is claimed.

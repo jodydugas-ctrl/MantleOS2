@@ -1,0 +1,80 @@
+{
+  "schema_version": "scan-pr5-version-comparison/0.1",
+  "specimen": {
+    "repository": "dail8859/NotepadNext",
+    "commit_sha": "f57db52d6760a2ce4149a37190c3adaa586845f5",
+    "tree_sha": "f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b"
+  },
+  "before": {
+    "engine_version": "0.23.0",
+    "certification_state": "PASS",
+    "counts": {
+      "files": 1928,
+      "nodes": 107886,
+      "edges": 120102,
+      "evidence": 118593,
+      "semantic_objects": 353130,
+      "semantic_relations": 880953
+    },
+    "compiler_ast": {
+      "translation_units": 394,
+      "mapped": 83,
+      "partial": 74,
+      "unavailable_or_bounded": 237,
+      "valid_ast_coverage": 157
+    },
+    "parser_gap_count": 311
+  },
+  "after": {
+    "engine_version": "0.24.0",
+    "certification_state": "PASS",
+    "counts": {
+      "files": 1928,
+      "nodes": 124255,
+      "edges": 139536,
+      "evidence": 136818,
+      "semantic_objects": 407458,
+      "semantic_relations": 1013513
+    },
+    "compiler_ast": {
+      "translation_units": 394,
+      "mapped": 84,
+      "partial": 294,
+      "unavailable_or_bounded": 16,
+      "valid_ast_coverage": 378
+    },
+    "parser_gap_count": 310,
+    "surface_closure": {
+      "total": 488,
+      "bound": 347,
+      "partial": 59,
+      "unresolved": 82
+    },
+    "effect_closure": {
+      "closed": 112,
+      "partial": 294,
+      "unresolved": 82
+    }
+  },
+  "delta": {
+    "nodes": 16369,
+    "edges": 19434,
+    "evidence": 18225,
+    "semantic_objects": 54328,
+    "semantic_relations": 132560,
+    "compiler_ast_mapped": 1,
+    "compiler_ast_partial": 220,
+    "compiler_ast_unavailable_or_bounded": -221,
+    "valid_ast_coverage": 221,
+    "parser_gaps": -1
+  },
+  "determinism": {
+    "two_fresh_full_scans": "PASS_BYTE_IDENTICAL",
+    "canonical_table_row_differences": 0,
+    "canonical_projection_differences": 0,
+    "cache_hits": 4165,
+    "cache_misses": 0
+  },
+  "gate_decision": "PR5_CALIBRATION_PARTIAL",
+  "interpretation": "v0.24 materially expands bounded compiler evidence without changing the human-surface or effect-closure denominator. Mechanical certification passes, but semantic convergence is not claimed."
+}

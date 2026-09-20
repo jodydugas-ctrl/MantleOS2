@@ -1,5 +1,5 @@
 # SCAN PROTOCOL
-Version: 0.29
+Version: 0.30
 Mode: Progressive / Read-Only by default
 Primary test specimen: NotepadNext
 Companion governance file: ANCHOR_CODING_PROMPT.md
@@ -21,6 +21,14 @@ The LLM's primary role is to help build or improve deterministic scanner tooling
 SCAN is not intended to birth an AppAI or migrate an agent into a host. Prior AppAI/NEST examples are useful because they expose the importance of substrate and environment, but SCAN's goal is software radiology and evidence-backed reconstruction fidelity.
 
 Before beginning, read and obey every active anchor in `ANCHOR_CODING_PROMPT.md`.
+
+## v0.30 bounded compiler recovery and determinism rule
+
+For C/C++ translation units, compiler execution remains bounded by the configured wall-time and retained JSON ceilings. When a complete Clang JSON AST times out or exceeds the parse ceiling, SCAN may derive one declaration filter from the source filename and mechanically recognized class/function declarations and retry under the same bounds. A filtered AST is always PARTIAL and never suppresses conservative fallback extraction or its diagnostics.
+
+Clang declaration IDs are process-local resolution aids, not evidence identities. They must not be persisted or used in stable IDs. Likewise, canonical evidence must not depend on which bounded resource limit happened to fire first, on bytes drained after termination, or on unordered set iteration. Two fresh identical scans must produce byte-identical canonical projections and zero row differences across canonical graph tables before a release is frozen.
+
+Engine v0.24 satisfies this gate on the exact PR5 specimen: 378/394 translation units have valid compiler evidence (84 MAPPED, 294 PARTIAL), all ten canonical projections match across two cold runs, canonical graph-table row differences are zero, and a separate cache proof records 4,165 hits and zero misses. Mechanical certification passes; semantic calibration remains PARTIAL.
 
 ## v0.29 PR5 cold-scan and calibration boundary
 

@@ -1,10 +1,21 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.30
-SCAN Protocol: 0.29
+Working Report Version: 0.31
+SCAN Protocol: 0.30
 Status: COLD SCAN PASS / CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Current project-state note (v0.30 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Generic Engine v0.21, v0.22, and frozen v0.23 sealed reruns mechanically passed; the v0.23 specimen certification independently verified 12/12 files, scanned 1,928/1,928 files, and recovered compiler AST evidence for 83 mapped and 74 partial of 394 translation units. Its compiler dimension is still PARTIAL with 311 explicit parser gaps. The post-seal PR5 calibration remains PARTIAL, not converged; human-surface closure is unchanged at 347 bound, 59 partial, 82 unresolved. H-001 is frozen and source-uninspected. The v0.29 result and earlier historical sections below remain chronology, not current gate claims. See `releases/v0.23/PR5_CALIBRATION_REPORT_v023.md` and its receipts/comparison.
+**Current project-state note (v0.31 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Generic Engine v0.21-v0.24 sealed reruns mechanically passed. The reproducible v0.24 specimen certification independently verified 12/12 files, scanned 1,928/1,928 files, and produced 124,255 nodes, 139,536 edges, 136,818 evidence records, 407,458 semantic objects, and 1,013,513 semantic relations. Compiler AST evidence now covers 84 mapped and 294 partial of 394 translation units; only 16 vendored/test units remain unavailable, and all application translation units have compiler evidence. Two fresh full scans are byte-identical across all canonical projections with zero canonical-table row differences. The post-seal PR5 calibration remains PARTIAL, not converged; human-surface closure is unchanged at 347 bound, 59 partial, and 82 unresolved, while effect closure remains 112 closed, 294 partial, and 82 unresolved. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.24/PR5_CALIBRATION_REPORT_v024.md` and its receipts/comparison.
+
+## 0A. Authoritative v0.24 refinement result
+
+- Engine package: reproducible `SCAN_ENGINE_v0.24.zip`, SHA-256 `92c1ff83a13c1a940fb9d608451e9bfb56645368e405ee4ee790f2ad2c39cc15`.
+- Wheel: reproducible `scan_software_body-0.24.0-py3-none-any.whl`, SHA-256 `f6b0a2cf8b79a89ab7c6a06dbf1d141a56862a1037fba941088a0c8b8c645735`.
+- Qualification: 128/128 tests in development and clean extraction; three Windows symlink-privilege skips; fresh Python 3.13.13 install; 12/12 LLM-disabled queries.
+- Determinism: two fresh 1,928-file scans; ten canonical projections byte-identical; zero differing rows in canonical graph tables.
+- Cache: 4,165 hits, zero misses; all cache-independent projections byte-identical to the cold run.
+- Compiler coverage: 378/394 valid ASTs (84 MAPPED, 294 PARTIAL); 16 vendored/test units unavailable; 310 explicit parser gaps overall.
+- Sealed certification: 276,698,801 bytes, SHA-256 `53d6aa30a2c24272bc1b5288348a194d4430d964cb432eaf4ebab6eb2d50c972`; independent verification PASS with 12/12 files and zero issues.
+- Gate: mechanical certification PASS; PR5 calibration PARTIAL. No production-grade claim, H-001 scan, or external-agent reconstruction claim is made.
 
 ## 0. Authoritative PR5 cold result
 

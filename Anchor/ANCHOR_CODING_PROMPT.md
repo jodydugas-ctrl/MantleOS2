@@ -1,8 +1,17 @@
 # ANCHOR CODING PROMPT
-Version: 0.29
+Version: 0.30
 Project: SCAN
 Purpose: Governing primer for any coding agent working on this project
-Anchor set status: A1-A8 remain the active set in v0.29. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording the sealed PR5 NotepadNext cold certification and honest PARTIAL calibration result.
+Anchor set status: A1-A8 remain the active set in v0.30. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording the sealed SCAN v0.24 bounded-AST calibration and honest PARTIAL result.
+
+
+## v0.30 SCAN Engine v0.24 calibration checkpoint
+
+Engine v0.24 is a generic refinement admitted by the sealed v0.23 PR5 result. Oversized or timed-out full Clang AST attempts may be retried with one source-derived declaration filter under the same five-second and 64,000,000-byte bounds. Filtered evidence is always PARTIAL, and fallback extraction continues. Process-local compiler pointers, scheduler-dependent timeout-versus-byte races, and unordered case-equivalent token sets are forbidden from influencing canonical persisted identities or projections.
+
+The exact reproducible v0.24 wheel/package passed 128 development and clean-package tests with three Windows privilege-dependent skips, fresh Python 3.13 installation, LLM-disabled qualification, 12/12 required queries, two byte-identical full PR5 scans, zero canonical-table row differences, and a 4,165-hit/zero-miss cache proof. The sealed NotepadNext certification independently verifies 12/12 files and is identified by SHA-256 `53d6aa30a2c24272bc1b5288348a194d4430d964cb432eaf4ebab6eb2d50c972`.
+
+Compiler evidence now covers 378/394 translation units (84 MAPPED, 294 PARTIAL); the remaining 16 are vendored/test units. This does not change the semantic gate: surface closure remains 347 bound, 59 partial, and 82 unresolved of 488, so PR5 remains CALIBRATION PARTIAL. No NotepadNext-specific scanner rule is admitted. H-001 remains frozen and source-uninspected.
 
 
 ## v0.29 PR5 cold-certification checkpoint

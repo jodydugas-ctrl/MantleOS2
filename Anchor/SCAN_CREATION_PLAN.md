@@ -1,8 +1,16 @@
 # SCAN CREATION PLAN
-Version: 0.30
+Version: 0.31
 Status: ACTIVE LIVING ROADMAP
 Canonical project: Google Drive `AI Systems/ANCHORCODING`
 Companion files: `ANCHOR_CODING_PROMPT.md`, `SCAN_PROTOCOL.md`, `SCAN_REPORT.md`
+
+## v0.31 frozen v0.24 bounded-AST checkpoint
+
+Engine v0.24 is frozen under `engine/v0.24/` and `releases/v0.24/`. It adds generic bounded Clang declaration filtering after oversized or timed-out full AST attempts and removes process-pointer, scheduler-race, and case-tied set-order data from canonical serialization. The release passed 128 development and clean-package tests (three Windows symlink-privilege skips), reproducible ZIP/wheel builds, fresh Python 3.13 installation, package/projection self-audits, LLM-disabled qualification, and 12/12 required queries.
+
+Two fresh full scans of the exact 1,928-file PR5 specimen emitted byte-identical canonical projections and zero canonical-table row differences. Compiler evidence advanced from 157/394 translation units in v0.23 to 378/394 in v0.24 (84 MAPPED, 294 PARTIAL); only 16 vendored/test units remain unavailable. A separate cache proof produced 4,165 hits and zero misses. The sealed v0.24 certification passed and independently verified 12/12 files; bundle SHA-256 is `53d6aa30a2c24272bc1b5288348a194d4430d964cb432eaf4ebab6eb2d50c972`.
+
+PR5 remains **CALIBRATION PARTIAL** because human-surface closure is unchanged at 347 bound, 59 partial, and 82 unresolved of 488, and effect closure remains 112 closed, 294 partial, and 82 unresolved. The next critical-path refinement is generic denominator/classification correction for raw Qt `ui->object` references and false CLI-like metadata candidates, followed by the same clean determinism and sealed calibration gates. After acceptable PR5 convergence: candidate freeze, source-blind external-agent reconstruction/M6B, untouched H-001 cold holdout, then final production certification. H-001 remains source-uninspected.
 
 ## v0.30 frozen v0.23 GitHub synchronization checkpoint
 
@@ -343,7 +351,7 @@ Use D0-D5 depth selectively. If static evidence cannot resolve purpose and the u
 
 ## Current route to the v1 quality gate
 
-As of engine v0.20 / project v0.29, the strongest implemented areas are the deterministic/evidence substrate, graph integrity, acquisition semantics, denominator-driven human-surface discovery, deep call/effect closure, and sealed certification. The full NotepadNext cold run confirms those strengths and makes the largest remaining engineering risk concrete: **PR2/PR3/PR4 compiler, persistence, lifecycle, dynamic-route, and capability closure on a complete real C++/Qt application**, followed by convergence, reconstruction proof, and holdout certification.
+As of engine v0.24 / project v0.31, the strongest implemented areas are the deterministic/evidence substrate, graph integrity, acquisition semantics, bounded compiler recovery, denominator-driven human-surface discovery, deep call/effect closure, and sealed certification. Full NotepadNext calibration now has compiler evidence for every application translation unit and 378/394 total translation units. The largest remaining engineering risk is **PR3/PR4 human-surface denominator accuracy, lifecycle, dynamic-route, and capability/effect closure on a complete real C++/Qt application**, followed by convergence, reconstruction proof, and holdout certification.
 
 The recommended order from here is:
 
@@ -422,7 +430,7 @@ Current status: **PARTIAL**. TR-001 and TR-002B prove transferability-driven ref
 
 Only after PR1-PR8 pass should SCAN v1 be called "production-ready" in the project's quoted sense. Later language/framework adapters can expand scope without weakening the v1 C++/Qt quality claim.
 
-## Current production-grade assessment at v0.20 / project v0.29
+## Current production-grade assessment at v0.24 / project v0.31
 
 The architecture is mature enough that the remaining work is mostly **certification, depth closure, and release hardening**, not invention of the basic SCAN model. However, the highest-consequence proof gates are still open, so the project must not yet be called production-grade.
 
@@ -432,7 +440,7 @@ Current gate assessment:
 - **PR2 C++/Qt structural depth: STRONG PARTIAL.** Compiler-assisted extraction, fallback structure, overload/type/receiver resolution, semantic QAction identity, payload dispatch, generated-code contracts, and deep effect closure exist. Remaining: stronger whole-program CFG/data flow, macro/generated-code closure, more template/virtual dispatch cases, and more exact value propagation.
 - **PR3 Human surface/framework closure: PARTIAL TO STRONG PARTIAL.** Designer/programmatic widgets, actions, shortcuts, events, dialogs, dynamic families, CLI, drag/drop and several framework routes are represented. Remaining: accessibility-relevant surfaces where exposed, broader native/framework behavior, exact alternate-route equivalence, and stronger Scintilla/Lexilla user-behavior closure.
 - **PR4 NEST/persistence/extensions: STRONG PARTIAL.** Typed boundaries, persistence, guards, error/cancel/retry, platform conditions, extension receptors and capability states exist. Remaining: more exact cross-platform configured-build semantics and end-to-end provider/effect closure on full real applications.
-- **PR5 Full pinned NotepadNext calibration: COLD SCAN PASS / CALIBRATION PARTIAL.** Exact commit/tree bytes were verified, the authenticated v0.20 engine completed a source-blind LLM-disabled full scan, and the sealed result independently verifies. Exact action-denominator/route/anomaly checks pass; generic compiler, persistence, lifecycle, dynamic-route, capability, performance, Windows-platform, and receipt gaps remain before convergence.
+- **PR5 Full pinned NotepadNext calibration: COLD SCAN PASS / CALIBRATION PARTIAL.** Exact commit/tree bytes were verified, the authenticated v0.20 engine completed the immutable source-blind LLM-disabled cold scan, and generic v0.21-v0.24 reruns are sealed. v0.24 provides compiler AST evidence for 378/394 units, including every application unit, but the human-surface/effect denominators remain unchanged and require generic correction before convergence.
 - **PR6 Transferability: PARTIAL, HOLDOUT FROZEN.** Multiple unrelated specimens have improved the scanner. qView remains a development oracle. H-001 (DB Browser for SQLite) is now frozen before source analysis and reserved for the final blind candidate scan.
 - **PR7 Reconstruction proof: PARTIAL / M5 + M6A MECHANISM PASS.** Evidence-gated behavior/anchor promotion, fidelity-test contracts, contradiction/coverage discipline, immutable certification lineage, deterministic public/private blind-trial splitting, source-free scoring requirements, candidate rescanning, mismatch attribution, sealed trial verification, and installed-wheel challenge-only controlled reconstruction scoring are working. Remaining: apply the pipeline to complete calibrated real-specimen evidence, use a capable external coding agent under genuine source isolation, and complete behavior-level M6B fidelity evaluation.
 - **PR8 Release engineering: VERY STRONG PARTIAL.** Deterministic package/projection byte audits, clean-package tests, wheel build/install validation on Python 3.13.5, aggregate budgets/cancellation, resume regression, LLM-disabled mechanical qualification, the 12-query acceptance surface, sealed specimen/reconstruction/trial certification and verification, deterministic challenge bundles, immutable read-only inspection, and a 321-file cold/warm load checkpoint are working. Remaining: real large-repository performance/load evidence, broader supported Python/platform matrix, final operator/schema documentation sweep, and final candidate certification after PR5/PR7 and the frozen PR6 holdout.
