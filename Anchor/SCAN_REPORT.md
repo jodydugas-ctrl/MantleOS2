@@ -1,12 +1,28 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.30
-SCAN Protocol: 0.29
+Working Report Version: 0.31
+SCAN Protocol: 0.31
 Status: COLD SCAN PASS / CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Current project-state note (v0.30 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Generic Engine v0.21, v0.22, and frozen v0.23 sealed reruns mechanically passed; the v0.23 specimen certification independently verified 12/12 files, scanned 1,928/1,928 files, and recovered compiler AST evidence for 83 mapped and 74 partial of 394 translation units. Its compiler dimension is still PARTIAL with 311 explicit parser gaps. The post-seal PR5 calibration remains PARTIAL, not converged; human-surface closure is unchanged at 347 bound, 59 partial, 82 unresolved. H-001 is frozen and source-uninspected. The v0.29 result and earlier historical sections below remain chronology, not current gate claims. See `releases/v0.23/PR5_CALIBRATION_REPORT_v023.md` and its receipts/comparison.
+**Current project-state note (v0.31 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.25 combines the v0.24 adaptive substrate machinery with bounded Clang recovery and deterministic compiler evidence. Two exact manifest-backed scans were byte- and row-identical; the final certification independently verified 12/12 files. Compiler evidence now covers 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is unchanged at 347 bound, 59 partial, 82 unresolved. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.25/SCAN_v0.25_REPORT.md` and `releases/v0.25/PR5_CALIBRATION_REPORT_v025.md`.
 
-## 0. Authoritative PR5 cold result
+## 0. Current authoritative v0.25 calibration result
+
+- Exact identity: `dail8859/NotepadNext@f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`.
+- Acquisition: 1,928/1,928 provider blobs, 20,875,384 verified bytes, oracle unused.
+- Determinism: two fresh manifest scans emitted 21/21 byte-identical files and zero canonical database-row differences; warm-cache proof recorded 4,186 hits / 0 misses without evidence drift.
+- Mechanical body: 125,066 nodes, 139,567 edges, 137,629 evidence records, 409,175 semantic objects, 1,016,189 semantic relations.
+- Compiler evidence: 84 `MAPPED`, 294 valid-but-`PARTIAL`, 16 unavailable of 394 translation units; 331 explicit parser gaps.
+- Integrity: `PARTIAL`, 13 WARN-only orphan-evidence issues, zero ERRORs.
+- Human surfaces: 488 total; 347 bound, 59 partial, 82 unresolved.
+- Effect closure: 112 closed, 294 partial, 82 unresolved; feedback observed for 59 surfaces.
+- Packaging: reproducible source ZIP SHA-256 `dbc929892b26bf3d2d61916d8a9e18e0a70a32d3d9a37cb1692ec6ba98dbf6c3`; reproducible wheel SHA-256 `627837b08d6d7d5268edd142baac33cf6b4a285e7225afc8099d2aae620a3dc6`.
+- Sealed certification: 277,741,620 bytes, SHA-256 `0834f44051ce7cf012c391e113905cbccf28754fd6143bd9388c16f7007a7fee`; independent verification 12/12 PASS, zero issues.
+- Adaptive assessment: deterministic inert workbench opened for Lua and Python substrate gaps; no generated candidate code was executed or promoted.
+
+Gate decision: **mechanical certification PASS; PR5 calibration PARTIAL**. The next admissible loop is generic correction of the inflated surface denominator followed by two fresh sealed reruns. No NotepadNext-specific rule is admissible.
+
+## 0A. Immutable v0.20 PR5 cold result
 
 - Exact identity: commit `f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`.
 - Acquisition: 1,928/1,928 provider blobs, 20,875,384 verified bytes, zero unavailable files; exact acquisition SHA-256 `4a1343f4f56500ba850162039e7483e2f17f894be6493f5afbaacdf25c2c44a3`.
@@ -1636,7 +1652,7 @@ This advances PR7 to **PARTIAL / M5 + M6A mechanism pass**. The controlled chall
 
 ---
 
-## 15. Anchor Gate: Project v0.29 / PR5 cold result
+## 15. Historical Anchor Gate: Project v0.29 / PR5 cold result
 
 ### A1 Preserve the specimen
 

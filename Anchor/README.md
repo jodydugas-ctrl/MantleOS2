@@ -10,10 +10,10 @@ The Markdown files in this directory are synchronized repository copies. Updates
 
 ## Current checkpoint
 
-- SCAN Engine: v0.23 frozen candidate; v0.20 remains the immutable pre-oracle cold baseline
-- Project documentation: v0.30 checkpoint (A1-A8 governing contract unchanged)
+- SCAN Engine: v0.25 frozen calibration release; v0.20 remains the immutable pre-oracle cold baseline
+- Project documentation: v0.31 checkpoint (A1-A8 governing contract unchanged)
 - Status: frozen pre-v1 candidate; calibration loop active, production certification pending
-- PR5 NotepadNext calibration: v0.20 cold and v0.21-v0.23 sealed reruns mechanically PASS; calibration PARTIAL
+- PR5 NotepadNext calibration: v0.20 cold and v0.21-v0.25 sealed reruns mechanically PASS; calibration PARTIAL
 - PR7 reconstruction proof: partial; M5 and M6A mechanisms pass, external-agent M6B remains open
 - H-001 blind holdout: frozen and source-uninspected
 
@@ -27,8 +27,8 @@ The Markdown files in this directory are synchronized repository copies. Updates
 - [`evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json`](evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json) — authoritative v0.20 release hashes and cold-run admission policy.
 - [`evidence/pr5/PR5_COLD_SCAN_RECEIPT.json`](evidence/pr5/PR5_COLD_SCAN_RECEIPT.json) — sealed cold-run identity, coverage, and bundle digests.
 - [`evidence/pr5/PR5_CALIBRATION_REPORT.md`](evidence/pr5/PR5_CALIBRATION_REPORT.md) — post-seal machine-versus-oracle comparison and generic corrective backlog.
-- [`engine/v0.23/`](engine/v0.23/) — exact frozen manifest-only scanner source; this is not the NotepadNext specimen.
-- [`releases/v0.23/`](releases/v0.23/) — frozen v0.23 release receipts, packaged artifacts, and completed PR5 calibration evidence. The 238 MB sealed specimen bundle is kept out of Git and identified by SHA-256.
+- [`engine/v0.25/`](engine/v0.25/) — exact frozen combined adaptive/bounded scanner source; this is not the NotepadNext specimen.
+- [`releases/v0.25/`](releases/v0.25/) — frozen v0.25 artifacts, deterministic/cache receipts, and completed PR5 certification/calibration evidence. The 277 MB sealed specimen bundle is kept out of Git and identified by SHA-256.
 
 ## Synchronization rules
 
