@@ -1,8 +1,15 @@
 # ANCHOR CODING PROMPT
-Version: 0.29
+Version: 0.31
 Project: SCAN
 Purpose: Governing primer for any coding agent working on this project
-Anchor set status: A1-A8 remain the active set in v0.29. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract and frozen holdout while recording the sealed PR5 NotepadNext cold certification and honest PARTIAL calibration result.
+Anchor set status: A1-A8 remain the active set in v0.31. No governance anchor was added or removed. This revision preserves the Stage 1 architecture contract, immutable cold baseline, and frozen holdout while recording the combined adaptive/bounded SCAN v0.25 release and its honest PARTIAL calibration result.
+
+
+## v0.31 SCAN v0.25 bounded/adaptive checkpoint
+
+Engine v0.25 freezes the v0.24 adaptive TypeScript/React/Electron substrate work together with generic bounded Clang recovery and cross-process determinism corrections. Compiler pipes are drained concurrently, retained JSON is capped, oversized or timed-out full ASTs may receive one mechanically source-derived filtered retry, and every filtered recovery remains `PARTIAL`. Process-local compiler pointer IDs are never persisted or used as stable identity. The adaptive workbench remains inert secondary engineering output; generated candidate code cannot rewrite canonical evidence or execute automatically.
+
+The exact NotepadNext manifest was scanned twice with LLM credentials disabled and no oracle input. All 21 emitted files and all canonical database rows were identical. The final 1,928-file certification independently verifies 12/12 files with zero issues and is sealed at SHA-256 `0834f44051ce7cf012c391e113905cbccf28754fd6143bd9388c16f7007a7fee`. Compiler evidence now exists for 378 of 394 translation units (84 `MAPPED`, 294 `PARTIAL`); 16 remain unavailable. Human-surface and effect closure remain unchanged, so PR5 calibration is still `PARTIAL`. H-001 remains frozen and source-uninspected.
 
 
 ## v0.29 PR5 cold-certification checkpoint

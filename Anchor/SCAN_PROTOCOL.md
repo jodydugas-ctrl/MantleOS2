@@ -1,5 +1,5 @@
 # SCAN PROTOCOL
-Version: 0.29
+Version: 0.31
 Mode: Progressive / Read-Only by default
 Primary test specimen: NotepadNext
 Companion governance file: ANCHOR_CODING_PROMPT.md
@@ -21,6 +21,14 @@ The LLM's primary role is to help build or improve deterministic scanner tooling
 SCAN is not intended to birth an AppAI or migrate an agent into a host. Prior AppAI/NEST examples are useful because they expose the importance of substrate and environment, but SCAN's goal is software radiology and evidence-backed reconstruction fidelity.
 
 Before beginning, read and obey every active anchor in `ANCHOR_CODING_PROMPT.md`.
+
+## v0.31 bounded extraction and adaptive-assimilation boundary
+
+The frozen v0.25 scanner keeps canonical scanning mechanical and LLM-disabled. Compiler processes must be bounded while running, not merely checked after an unbounded capture: stdout and stderr are drained concurrently, retained AST JSON is capped, and timeout/output-limit recovery may use only a mechanically source-derived declaration filter. Filtered compiler results remain `PARTIAL`, and generic fallback extraction must continue when recovery cannot establish a valid AST.
+
+Process-local parser identities, scheduling races, wall-clock values, and unordered case-equivalent tokens must not enter canonical stable IDs or projections. Two fresh scans of unchanged manifest-backed bytes must match byte-for-byte and at the canonical database-row level. A warm-cache proof must reproduce the same canonical evidence.
+
+Adaptive substrate assessment occurs only after canonical outputs are sealed. It may emit an inert workbench describing unsupported languages or structural gaps, but generated adapters are never trusted, imported, or executed automatically. Promotion requires generic fixtures, frozen-baseline regression, two deterministic rescans, integrity gates, and adversarial review. Specimen-specific names, oracle conclusions, and answer-key logic remain prohibited.
 
 ## v0.29 PR5 cold-scan and calibration boundary
 
