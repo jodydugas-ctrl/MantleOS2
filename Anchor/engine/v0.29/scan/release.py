@@ -640,15 +640,22 @@ def qualify_release(package_root: Path, *, output_path: Path | None = None) -> d
             deep = effect_closure(store)
             store.close()
             projections = verify_projection_manifest(scan_out)
+            coverage_projection = _json_file(scan_out / "coverage_report.json")
             queries = run_query_acceptance(scan_out / "scan_index.sqlite")
             required_outputs = [
                 "scan_index.sqlite", "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
                 "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json",
-                "nest_capability_map.json", "projection_manifest.json", "stage1_summary.md",
+                "nest_capability_map.json", "coverage_report.json", "coverage_report.md", "gaps.md",
+                "projection_manifest.json", "stage1_summary.md",
             ]
             missing_outputs = [name for name in required_outputs if not (scan_out / name).is_file()]
             mechanical = {
-                "state": "PASS" if not missing_outputs and integrity.get("severity_counts", {}).get("ERROR", 0) == 0 else "FAIL",
+                "state": "PASS" if (
+                    not missing_outputs
+                    and integrity.get("severity_counts", {}).get("ERROR", 0) == 0
+                    and coverage_projection.get("projection_state") == "PASS"
+                    and (coverage_projection.get("authority") or {}).get("classification_mutation") == "NONE"
+                ) else "FAIL",
                 "llm_environment": "DISABLED",
                 "required_outputs": required_outputs,
                 "missing_outputs": missing_outputs,
@@ -656,6 +663,8 @@ def qualify_release(package_root: Path, *, output_path: Path | None = None) -> d
                 "integrity_error_count": integrity.get("severity_counts", {}).get("ERROR", 0),
                 "surface_closure_state": closure.get("state"),
                 "effect_closure_state": deep.get("state"),
+                "coverage_projection_state": coverage_projection.get("projection_state"),
+                "coverage_gap_count": (coverage_projection.get("gaps") or {}).get("count", 0),
                 "files": summary["inventory"]["file_count"],
                 "nodes": summary["extraction"]["node_count"],
                 "edges": summary["extraction"]["edge_count"],
