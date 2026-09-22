@@ -21,6 +21,7 @@ from .evidence_graph import (
 from .store import Store
 from .integrity import audit_integrity, effect_closure, refresh_refinement_completeness, surface_closure, write_integrity_outputs, write_projection_manifest
 from .capabilities import write_nest_capability_map
+from .layered_provenance import write_layered_provenance_outputs
 from .reconstruction import (
     export_reconstruction_contract, load_reconstruction_proposal, promote_reconstruction_proposal,
     validate_reconstruction_proposal,
@@ -355,10 +356,11 @@ def main(argv=None):
             export_completeness(store, args.out_dir / "completeness_vector.json")
             write_integrity_outputs(store, args.out_dir)
             write_nest_capability_map(store, args.out_dir / "nest_capability_map.json")
+            write_layered_provenance_outputs(store, args.out_dir, engine_version=__version__)
             refresh_machine_body_map_projection(store, args.out_dir / "machine_body_map.json")
             write_projection_manifest(args.out_dir, [
                 "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
-                "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "stage1_summary.md",
+                "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "layered_provenance.json", "layered_provenance.md", "stage1_summary.md",
             ])
         store.close()
         print(json.dumps(result, indent=2))
@@ -390,12 +392,13 @@ def main(argv=None):
                 export_completeness(store, args.out_dir / "completeness_vector.json")
                 write_integrity_outputs(store, args.out_dir)
                 write_nest_capability_map(store, args.out_dir / "nest_capability_map.json")
+                write_layered_provenance_outputs(store, args.out_dir, engine_version=__version__)
                 refresh_machine_body_map_projection(store, args.out_dir / "machine_body_map.json")
                 write_projection_manifest(args.out_dir, [
                     "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
                     "completeness_vector.json", "integrity_report.json", "surface_closure.json",
-                    "effect_closure.json", "nest_capability_map.json", "reconstruction_contract.json",
-                    "stage1_summary.md",
+                    "effect_closure.json", "nest_capability_map.json", "layered_provenance.json", "layered_provenance.md",
+                    "reconstruction_contract.json", "stage1_summary.md",
                 ])
         finally:
             store.close()
