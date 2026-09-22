@@ -4,6 +4,25 @@ Mode: Progressive / Read-Only by default
 Primary test specimen: NotepadNext
 Companion governance file: ANCHOR_CODING_PROMPT.md
 
+
+## v1.0 release-certification boundary
+
+The governing scan/provenance rules remain evidence-first and read-only by
+default. v1.0 adds a release boundary rather than relaxing those rules.
+
+A v1.0 release certificate is valid only for the exact commit and exact package
+bytes that passed the final gate. The gate requires package self-audit,
+LLM-disabled qualification, the full regression suite, supported
+platform/Python lanes, independent-reconstruction regression evidence, live
+runtime validation only under explicit plan-hash authorization, operational
+hardening, fresh wheel installation, and aggregate artifact sealing.
+
+Runtime observations remain sidecar evidence. They do not automatically promote
+static coverage, semantic claims, or reconstruction anchors. A release PASS is a
+statement about the tested release gates, not a claim that every behavior of
+every specimen is known.
+
+
 ## Mission
 
 Perform a software **SCAN**: a non-destructive, code-first examination of a software repository that reconstructs as much of the visible software entity as deterministic evidence allows.
