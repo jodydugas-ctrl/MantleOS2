@@ -13,6 +13,10 @@ on:
       - '.github/workflows/scan-v037-operational-hardening.yml'
   workflow_dispatch:
 
+concurrency:
+  group: scan-v037-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
