@@ -1,86 +1,98 @@
-# SCAN Engine v0.37
+# SCAN Engine v1.0
 
-Status: **operational-hardening candidate — not release-qualified**.
+Status: **final certification candidate**.
 
-v0.37 is stacked on the v0.36 authorized-runtime-validation candidate and implements the ninth production-readiness stage: operational hardening before final v1.0 certification.
+v1.0 is the consolidation release for the production-readiness path:
 
-The purpose of this stage is not to add another interpretation layer. It is to make the existing scanner fail predictably under hostile, malformed, interrupted, concurrent, oversized, or otherwise inconvenient operating conditions while preserving its evidence boundaries.
+**coverage/gaps → uncertainty challenger → triage ranking → layered provenance → parity scenarios/distribution → broader calibration → independent reconstruction proof → authorized runtime validation → operational hardening → v1.0 certification**
 
-## New writer-safety boundary
+The final stage does not add another interpretation layer. It binds an exact package, exact commit, mechanical qualification, cross-platform regression matrix, live authorized-runtime evidence, and release artifacts into one auditable release record.
 
-Every canonical `scan` and `scan-manifest` operation now acquires an exclusive scanner-owned output lease:
+## Final certification model
 
-`.scan-write.lock`
+v1.0 separates local package proof from CI-wide release proof.
 
-The lease:
+### Local package proof
 
-- is created atomically with `O_CREAT | O_EXCL`;
-- records schema, engine version, PID, host, and process-start token;
-- refuses a second live writer targeting the same output directory;
-- recovers a stale lock only when the previous writer is provably dead on the same host;
-- fails closed for unreadable locks and foreign-host ownership;
-- is released on ordinary completion and on propagated exceptions;
-- rejects an output root that is itself a symlink.
+A staged package must first be sealed:
 
-The lease is operational metadata only. It is not canonical evidence and it is removed before a successful scan returns.
+```bash
+scan-body package-manifest <package-root>
+```
 
-## Hardening coverage
+Then:
 
-The v0.37 regression and CI gates exercise the operational failure surface accumulated across earlier versions, including:
+```bash
+scan-body release-certify <package-root> --out <certification-dir>
+scan-body verify-release-certification <certification-dir>
+```
 
-- malformed and non-UTF-8 repository content;
-- parser/adaptor exceptions versus catastrophic `MemoryError`;
-- local symlink containment and manifest path traversal;
-- per-file and aggregate resource ceilings;
-- extraction cancellation and safe-boundary partial completion;
-- budget-limited resume using valid extraction cache;
-- corrupt SQLite quarantine and clean rebuild;
-- deterministic fresh rebuilds and projection hashes;
-- exclusive output-writer behavior and stale-lock recovery;
-- bounded synthetic large-repository degradation;
-- clean wheel/CLI installation checks;
-- Linux, macOS, and Windows execution of the focused hardening suite.
+The local certificate:
 
-Inherited runtime-validation behavior remains unchanged: ordinary SCAN is static and non-executing; `runtime-validate` remains explicit, plan-hash authorized, network-denied, and sidecar-only.
+- verifies every file against `PACKAGE_MANIFEST.json`;
+- requires engine/package/pyproject version agreement;
+- reruns the LLM-disabled mechanical release qualification;
+- requires current coverage/gap, uncertainty, triage, and layered-provenance projections;
+- seals the exact package-manifest and qualification hashes;
+- verifies its own sealed output.
 
-## Failure semantics
+Its scope is explicitly `LOCAL_MECHANICAL_PACKAGE`.
 
-Operational hardening keeps three classes distinct:
+A local PASS is not allowed to imply the CI-only release gates passed.
 
-1. **Explicit degradation** — unsafe, unavailable, malformed, or resource-limited specimen regions remain visible as PARTIAL/BLOCKED/UNKNOWN states rather than disappearing.
-2. **Recoverable scanner state failure** — derived-state corruption may be quarantined and mechanically rebuilt when the existing recovery policy authorizes it.
-3. **Catastrophic process failure** — conditions such as `MemoryError` propagate instead of being mislabeled as ordinary parser uncertainty. Writer leases are still released by the caller boundary.
+### CI release proof
 
-A hardening PASS therefore means the tested failure mode produced the expected bounded outcome. It does not mean every possible hostile repository or operating-system failure has been exhausted.
+The final v1.0 workflow additionally requires:
 
-## Operational acceptance boundary
+- the complete inherited regression suite;
+- focused hardening/certification tests across Linux, macOS, and Windows;
+- Python 3.11, 3.12, and 3.13 coverage;
+- clean wheel build and fresh-environment install;
+- live Linux `network=DENY` authorized-runtime validation;
+- wrong-plan-hash fail-closed behavior;
+- runtime source immutability and secret non-forwarding;
+- the sealed local package certificate;
+- final artifact hashing.
 
-The v0.37 stage is intended to prove that:
+Only the aggregate CI gate may emit the final `V1_CI_RELEASE_CERTIFICATE.json`.
 
-- no specimen symlink/path-traversal case can escape the scanner's source authority boundary;
-- concurrent writers cannot silently interleave one output tree;
-- interrupted or crashed same-host writers do not permanently poison that output path;
-- malformed inputs degrade explicitly rather than erasing the rest of the specimen;
-- resource exhaustion controls remain coverage statements, not false-success claims;
-- corrupt derived state can be distinguished from source evidence and recovered under the existing policy;
-- unchanged fresh scans remain reproducible;
-- focused hardening behavior survives the supported Python range and the three primary desktop CI operating systems.
+## Preserved authority boundaries
 
-## Explicit limits
+v1.0 retains all earlier boundaries:
 
-This stage does **not** claim:
+- ordinary SCAN is static, deterministic, and non-executing;
+- runtime execution requires explicit plan-hash authorization;
+- runtime observations remain sidecar evidence and cannot automatically promote static claims;
+- ranking is investigation priority, not truth;
+- semantic overlays never become DIRECT evidence merely because an LLM proposed them;
+- independent reconstruction proof remains distinct from ordinary reconstruction self-report;
+- operational locks are scanner metadata, not canonical specimen evidence;
+- budget stops and unavailable content remain explicit coverage limitations.
 
-- hostile-code sandboxing beyond the already documented authorized-runtime isolation controls;
-- distributed or multi-host writer coordination;
-- correctness on network filesystems with weak/novel locking semantics;
-- power-loss atomicity for every projection file on every storage stack;
-- exhaustive fuzz coverage of every parser grammar;
-- a production SLA for repository size, latency, CPU, or memory;
-- universal GUI/visual/runtime equivalence;
-- final v1.0 certification.
+## Operational hardening retained
 
-Those claims require evidence beyond this tranche.
+The v0.37 writer-safety behavior is inherited unchanged:
 
-The next and final roadmap stage is **v1.0 certification**.
+- one canonical writer per output tree;
+- stale same-host dead-PID recovery;
+- fail-closed ambiguous/foreign-host lock handling;
+- Windows-safe process-liveness probing;
+- output-root symlink rejection;
+- exception-safe lease release.
 
-v0.28.0 remains the latest released version while the stacked production-readiness candidates are evaluated.
+## Certification limits
+
+A v1.0 PASS does not claim:
+
+- universal semantic completeness;
+- universal runtime or pixel equivalence;
+- hostile-code sandbox security;
+- distributed/multi-host locking;
+- correctness on every network filesystem;
+- exhaustive parser fuzzing;
+- an unbounded repository-size, memory, or latency SLA;
+- absence of future defects.
+
+The certificate applies to the exact sealed package bytes and commit that were tested.
+
+See `docs/V1_CERTIFICATION.md` for the release contract.
