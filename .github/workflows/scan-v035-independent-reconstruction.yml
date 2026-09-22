@@ -1,0 +1,466 @@
+name: SCAN v0.35 independent reconstruction proof
+
+on:
+  push:
+    branches:
+      - scan-v0.35-independent-reconstruction
+    paths:
+      - 'Anchor/engine/v0.35/**'
+      - '.github/workflows/scan-v035-independent-reconstruction.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.35/**'
+      - '.github/workflows/scan-v035-independent-reconstruction.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install v0.35 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.35
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.35.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.35/PACKAGE_MANIFEST.json
+      - name: Run full inherited plus v0.35 tests
+        shell: bash
+        run: pytest -q Anchor/engine/v0.35/tests
+
+  prepare:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install and seal qualification package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e Anchor/engine/v0.35
+          scan-body package-manifest Anchor/engine/v0.35
+      - name: Create private source certification and split public/private handoff
+        shell: bash
+        run: |
+          mkdir -p proof
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          from scan.release import certify_specimen, certify_reconstruction_handoff
+          from scan.store import Store
+
+          package = Path("Anchor/engine/v0.35")
+          source = Path("proof/private-source")
+          source.mkdir(parents=True)
+
+          ui = """<?xml version="1.0" encoding="UTF-8"?>
+          <ui version="4.0">
+           <class>MainWindow</class>
+           <widget class="QMainWindow" name="MainWindow">
+            <action name="actionSave"><property name="text"><string>Save</string></property></action>
+           </widget>
+          </ui>
+          """
+          cpp = """#include <QAction>
+          void MainWindow::wire() {
+              connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
+          }
+          void MainWindow::saveFile() {}
+          """
+          (source / "MainWindow.ui").write_text(ui, encoding="utf-8")
+          (source / "MainWindow.cpp").write_text(cpp, encoding="utf-8")
+
+          mechanical = Path("proof/mechanical")
+          result = certify_specimen(package, source, mechanical, specimen_id="v035-private-reference")
+          assert result["state"] == "PASS", result
+
+          store = Store(mechanical / "scan" / "scan_index.sqlite", readonly=True)
+          try:
+              save = next(row for row in store.semantic_objects() if row["label"] == "actionSave")
+          finally:
+              store.close()
+
+          proposal = {
+              "schema_version": "scan-reconstruction-proposal/0.1",
+              "proposal_id": "RP-V035-CI-SAVE",
+              "objects": [
+                  {
+                      "id": "BEH-V035-CI-SAVE",
+                      "object_type": "BEHAVIOR",
+                      "subtype": "document-save",
+                      "label": "Save current document",
+                      "coverage": "MAPPED",
+                      "attributes": {
+                          "trigger": "User invokes Save",
+                          "observable_response": "The Save route reaches the recovered save handler",
+                          "uncertainty": "Only the recovered static route is asserted"
+                      }
+                  },
+                  {
+                      "id": "RA-V035-CI-SAVE",
+                      "object_type": "RECONSTRUCTION_ANCHOR",
+                      "subtype": "behavior",
+                      "label": "Preserve Save semantics",
+                      "coverage": "MAPPED",
+                      "attributes": {
+                          "property": "A human-facing Save control must reach the save behavior.",
+                          "fidelity_test": "Invoke Save and verify the control reaches the save behavior.",
+                          "uncertainty": "Runtime persistence details are outside this qualification."
+                      }
+                  }
+              ],
+              "relations": [
+                  {"src": save["id"], "dst": "BEH-V035-CI-SAVE", "kind": "supports"},
+                  {"src": "BEH-V035-CI-SAVE", "dst": "RA-V035-CI-SAVE", "kind": "supports_anchor"}
+              ]
+          }
+          proposal_path = Path("proof/proposal.json")
+          proposal_path.write_text(json.dumps(proposal, indent=2) + "\n", encoding="utf-8")
+
+          semantic = Path("proof/semantic")
+          promoted = certify_reconstruction_handoff(package, mechanical, proposal_path, semantic)
+          assert promoted["state"] == "PASS", promoted
+          PY
+
+          scan-body prepare-reconstruction-trial proof/semantic             --challenge-out proof/challenge             --evaluator-out proof/evaluator             --challenge-bundle proof/challenge.zip             --evaluator-bundle proof/evaluator.zip
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          challenge = json.loads(Path("proof/challenge/challenge.json").read_text())
+          isolation = challenge["source_isolation"]
+          assert isolation["original_source_bytes_included"] is False
+          assert isolation["canonical_database_included"] is False
+          assert isolation["private_evaluator_included"] is False
+          assert not (Path("proof/challenge") / "scan_index.sqlite").exists()
+          assert not (Path("proof/challenge") / "evaluator.json").exists()
+          PY
+      - name: Upload public challenge only
+        uses: actions/upload-artifact@v4
+        with:
+          name: v035-public-challenge
+          path: proof/challenge/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload private evaluator separately
+        uses: actions/upload-artifact@v4
+        with:
+          name: v035-private-evaluator
+          path: proof/evaluator/
+          if-no-files-found: error
+          retention-days: 14
+
+  worker:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download only public challenge
+        uses: actions/download-artifact@v4
+        with:
+          name: v035-public-challenge
+          path: public-challenge
+      - name: Assert clean worker workspace
+        shell: bash
+        run: |
+          test ! -d .git
+          test ! -e Anchor
+          test ! -e evaluator.json
+          test ! -e EVALUATOR_MANIFEST.json
+          test -f public-challenge/challenge.json
+          test -f public-challenge/CHALLENGE_MANIFEST.json
+          find . -maxdepth 2 -type f -print | sort
+      - name: Write generic reference worker harness
+        shell: bash
+        run: |
+          cat > reference_worker.py <<'PY'
+          from hashlib import sha256
+          import json
+          from pathlib import Path
+          import re
+          import sys
+
+          challenge_root = Path(sys.argv[1]).resolve(strict=True)
+          output_root = Path(sys.argv[2]).resolve()
+          candidate = output_root / "candidate"
+          submission_path = output_root / "submission.json"
+          receipt_path = output_root / "worker_receipt.json"
+          output_root.mkdir(parents=True, exist_ok=True)
+          candidate.mkdir(parents=True, exist_ok=True)
+
+          interfaces = sorted(p.name for p in Path("/sys/class/net").iterdir())
+          if any(name != "lo" for name in interfaces):
+              raise SystemExit(f"network namespace not isolated: {interfaces}")
+
+          cwd = Path.cwd()
+          if (cwd / ".git").exists() or (cwd / "Anchor").exists():
+              raise SystemExit("repository checkout unexpectedly present")
+          if any(p.name in {"evaluator.json", "EVALUATOR_MANIFEST.json"} for p in cwd.rglob("*") if p.is_file()):
+              raise SystemExit("private evaluator unexpectedly present")
+
+          challenge = json.loads((challenge_root / "challenge.json").read_text(encoding="utf-8"))
+          requirements = challenge.get("reconstruction_requirements") or []
+
+          surfaces = []
+          for req in requirements:
+              if not req.get("scorable"):
+                  continue
+              for surface in req.get("surface_requirements") or []:
+                  surfaces.append(surface)
+
+          qt_surfaces = [
+              s for s in surfaces
+              if str(s.get("surface_type") or "").lower().startswith("qt:")
+          ]
+          if not qt_surfaces:
+              raise SystemExit("reference worker currently qualifies only a source-free Qt surface challenge")
+
+          actions = []
+          connects = []
+          handlers = []
+          includes = {"#include <QAction>"}
+          for index, surface in enumerate(qt_surfaces, start=1):
+              text = str(surface.get("human_text") or surface.get("fallback_name") or f"Action {index}")
+              token = re.sub(r"[^A-Za-z0-9]+", "", text) or str(index)
+              action = "action" + token[0].upper() + token[1:]
+              handler = "handle" + token[0].upper() + token[1:]
+              actions.append(
+                  f'  <action name="{action}"><property name="text"><string>{text}</string></property></action>'
+              )
+              connects.append(
+                  f'    connect(ui->{action}, &QAction::triggered, this, &MainWindow::{handler});'
+              )
+
+              body = []
+              for terminal in surface.get("required_mapped_terminals") or []:
+                  effect = terminal.get("effect_type")
+                  if effect == "subprocess_launch":
+                      includes.add("#include <QProcess>")
+                      body.append('    QProcess::startDetached("echo", {"scan"});')
+                  elif effect in {"filesystem_write", "file_write"}:
+                      includes.add("#include <QFile>")
+                      body.extend([
+                          '    QFile output("state.txt");',
+                          '    output.open(QIODevice::WriteOnly);',
+                          '    output.write("scan");',
+                      ])
+              handlers.append(
+                  f"void MainWindow::{handler}() {{\n" + ("\n".join(body) if body else "") + "\n}"
+              )
+
+          ui = """<?xml version="1.0" encoding="UTF-8"?>
+          <ui version="4.0">
+           <class>MainWindow</class>
+           <widget class="QMainWindow" name="MainWindow">
+          """ + "\n".join(actions) + """
+           </widget>
+          </ui>
+          """
+          cpp = "\n".join(sorted(includes)) + """
+          void MainWindow::wire() {
+          """ + "\n".join(connects) + """
+          }
+          """ + "\n".join(handlers) + "\n"
+          (candidate / "MainWindow.ui").write_text(ui, encoding="utf-8")
+          (candidate / "MainWindow.cpp").write_text(cpp, encoding="utf-8")
+
+          submission = {
+              "schema_version": "scan-reconstruction-submission/0.1",
+              "challenge_id": challenge["challenge_id"],
+              "agent": {
+                  "name": "deterministic-reference-worker",
+                  "version": "1",
+                  "provider": "SCAN-CI"
+              },
+              "source_isolation": {
+                  "original_source_accessed": False,
+                  "parent_certification_accessed": False,
+                  "evaluator_bundle_accessed": False,
+                  "network_source_lookup_used": False,
+                  "enforcement_level": "CI_SEPARATE_JOB_NETWORK_NAMESPACE"
+              },
+              "notes": "Generic reference reconstruction generated only from the public challenge."
+          }
+          submission_path.write_text(json.dumps(submission, indent=2) + "\n", encoding="utf-8")
+
+          def file_hash(path):
+              return sha256(path.read_bytes()).hexdigest()
+
+          records = []
+          for path in sorted(p for p in candidate.rglob("*") if p.is_file()):
+              records.append({
+                  "path": path.relative_to(candidate).as_posix(),
+                  "bytes": path.stat().st_size,
+                  "sha256": file_hash(path),
+              })
+          canonical = json.dumps(records, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+          candidate_digest = sha256(canonical.encode("utf-8")).hexdigest()
+          worker_hash = file_hash(Path(__file__))
+
+          receipt = {
+              "schema_version": "scan-independent-worker-receipt/0.1",
+              "challenge_manifest_sha256": file_hash(challenge_root / "CHALLENGE_MANIFEST.json"),
+              "candidate_tree_sha256": candidate_digest,
+              "candidate_file_count": len(records),
+              "submission_sha256": file_hash(submission_path),
+              "worker": {
+                  "kind": "deterministic-reference",
+                  "name": "generic-public-challenge-worker",
+                  "implementation_sha256": worker_hash,
+              },
+              "isolation": {
+                  "repository_checkout": "ABSENT",
+                  "original_source": "NOT_PRESENT",
+                  "private_evaluator": "NOT_PRESENT",
+                  "input_artifacts": ["challenge"],
+                  "network_during_worker": "ENFORCED_LINUX_NETWORK_NAMESPACE",
+                  "network_interfaces": interfaces,
+              },
+          }
+          receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+          PY
+      - name: Generate reconstruction with network mechanically disabled
+        shell: bash
+        run: |
+          mkdir -p worker-output
+          sudo unshare --net -- python3 reference_worker.py public-challenge worker-output
+          test -f worker-output/candidate/MainWindow.ui
+          test -f worker-output/candidate/MainWindow.cpp
+          test -f worker-output/submission.json
+          test -f worker-output/worker_receipt.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          receipt = json.loads(Path("worker-output/worker_receipt.json").read_text())
+          assert receipt["isolation"]["repository_checkout"] == "ABSENT"
+          assert receipt["isolation"]["private_evaluator"] == "NOT_PRESENT"
+          assert receipt["isolation"]["input_artifacts"] == ["challenge"]
+          assert receipt["isolation"]["network_during_worker"] == "ENFORCED_LINUX_NETWORK_NAMESPACE"
+          assert receipt["isolation"]["network_interfaces"] == ["lo"]
+          PY
+      - name: Upload isolated worker output
+        uses: actions/upload-artifact@v4
+        with:
+          name: v035-worker-output
+          path: worker-output/
+          if-no-files-found: error
+          retention-days: 14
+
+  adjudicate:
+    needs: [prepare, worker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install and seal scoring package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e Anchor/engine/v0.35
+          scan-body package-manifest Anchor/engine/v0.35
+      - name: Download public challenge for lineage verification
+        uses: actions/download-artifact@v4
+        with:
+          name: v035-public-challenge
+          path: public-challenge
+      - name: Download private evaluator only in adjudication job
+        uses: actions/download-artifact@v4
+        with:
+          name: v035-private-evaluator
+          path: private-evaluator
+      - name: Download isolated worker output
+        uses: actions/download-artifact@v4
+        with:
+          name: v035-worker-output
+          path: worker
+      - name: Fresh-scan and score reconstructed candidate
+        shell: bash
+        run: |
+          mkdir -p proof
+          scan-body score-reconstruction-trial             Anchor/engine/v0.35             private-evaluator             worker/candidate             worker/submission.json             --out proof/trial             --bundle proof/trial.zip
+          scan-body verify-independent-reconstruction             public-challenge             worker/candidate             worker/submission.json             worker/worker_receipt.json             proof/trial             --out proof/independent_proof.json             --reference-worker
+      - name: Audit independent proof claims
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          proof = json.loads(Path("proof/independent_proof.json").read_text())
+          score = json.loads(Path("proof/trial/scorecard.json").read_text())
+          receipt = json.loads(Path("proof/trial/trial_receipt.json").read_text())
+
+          assert proof["state"] == "PASS", proof
+          assert proof["independence"]["state"] == "PASS"
+          assert proof["independence"]["repository_checkout"] == "ABSENT"
+          assert proof["independence"]["original_source"] == "NOT_PRESENT"
+          assert proof["independence"]["private_evaluator"] == "NOT_PRESENT"
+          assert proof["independence"]["network_during_worker"] == "ENFORCED_LINUX_NETWORK_NAMESPACE"
+          assert proof["lineage"]["challenge_manifest_sha256"] == proof["lineage"]["trial_challenge_manifest_sha256"]
+          assert proof["adjudication"]["trial_verification_state"] == "PASS"
+          assert proof["adjudication"]["score_state"] == "PASS"
+          assert proof["adjudication"]["candidate_self_report_authority"] == "NONE"
+          assert proof["claims"]["static_reconstruction_proof"] is True
+          assert proof["claims"]["reference_worker"] is True
+          assert proof["claims"]["external_llm_benchmark_claimed"] is False
+          assert proof["claims"]["runtime_equivalence_claimed"] is False
+          assert score["anchor_counts"]["FAIL"] == 0
+          assert score["anchor_counts"]["PASS"] >= 1
+          assert receipt["blindness"]["agent_isolation"] == "CI_SEPARATE_JOB_NETWORK_NAMESPACE"
+          PY
+      - name: Upload v0.35 independent proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v035-independent-reconstruction-proof
+          path: proof/
+          if-no-files-found: error
+          retention-days: 14
