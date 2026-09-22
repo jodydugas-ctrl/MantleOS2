@@ -278,6 +278,8 @@ jobs:
   final-release-certificate:
     needs: [platform-certification, full-regression, live-authorized-runtime]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     timeout-minutes: 35
     permissions:
       contents: write
@@ -293,6 +295,7 @@ jobs:
       MISTRAL_API_KEY: ''
       COHERE_API_KEY: ''
       XAI_API_KEY: ''
+      GH_TOKEN: ${{ github.token }}
       FULL_TEST_COUNT: ${{ needs.full-regression.outputs.test_count }}
       GH_TOKEN: ${{ github.token }}
 
