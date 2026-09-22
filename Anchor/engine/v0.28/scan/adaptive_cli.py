@@ -14,6 +14,7 @@ from .assimilation_candidate import validate_assimilation_candidate
 from .assimilation_context import files_for_assimilation_detection
 from .cli import main as canonical_main
 from .conformance import evaluate_candidate
+from .refinement_loop import run_refinement_loop
 from .store import Store
 
 
@@ -157,12 +158,50 @@ def _conform_command(args: list[str]) -> int:
     return 0 if result.get("state") == "PASS" else 12
 
 
+def _refine_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body refine",
+        description="run a bounded SCAN-verified reconstruction refinement loop",
+    )
+    parser.add_argument("blueprint", type=Path)
+    parser.add_argument("candidate_root", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--specimen-id", default=None)
+    parser.add_argument(
+        "--patch-command",
+        default=None,
+        help=(
+            "optional external patch command. Placeholders: {candidate}, {blueprint}, {refinement}, "
+            "{conformance}, {report}, {task}, {iteration}, {iteration_dir}"
+        ),
+    )
+    parser.add_argument("--max-iterations", type=int, default=4)
+    parser.add_argument("--max-stalled-iterations", type=int, default=1)
+    parser.add_argument("--regression-policy", choices=["stop", "repair"], default="stop")
+    parser.add_argument("--patch-timeout-seconds", type=float, default=900.0)
+    ns = parser.parse_args(args[1:])
+    result = run_refinement_loop(
+        ns.blueprint,
+        ns.candidate_root,
+        ns.out,
+        engine_version=__version__,
+        specimen_id=ns.specimen_id,
+        patch_command=ns.patch_command,
+        max_iterations=ns.max_iterations,
+        max_stalled_iterations=ns.max_stalled_iterations,
+        regression_policy=ns.regression_policy,
+        patch_timeout_seconds=ns.patch_timeout_seconds,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result.get("state") in {"COMPLETE", "WAITING_FOR_PATCH"} else 13
+
+
 def main(argv=None):
     """Run canonical SCAN plus explicit downstream engineering layers.
 
     Stage 1 remains deterministic and LLM-free. Anchor Code and Anchor Blueprint
-    are derived projections of canonical evidence. Conformance always rescans the
-    candidate and does not accept a coding agent's self-report as evidence.
+    are derived projections of canonical evidence. Conformance and refinement
+    always rescan the candidate; a coding worker's self-report is not evidence.
     """
     args = list(sys.argv[1:] if argv is None else argv)
     if args and args[0] == "validate-assimilation":
@@ -173,6 +212,8 @@ def main(argv=None):
         return _anchor_blueprint_command(args)
     if args and args[0] == "conform":
         return _conform_command(args)
+    if args and args[0] == "refine":
+        return _refine_command(args)
 
     result = canonical_main(args)
     status = _post_scan_assimilation(args)
