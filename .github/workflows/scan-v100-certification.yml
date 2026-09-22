@@ -279,7 +279,8 @@ jobs:
     needs: [platform-certification, full-regression, live-authorized-runtime]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      checks: read
     timeout-minutes: 35
     permissions:
       contents: write
@@ -295,7 +296,6 @@ jobs:
       MISTRAL_API_KEY: ''
       COHERE_API_KEY: ''
       XAI_API_KEY: ''
-      GH_TOKEN: ${{ github.token }}
       FULL_TEST_COUNT: ${{ needs.full-regression.outputs.test_count }}
       GH_TOKEN: ${{ github.token }}
 
@@ -328,6 +328,8 @@ jobs:
 
       - name: Bind pre-merge stage evidence to the main release commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           mkdir -p proof
@@ -609,8 +611,49 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+  publish-release:
+    needs: final-release-certificate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download certified v1.0 release evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: scan-v1.0-certified-release
+          path: proof
+
+      - name: Verify publication payload
+        shell: bash
+        run: |
+          test -f proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+          test -f proof/publish/V1_CI_MANIFEST.json
+          test -f proof/publish/SHA256SUMS.txt
+          (
+            cd proof/publish
+            sha256sum -c SHA256SUMS.txt
+          )
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          cert = json.loads(Path("proof/publish/V1_CI_RELEASE_CERTIFICATE.json").read_text())
+          assert cert["state"] == "PASS"
+          assert cert["engine_version"] == "1.0.0"
+          assert cert["commit_sha"] == os.environ["GITHUB_SHA"]
+          lineage = cert["gates"]["integration_stage_lineage"]
+          assert lineage["state"] == "PASS"
+          assert lineage["release_commit_sha"] == os.environ["GITHUB_SHA"]
+          PY
+
       - name: Publish immutable SCAN v1.0.0 GitHub release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           git fetch --tags --force
@@ -646,4 +689,3 @@ jobs:
             --title "SCAN v1.0.0" \
             --notes-file Anchor/releases/v1.0/RELEASE_NOTES.md \
             "${assets[@]}"
-
