@@ -32,6 +32,7 @@ from .reconstruction import (
 from .reconstruction_trial import (
     prepare_reconstruction_trial, score_reconstruction_trial, verify_reconstruction_trial,
 )
+from .independent_reconstruction import verify_independent_reconstruction_proof
 
 from .queries import QUERY_SQL
 from .release import (certify_manifest, certify_reconstruction_handoff, certify_specimen, qualify_release,
@@ -208,6 +209,18 @@ def main(argv=None):
     p_verify_trial.add_argument("trial_root", type=Path)
     p_verify_trial.add_argument("--out", type=Path, default=None)
 
+    p_verify_independent = sub.add_parser(
+        "verify-independent-reconstruction",
+        help="verify worker isolation/lineage plus the private SCAN reconstruction adjudication",
+    )
+    p_verify_independent.add_argument("challenge_root", type=Path)
+    p_verify_independent.add_argument("candidate_root", type=Path)
+    p_verify_independent.add_argument("submission", type=Path)
+    p_verify_independent.add_argument("worker_receipt", type=Path)
+    p_verify_independent.add_argument("trial_root", type=Path)
+    p_verify_independent.add_argument("--out", type=Path, default=None)
+    p_verify_independent.add_argument("--reference-worker", action="store_true")
+
     p_manifest_build = sub.add_parser("package-manifest", help="regenerate deterministic PACKAGE_MANIFEST.json for a release tree")
     p_manifest_build.add_argument("package_root", type=Path)
 
@@ -311,6 +324,18 @@ def main(argv=None):
             args.out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0 if result.get("state") == "PASS" else 11
+    if args.command == "verify-independent-reconstruction":
+        result = verify_independent_reconstruction_proof(
+            args.challenge_root,
+            args.candidate_root,
+            args.submission,
+            args.worker_receipt,
+            args.trial_root,
+            output_path=args.out,
+            reference_worker=args.reference_worker,
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0 if result.get("state") == "PASS" else (12 if result.get("state") == "PARTIAL" else 13)
 
     if args.command == "scan":
         summary = ScanEngine(
