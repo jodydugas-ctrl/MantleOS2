@@ -31,11 +31,15 @@ Frozen calibration preserved the established actionable-surface denominator:
 - existing surface/effect states and NEST projection preserved
 - integrity errors: **0**
 
-## Sealed artifacts
+## Published assets
 
-- wheel SHA-256: `87fe51d3241d3b21627261bdb7db3ab5ad4bd69ac0b6a9de5d4fa9ccbb78aa79`
-- sdist SHA-256: `43fb8f46a1943a77cb55e73ac469049cdd408f28ec104ece3d2f89f65a17bd70`
-- deterministic source ZIP SHA-256: `6e7d4553a07d843689ae9589b304765eea61b1cf265bebd45cc1e971e39fc9f0`
-- package manifest SHA-256: `a03048a4bc54e346313f5bd32e9fb5281ee5686a18e98bd55fcc0009ebfd861e`
+The GitHub Release publishes only artifacts that the release workflow can reproduce deterministically:
+
+- Python wheel — sealed SHA-256 `87fe51d3241d3b21627261bdb7db3ab5ad4bd69ac0b6a9de5d4fa9ccbb78aa79`
+- deterministic source ZIP — rebuilt twice and required to be byte-identical before publication
+- `PACKAGE_MANIFEST.json` — SHA-256 `a03048a4bc54e346313f5bd32e9fb5281ee5686a18e98bd55fcc0009ebfd861e`
+- `SHA256SUMS.txt` — authoritative checksums for the published release assets
+
+The RC qualification also built an sdist successfully, but separate sdist builds did not preserve a stable archive hash, so the sdist is intentionally **not** published as a sealed release asset.
 
 Detailed qualification and frozen-calibration evidence is preserved under `Anchor/releases/v0.28/`.
