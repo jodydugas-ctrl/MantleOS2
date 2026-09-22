@@ -168,3 +168,24 @@ The full inherited regression suite remains mandatory and carries forward the ex
 The CI hardening matrix runs the focused v0.37 tests on Linux, macOS, and Windows across the supported Python range. A separate Ubuntu job runs the complete inherited plus v0.37 suite and a clean wheel/console-entry-point smoke test.
 
 This gate is intentionally narrower than final v1.0 certification. It does not claim distributed/multi-host locking, network-filesystem semantics, power-loss atomicity for every projection, exhaustive parser fuzzing, or a production performance SLA.
+
+
+## v1.0 final certification qualification
+
+v1.0 strengthens the packaged qualification surface and then separates local package certification from aggregate CI release certification.
+
+The packaged `qualify` gate now requires all currently emitted production-readiness projections, not only the earlier Stage 1 set. In addition to the canonical database, evidence graph, completeness, integrity, closure, and NEST projections, the required output set includes:
+
+- `coverage_report.json` / `coverage_report.md`;
+- `gaps.json` / `gaps.md`;
+- `uncertainty_challenges.json` / `uncertainty_challenges.md`;
+- `triage_ranking.json` / `triage_ranking.md`;
+- `layered_provenance.json` / `layered_provenance.md`.
+
+The LLM-disabled qualification environment removes the supported common provider credential variables before running the mechanical gate.
+
+`scan-body release-certify` then binds the exact `PACKAGE_MANIFEST.json` to the qualification report and seals those bytes in `V1_RELEASE_MANIFEST.json`. Its scope remains `LOCAL_MECHANICAL_PACKAGE`; it must not self-promote into a claim about CI-only evidence.
+
+The final CI release gate additionally requires the full inherited regression suite, a Linux/macOS/Windows Python 3.11/3.12/3.13 matrix, a clean wheel install, a live Linux authorized-runtime validation under enforced network denial, wrong-plan-hash refusal, source immutability, secret non-forwarding, and final release-artifact hashing.
+
+The aggregate CI certificate is therefore commit- and byte-specific. Any subsequent source change invalidates the applicability of that certificate until the gate is rerun.
