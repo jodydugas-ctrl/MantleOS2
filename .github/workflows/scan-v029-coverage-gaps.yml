@@ -1,0 +1,178 @@
+name: SCAN v0.29 coverage gaps
+
+on:
+  push:
+    branches:
+      - anchor-v0.29-coverage-gaps
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-coverage-gaps.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-coverage-gaps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-gaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install v0.29 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e Anchor/engine/v0.29 pytest
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.29.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.29/PACKAGE_MANIFEST.json
+
+      - name: Run complete v0.29 regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.29/tests
+
+      - name: Run duplicate v0.29 scans
+        shell: bash
+        run: |
+          mkdir -p results
+          scan-body scan Anchor/engine/v0.29/tests/fixtures/qualification_sample --out results/v029-a --specimen-id v029-coverage-gaps
+          scan-body scan Anchor/engine/v0.29/tests/fixtures/qualification_sample --out results/v029-b --specimen-id v029-coverage-gaps
+
+      - name: Prove coverage projection determinism and manifest sealing
+        shell: bash
+        run: |
+          cmp results/v029-a/coverage_report.json results/v029-b/coverage_report.json
+          cmp results/v029-a/coverage_report.md results/v029-b/coverage_report.md
+          cmp results/v029-a/gaps.md results/v029-b/gaps.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scan.release import verify_projection_manifest
+
+          root = Path("results/v029-a")
+          report = json.loads((root / "coverage_report.json").read_text())
+          manifest = json.loads((root / "projection_manifest.json").read_text())
+          names = {row["name"] for row in manifest["projections"]}
+          assert {"coverage_report.json", "coverage_report.md", "gaps.md"} <= names
+          assert report["projection_state"] == "PASS"
+          assert report["authority"]["classification_mutation"] == "NONE"
+          assert report["authority"]["scalar_confidence_score"] == "NOT_USED"
+          verification = verify_projection_manifest(root)
+          assert verification["state"] == "PASS", verification
+          PY
+
+      - name: Prove canonical row determinism
+        shell: bash
+        run: |
+          python - <<'PY'
+          import sqlite3
+
+          def rows(path, table):
+              db = sqlite3.connect(path)
+              db.row_factory = sqlite3.Row
+              try:
+                  return [dict(r) for r in db.execute(f"SELECT * FROM {table} ORDER BY 1")]
+              finally:
+                  db.close()
+
+          tables = [
+              "files", "nodes", "edges", "evidence", "findings",
+              "semantic_objects", "semantic_relations", "completeness_dimensions",
+          ]
+          for table in tables:
+              a = rows("results/v029-a/scan_index.sqlite", table)
+              b = rows("results/v029-b/scan_index.sqlite", table)
+              assert a == b, table
+          PY
+
+      - name: Compare v0.28 and v0.29 canonical evidence
+        shell: bash
+        run: |
+          PYTHONPATH="$GITHUB_WORKSPACE/Anchor/engine/v0.28" python - <<'PY'
+          from pathlib import Path
+          import scan
+          from scan.engine import ScanEngine
+          assert scan.__version__ == "0.28.0", scan.__version__
+          ScanEngine().scan(
+              Path("Anchor/engine/v0.29/tests/fixtures/qualification_sample"),
+              Path("results/v028"),
+              "v029-coverage-gaps",
+          )
+          PY
+          python - <<'PY'
+          import sqlite3
+
+          def rows(path, table):
+              db = sqlite3.connect(path)
+              db.row_factory = sqlite3.Row
+              try:
+                  return [dict(r) for r in db.execute(f"SELECT * FROM {table} ORDER BY 1")]
+              finally:
+                  db.close()
+
+          tables = [
+              "files", "nodes", "edges", "evidence", "findings",
+              "semantic_objects", "semantic_relations", "completeness_dimensions",
+          ]
+          for table in tables:
+              old = rows("results/v028/scan_index.sqlite", table)
+              new = rows("results/v029-a/scan_index.sqlite", table)
+              assert old == new, f"v0.28->v0.29 canonical drift in {table}"
+          PY
+
+      - name: Reconcile report counts against SQLite
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, sqlite3
+          from collections import Counter
+          from pathlib import Path
+
+          root = Path("results/v029-a")
+          report = json.loads((root / "coverage_report.json").read_text())
+          db = sqlite3.connect(root / "scan_index.sqlite")
+          db.row_factory = sqlite3.Row
+          specs = {
+              "files": ("SELECT coverage AS state FROM files",),
+              "nodes": ("SELECT coverage AS state FROM nodes",),
+              "edges": ("SELECT coverage AS state FROM edges",),
+              "findings": ("SELECT status AS state FROM findings",),
+              "semantic_objects": ("SELECT coverage AS state FROM semantic_objects",),
+              "semantic_relations": ("SELECT status AS state FROM semantic_relations",),
+              "completeness_dimensions": ("SELECT state FROM completeness_dimensions",),
+          }
+          try:
+              for layer, (sql,) in specs.items():
+                  expected = Counter(str(r["state"] or "UNKNOWN").upper() for r in db.execute(sql))
+                  actual = Counter(report["coverage"][layer])
+                  assert actual == expected, (layer, actual, expected)
+          finally:
+              db.close()
+          assert report["gaps"]["count"] == len(report["gaps"]["records"])
+          PY
+
+      - name: Upload candidate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v029-coverage-gaps
+          path: results
+          if-no-files-found: error
+          retention-days: 14
