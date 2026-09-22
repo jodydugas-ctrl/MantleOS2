@@ -1,90 +1,61 @@
-# SCAN Engine v0.28
+# SCAN Engine v0.29
 
-Status: **integration candidate — not release-qualified**.
+Status: **coverage/gaps integration candidate — not release-qualified**.
 
-v0.28 advances the v0.27 evidence-first scanner into a closed reconstruction-verification loop while preserving the A1-A8 governance contract. The v0.27 scanner is the base; its newer Qt routing, bounded extraction, evidence graph, NEST model, reconstruction-trial machinery, and certification code remain the authority for Stage 1.
+v0.29 starts the production-readiness upgrade path from the sealed v0.28.0 release. This tranche adds only the first planned step: deterministic coverage and unresolved-gap projections.
 
-This candidate intentionally has **no `PACKAGE_MANIFEST.json` yet**. The copied v0.27 manifest was removed because its hashes and version would be false after modification. A new manifest must be generated only after the v0.28 bytes and tests are final.
+## Added in this tranche
 
-## What v0.28 adds
+Ordinary scans now emit:
 
-### Anchor Code 0.9
+- `coverage_report.json`
+- `coverage_report.md`
+- `gaps.json`
+- `gaps.md`
 
-`scan/anchor_code.py` projects the canonical semantic graph into a deterministic, line-oriented Anchor Code representation.
+These artifacts are projections of `scan_index.sqlite`. They do not create a second authority, assign scalar confidence, rank gaps, or promote evidence.
 
-The projection preserves the evidence firewall:
+The report reconciles existing canonical state across:
 
-- static graph relations are marked as statically derived rather than observed runtime behavior;
-- `UNKNOWN`, `PARTIAL`, and `BLOCKED` coverage survive;
-- source evidence remains traceable;
-- the projection is downstream of `scan_index.sqlite` and cannot rewrite canonical evidence.
+- files, nodes, edges, findings;
+- semantic objects and relations;
+- completeness dimensions;
+- acquisition/content availability;
+- human-surface closure;
+- deep effect closure.
 
-Command:
+Each gap record carries a canonical object ID, state, reason code, evidence IDs when available, and a resolution target.
 
-```bash
-scan-body anchor-code .scan/scan_index.sqlite --out-dir .scan
-```
-
-### Portable Anchor Blueprint
-
-`scan/agent_blueprint.py` emits one Markdown handoff for a coding agent. It includes the evidence-supported human surface, state/routing anatomy, effects and NEST boundary, build/dependency anatomy, explicit uncertainty, and an embedded machine-readable conformance manifest.
-
-Command:
+The same projections can be regenerated without rescanning:
 
 ```bash
-scan-body anchor-blueprint .scan/scan_index.sqlite
+scan-body coverage-gaps .scan/scan_index.sqlite --out-dir ./coverage
 ```
 
-The Blueprint is a derived reconstruction artifact, not a replacement authority for the canonical evidence graph.
+## Explicit non-goals
 
-### Fresh-scan reconstruction conformance
+This tranche does **not** implement:
 
-`scan/conformance.py` implements the important authority separation learned in the terminal branch:
+- uncertainty challenger/reviewer behavior;
+- centrality or triage ranking;
+- layered provenance changes;
+- parity-scenario generation;
+- AGENTS.md distribution;
+- new runtime observation;
+- any new evidence-promotion mechanism.
 
-`Blueprint -> coding agent -> candidate -> fresh SCAN -> mechanical comparison`
+Those remain later production-readiness stages and must be admitted separately after this projection proves deterministic and useful.
 
-A coding agent does not certify its own implementation. SCAN rescans the candidate read-only and compares the mechanically recovered contracts with the source Blueprint.
+## Promotion gates
 
-Command:
+Before this candidate advances:
 
-```bash
-scan-body conform "Example Anchor Blueprint.md" ./candidate --out ./conformance
-```
+1. focused coverage/gaps tests pass;
+2. full v0.29 regression suite passes;
+3. ordinary scan outputs remain deterministic;
+4. coverage counts reconcile exactly to the canonical database;
+5. regeneration from a read-only DB does not mutate canonical bytes;
+6. v0.28 calibration behavior is not regressed;
+7. no stale package manifest is carried forward.
 
-Static conformance does not claim pixel, runtime, timing, network, or performance equivalence.
-
-### Static HTML/CSS human-surface extraction
-
-`scan/adapters/web_frontend.py` adds deterministic browser-surface extraction for HTML and CSS without executing the specimen.
-
-It maps:
-
-- buttons, inputs, selects, textareas, links, summaries, and canvas surfaces;
-- stable label / aria / associated-label identity;
-- inline DOM event bindings;
-- stylesheet selectors and declarations as visual contracts.
-
-A canvas is treated as a **presented surface by default**. It becomes an actionable input surface only when human-event evidence supports that classification. This mirrors v0.26's Qt surface-denominator correction: visible does not automatically mean actionable.
-
-## Preserved v0.27 behavior
-
-v0.28 is based on the v0.27 tree rather than the older terminal scanner core. In particular, the v0.27 Qt `QEvent::FileOpen` correction is retained: a file-open surface is bound only when the evidence is inside the actual enclosing `event()` implementation.
-
-The GitHub NEST vocabulary is also retained. Terminal-derived reconstruction contracts recognize both historical `environment_boundary` objects and the current `nest_boundary` representation, but v0.28 does not replace A8's NEST model.
-
-## Qualification state
-
-This branch is deliberately **not frozen** and **not certified**.
-
-Before promotion:
-
-1. add/port focused tests for Anchor Code, Blueprint, conformance, and web surfaces;
-2. run the full v0.28 regression suite;
-3. rerun the frozen calibration specimens and compare against v0.27;
-4. verify deterministic duplicate scans;
-5. inspect newly closed web routes for false joins;
-6. regenerate `PACKAGE_MANIFEST.json` from the final bytes;
-7. run package/self-audit and release qualification;
-8. update project-level evidence/report documents with only executed results.
-
-Until those gates are complete, v0.26 remains the latest frozen release and v0.28 remains an integration candidate.
+Until those gates are executed, v0.28.0 remains the latest released SCAN version.
