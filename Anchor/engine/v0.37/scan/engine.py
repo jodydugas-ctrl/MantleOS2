@@ -8,6 +8,7 @@ from pathlib import Path
 from . import __version__
 from .adapters import DEFAULT_ADAPTERS
 from .graph import graph_metrics
+from .operational_hardening import OutputLease
 from .inventory import DEFAULT_MAX_FILE_BYTES, FileRecord, inventory, inventory_from_manifest, read_verified_local
 from .model import ExtractionResult, Finding, stable_id
 from .resolution import resolve_cross_file
@@ -53,7 +54,8 @@ class ScanEngine:
             max_materialized_files=self.budget.max_materialized_files,
         )
         specimen = {"root": str(root), "specimen_id": specimen_id, "acquisition_mode": "local"}
-        return self._scan_records(files, output, specimen, content_root=root)
+        with OutputLease(output, engine_version=__version__):
+            return self._scan_records(files, output, specimen, content_root=root)
 
     def scan_manifest(self, manifest_path: Path, output: Path, content_root: Path | None = None,
                       specimen_id: str | None = None) -> dict:
@@ -78,7 +80,13 @@ class ScanEngine:
             "content_root": str(content_root.resolve()) if content_root else None,
             "acquisition_mode": "manifest",
         }
-        return self._scan_records(files, output, specimen, content_root=content_root.resolve() if content_root else None)
+        with OutputLease(output, engine_version=__version__):
+            return self._scan_records(
+                files,
+                output,
+                specimen,
+                content_root=content_root.resolve() if content_root else None,
+            )
 
     def _scan_records(self, files: list[FileRecord], output: Path, specimen: dict, content_root: Path | None) -> dict:
         output.mkdir(parents=True, exist_ok=True)
