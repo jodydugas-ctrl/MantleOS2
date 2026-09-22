@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - anchor-v0.28-reconstruction-loop
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.28/**'
+      - '.github/workflows/scan-v028-frozen-calibration.yml'
   workflow_dispatch:
 
 permissions:
