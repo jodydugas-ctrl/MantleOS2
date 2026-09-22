@@ -1,95 +1,100 @@
-# SCAN Engine v0.32
+# SCAN Engine v0.33
 
-Status: **layered-provenance integration candidate — not release-qualified**.
+Status: **parity-scenarios/distribution integration candidate — not release-qualified**.
 
-v0.32 is stacked on the v0.31 triage-ranking candidate and implements only the fourth production-readiness stage: explicit provenance layers over the existing canonical semantic graph.
+v0.33 is stacked on the v0.32 layered-provenance candidate and implements only the fifth production-readiness stage: portable static parity scenarios plus lightweight agent discovery.
 
-## Layer model
+## Purpose
 
-The canonical graph remains singular. v0.32 projects its objects into:
+The parity layer turns the Blueprint's existing embedded conformance manifest into human/agent-readable Given/When/Then scenarios without creating a second specification.
 
-- **E0 — source/evidence:** specimen identity, files, direct evidence;
-- **E1 — mechanical anatomy:** extracted anatomical objects, graph-relation claims, scanner findings;
-- **E2 — semantic interpretation:** interpretations and behavior contracts;
-- **E3 — reconstruction contract:** reconstruction anchors;
-- **E4 — human description:** presentation-only prose/description objects.
+Only contracts that are both:
 
-E4 is deliberately non-canonical. Human-readable explanation may cite lower-layer IDs but cannot upgrade source evidence or mechanical claims.
+- `coverage = MAPPED`
+- `enforcement = REQUIRED`
 
-## Output
+become parity scenarios.
 
-Ordinary scans emit:
+PARTIAL, BLOCKED, UNKNOWN, and advisory observations remain outside binary parity requirements.
 
-- `layered_provenance.json`
-- `layered_provenance.md`
+## Portable outputs
 
-The projection can be regenerated from an existing canonical database:
+Every Anchor Blueprint export now produces companion files in the same distribution directory:
+
+- `parity_scenarios.json`
+- `parity_scenarios.feature`
+- `AGENTS.md` when no project-authored AGENTS file already exists
+
+The same package can be regenerated from the Blueprint alone:
 
 ```bash
-scan-body provenance-layers .scan/scan_index.sqlite --out-dir ./provenance
+scan-body parity-scenarios "Application Anchor Blueprint.md" --out-dir ./handoff
 ```
 
-Semantic-overlay ingestion and reconstruction promotion also refresh the layered projection so E2/E3 state cannot silently lag behind the canonical store.
+No source repository or `scan_index.sqlite` is required for regeneration.
 
-## What is preserved
+## Scenario authority
 
-Each object retains its own coverage state. The projection does not derive one flat confidence value.
+Each parity scenario references exactly one embedded conformance contract ID.
 
-This means, for example:
+The scenario means only:
 
-- direct evidence can be `MAPPED`;
-- the mechanical function/call relationship can be `MAPPED`;
-- the behavioral interpretation can remain `PARTIAL`;
-- the reconstruction anchor can remain `PARTIAL`;
-- a human description can be readable while remaining presentation-only.
+1. a reconstruction candidate exists;
+2. SCAN performs a fresh read-only candidate scan;
+3. the source contract must be reported `SATISFIED`.
 
-For each object the projection exposes:
+The scenarios explicitly do **not** claim runtime, visual/pixel, timing, network, performance, or behavioral equivalence beyond what static conformance mechanically establishes.
 
-- layer identity;
-- original coverage state;
-- immediate proof support;
-- lower-layer support;
-- evidence IDs reachable through typed proof relations;
-- source-file IDs;
-- contradiction relation IDs;
-- whether a proof path reaches E0.
+Scenario JSON retains the original contract identity, expected values, comparison rule, count, and source references. The Gherkin file is a readable rendering of that same projection.
 
-Unknown future object types are emitted as `UNCLASSIFIED`, never silently assigned to a layer.
+## AGENTS.md distribution
+
+The generated AGENTS pointer is intentionally small. It:
+
+- points to the authoritative Blueprint;
+- records the Blueprint SHA-256;
+- identifies the parity files as derived projections;
+- instructs agents to verify with a fresh SCAN conformance pass;
+- states that candidate self-report is not evidence;
+- preserves uncertainty;
+- repeats that static parity is not runtime equivalence.
+
+SCAN never replaces an existing project-authored `AGENTS.md`. If a non-SCAN AGENTS file already exists, it is preserved unchanged and the distribution result reports `PRESERVED_EXISTING`.
 
 ## Authority boundary
 
-- one canonical graph: `scan_index.sqlite`;
-- no duplicate provenance database;
-- no canonical writes from the projection;
-- no confidence aggregation;
-- no automatic promotion;
-- higher-layer prose cannot alter lower-layer evidence.
+- Blueprint embedded conformance manifest remains authoritative for portable static contracts;
+- parity scenarios are projections only;
+- parity scenarios cannot add requirements;
+- candidate self-report has no authority;
+- AGENTS.md is discovery/instruction metadata, not a specification;
+- runtime equivalence is deferred to the later authorized runtime-validation stage.
 
 ## Explicit non-goals
 
 This tranche does not add:
 
-- parity/Gherkin scenarios;
-- AGENTS.md distribution;
-- calibration expansion;
-- new runtime evidence;
-- new reconstruction scoring;
-- evidence promotion rules.
-
-Those remain later roadmap stages.
+- new conformance contracts;
+- runtime scenarios;
+- visual/pixel assertions;
+- timing assertions;
+- broader calibration;
+- reconstruction scoring changes;
+- runtime execution;
+- evidence promotion.
 
 ## Promotion gates
 
 Before this stage is admitted:
 
-1. all inherited v0.31 tests remain green;
-2. projection generation and regeneration are deterministic;
-3. read-only regeneration leaves the canonical DB unchanged;
-4. projected object IDs exactly reconcile with canonical semantic objects;
-5. per-object coverage is unchanged by layer classification;
-6. a synthetic E0→E4 chain proves independent coverage at each layer;
-7. promoted semantic overlays refresh E2/E3 projections;
-8. unclassified object types remain visible;
-9. E4 remains explicitly presentation-only.
+1. all inherited v0.32 tests remain green;
+2. every parity scenario maps 1:1 to an embedded MAPPED+REQUIRED contract;
+3. advisory and uncertain contracts never become required parity scenarios;
+4. parity regeneration from the portable Blueprint is deterministic;
+5. parity regeneration does not modify the Blueprint;
+6. the Gherkin file contains exactly one scenario per JSON scenario;
+7. `AGENTS.md` remains small and contains no copied contract list;
+8. an existing project-authored `AGENTS.md` is never overwritten;
+9. scenario metadata explicitly states that runtime/visual/timing equivalence is not claimed.
 
 v0.28.0 remains the latest released SCAN version while the stacked production-readiness candidates are evaluated.
