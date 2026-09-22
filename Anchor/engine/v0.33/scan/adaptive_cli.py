@@ -18,6 +18,7 @@ from .coverage_report import build_coverage_report, write_coverage_outputs
 from .uncertainty_challenger import build_uncertainty_challenges, write_uncertainty_outputs
 from .triage_ranking import write_triage_outputs
 from .layered_provenance import write_layered_provenance_outputs
+from .parity_distribution import write_parity_distribution
 from .refinement_loop import run_refinement_loop
 from .store import Store
 
@@ -222,6 +223,23 @@ def _provenance_layers_command(args: list[str]) -> int:
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
+
+def _parity_scenarios_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body parity-scenarios",
+        description="regenerate derived static parity scenarios and AGENTS.md from a portable Anchor Blueprint",
+    )
+    parser.add_argument("blueprint", type=Path)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    ns = parser.parse_args(args[1:])
+    result = write_parity_distribution(
+        ns.blueprint,
+        ns.out_dir,
+        engine_version=__version__,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
 def _conform_command(args: list[str]) -> int:
     parser = argparse.ArgumentParser(
         prog="scan-body conform",
@@ -305,6 +323,8 @@ def main(argv=None):
         return _triage_gaps_command(args)
     if args and args[0] == "provenance-layers":
         return _provenance_layers_command(args)
+    if args and args[0] == "parity-scenarios":
+        return _parity_scenarios_command(args)
     if args and args[0] == "conform":
         return _conform_command(args)
     if args and args[0] == "refine":
