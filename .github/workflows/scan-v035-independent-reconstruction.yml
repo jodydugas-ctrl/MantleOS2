@@ -215,6 +215,7 @@ jobs:
           import json
           from pathlib import Path
           import re
+          import socket
           import sys
 
           challenge_root = Path(sys.argv[1]).resolve(strict=True)
@@ -225,7 +226,7 @@ jobs:
           output_root.mkdir(parents=True, exist_ok=True)
           candidate.mkdir(parents=True, exist_ok=True)
 
-          interfaces = sorted(p.name for p in Path("/sys/class/net").iterdir())
+          interfaces = sorted(name for _index, name in socket.if_nameindex())
           if any(name != "lo" for name in interfaces):
               raise SystemExit(f"network namespace not isolated: {interfaces}")
 
