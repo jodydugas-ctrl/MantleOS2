@@ -105,8 +105,7 @@ def _anchor_code_command(args: list[str]) -> int:
             specimen,
             ns.out_dir / "anchor_code.txt",
             ns.out_dir / "anchor_blueprint.json",
-            engine_version=__version__,
-            body_map_path=(ns.db.parent / "machine_body_map.json"),
+            engine_version=__version__
         )
     finally:
         store.close()
