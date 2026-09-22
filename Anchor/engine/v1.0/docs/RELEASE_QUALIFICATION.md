@@ -70,15 +70,19 @@ The release query set covers:
 
 A query is accepted when it executes mechanically against the canonical database. A zero-row result can be correct for a specimen and must not be converted into a fabricated finding.
 
-## What this qualification does not prove
+## What the packaged qualification alone does not prove
 
-It does not replace:
+The local `qualify` command does not replace:
 
 - full pinned NotepadNext calibration (PR5);
 - blind H-001 transferability after candidate freeze (PR6);
-- source-blind reconstruction proof (PR7);
+- independently isolated reconstruction proof;
 - large-repository performance/resume measurements;
 - cross-platform Python/install certification.
+
+The aggregate v1.0 CI certificate adds several of those release-level gates, but
+it still does not convert specimen-specific PARTIAL/BLOCKED/UNKNOWN evidence into
+semantic completeness.
 ## Parser/adaptor fault containment
 
 A supported scan must survive an ordinary exception from one extraction adapter without dropping the remainder of the specimen. The engine records the affected adapter, version, error class/message, and file as a `parser_failure`, downgrades that file to `PARTIAL`, and continues other independent extraction work. Such a failure is never cached as a successful result.
