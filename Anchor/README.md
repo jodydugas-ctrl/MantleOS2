@@ -19,6 +19,7 @@ The public, versioned project documents live in [`docs/`](docs/). They are part 
 - [`docs/SCAN_PROTOCOL.md`](docs/SCAN_PROTOCOL.md) — operational scanning, certification, promotion, and reconstruction protocol.
 - [`docs/SCAN_REPORT.md`](docs/SCAN_REPORT.md) — executed evidence, specimen findings, calibration history, and honest coverage state.
 - [`docs/SCAN_CREATION_PLAN.md`](docs/SCAN_CREATION_PLAN.md) — engineering roadmap and PR1-PR8 certification ledger.
+- [`docs/PRODUCTION_READINESS_PATH.md`](docs/PRODUCTION_READINESS_PATH.md) — staged post-v0.28 path from coverage/gaps through v1.0 certification.
 - [`evidence/pr5/PR5_ACQUISITION_RECEIPT.md`](evidence/pr5/PR5_ACQUISITION_RECEIPT.md) — exact pinned-source acquisition and archive digest evidence.
 - [`evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json`](evidence/pr5/PR5_EXECUTION_ARTIFACT_REQUIREMENTS.json) — authoritative v0.20 release hashes and cold-run admission policy.
 - [`evidence/pr5/PR5_COLD_SCAN_RECEIPT.json`](evidence/pr5/PR5_COLD_SCAN_RECEIPT.json) — sealed cold-run identity, coverage, and bundle digests.
