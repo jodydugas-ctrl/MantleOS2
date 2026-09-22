@@ -220,5 +220,21 @@ def test_unsafe_runtime_paths_are_rejected(tmp_path: Path):
     assert "unsafe relative path" in report["error"]
 
 
+
+def test_ordinary_scan_never_executes_runtime_target(tmp_path: Path):
+    from scan.engine import ScanEngine
+
+    target = tmp_path / "ordinary"
+    target.mkdir()
+    (target / "danger.py").write_text(
+        'from pathlib import Path\nPath("EXECUTED").write_text("bad", encoding="utf-8")\n',
+        encoding="utf-8",
+    )
+    out = tmp_path / "scan"
+    ScanEngine().scan(target, out, "v036-no-runtime")
+    assert not (target / "EXECUTED").exists()
+    assert not (out / "runtime_validation.json").exists()
+    assert not (out / "runtime_validation.md").exists()
+
 def test_candidate_version_is_v036():
     assert __version__ == "0.36.0"
