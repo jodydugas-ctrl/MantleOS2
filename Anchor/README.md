@@ -6,12 +6,12 @@ The public, versioned project documents live in [`docs/`](docs/). They are part 
 
 ## Current checkpoint
 
-- SCAN Engine: v0.27 tested calibration candidate; v0.26 remains the latest frozen release and v0.20 remains the immutable pre-oracle cold baseline
-- Project documentation: v0.32 checkpoint (A1-A8 governing contract unchanged)
-- Status: frozen pre-v1 candidate; calibration loop active, production certification pending
-- PR5 NotepadNext calibration: v0.20 cold and v0.21-v0.26 sealed reruns mechanically PASS; calibration PARTIAL
-- PR7 reconstruction proof: partial; M5 and M6A mechanisms pass, external-agent M6B remains open
-- H-001 blind holdout: frozen and source-uninspected
+- SCAN Engine: **v0.28.0 released**; v0.29 is the active production-readiness candidate.
+- v0.29 current tranche: deterministic coverage/gaps projection only; later uncertainty-challenger and triage stages are not yet admitted.
+- v0.28 release qualification: 158 tests passed, 90/90 sealed package files verified, 12/12 release queries passed, LLM-disabled mechanical qualification PASS.
+- v0.28 frozen calibration: NotepadNext 380 -> 380 actionable surfaces; Moji 103 -> 103; zero new actionable static-web surfaces; zero integrity errors.
+- H-001 blind holdout remains frozen/source-uninspected until the broader-calibration stage.
+- A1-A8 remain the governing architecture contract.
 
 ## Documents
 
@@ -24,8 +24,9 @@ The public, versioned project documents live in [`docs/`](docs/). They are part 
 - [`evidence/pr5/PR5_COLD_SCAN_RECEIPT.json`](evidence/pr5/PR5_COLD_SCAN_RECEIPT.json) — sealed cold-run identity, coverage, and bundle digests.
 - [`evidence/pr5/PR5_CALIBRATION_REPORT.md`](evidence/pr5/PR5_CALIBRATION_REPORT.md) — post-seal machine-versus-oracle comparison and generic corrective backlog.
 - [`engine/v0.26/`](engine/v0.26/) — exact frozen surface-denominator-corrected scanner source; this is not the NotepadNext specimen.
-- [`engine/v0.27/`](engine/v0.27/) — tested generic Qt `QEvent::FileOpen` routing correction; it is a candidate awaiting final release certification.
-- [`releases/v0.26/`](releases/v0.26/) — frozen v0.26 artifacts, deterministic/cache receipts, and completed PR5 certification/calibration evidence. The 277 MB sealed specimen bundle is kept out of Git and identified by SHA-256.
+- [`engine/v0.28/`](engine/v0.28/) — released v0.28 scanner/reconstruction-verification engine.
+- [`releases/v0.28/`](releases/v0.28/) — v0.28 sealed qualification, frozen-calibration, manifest, and release evidence.
+- [`engine/v0.29/`](engine/v0.29/) — active coverage/gaps production-readiness candidate; not released or package-sealed.
 
 ## Synchronization rules
 
