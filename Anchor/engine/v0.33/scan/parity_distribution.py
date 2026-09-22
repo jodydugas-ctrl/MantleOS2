@@ -37,7 +37,11 @@ def build_parity_scenarios(
     blueprint_sha256: str,
     engine_version: str,
 ) -> dict[str, Any]:
-    contracts = list(manifest.get("contracts") or [])
+    contracts = [
+        contract for contract in (manifest.get("contracts") or [])
+        if str(contract.get("enforcement") or "REQUIRED").upper() == "REQUIRED"
+        and str(contract.get("coverage") or "UNKNOWN").upper() == "MAPPED"
+    ]
     scenarios: list[dict[str, Any]] = []
     for contract in contracts:
         contract_id = str(contract.get("contract_id") or "")
