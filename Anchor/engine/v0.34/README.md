@@ -1,100 +1,71 @@
-# SCAN Engine v0.33
+# SCAN Engine v0.34
 
-Status: **parity-scenarios/distribution integration candidate — not release-qualified**.
+Status: **broader-calibration candidate — no scanner feature changes**.
 
-v0.33 is stacked on the v0.32 layered-provenance candidate and implements only the fifth production-readiness stage: portable static parity scenarios plus lightweight agent discovery.
+v0.34 is stacked on the v0.33 parity/distribution candidate. This stage changes the test and qualification envelope rather than adding scanner behavior.
 
-## Purpose
+## Calibration objective
 
-The parity layer turns the Blueprint's existing embedded conformance manifest into human/agent-readable Given/When/Then scenarios without creating a second specification.
+The production-readiness mechanisms added in v0.29-v0.33 must transfer across different software shapes and failure modes without specimen-specific rules.
 
-Only contracts that are both:
+The matrix combines frozen real repositories with deterministic adversarial fixtures.
 
-- `coverage = MAPPED`
-- `enforcement = REQUIRED`
+### Frozen real repositories
 
-become parity scenarios.
+- **NotepadNext** — Qt/C++ desktop application.
+- **Moji** — TypeScript/Electron application.
+- **pell** — plain JavaScript/web editor.
 
-PARTIAL, BLOCKED, UNKNOWN, and advisory observations remain outside binary parity requirements.
+Every external specimen is pinned to an exact commit and tree identity.
 
-## Portable outputs
+### Deterministic adversarial fixtures
 
-Every Anchor Blueprint export now produces companion files in the same distribution directory:
+- unsupported Python CLI;
+- mixed-language C++/HTML/TypeScript/Python specimen;
+- metadata-only/incomplete acquisition manifest;
+- ambiguous static web routing;
+- forced resource-budget interruption.
 
-- `parity_scenarios.json`
-- `parity_scenarios.feature`
-- `AGENTS.md` when no project-authored AGENTS file already exists
+These fixtures are deliberately small. They test epistemic behavior and failure handling, not application-specific extraction quality.
 
-The same package can be regenerated from the Blueprint alone:
+## Calibration invariants
 
-```bash
-scan-body parity-scenarios "Application Anchor Blueprint.md" --out-dir ./handoff
-```
+For every applicable specimen the gate checks:
 
-No source repository or `scan_index.sqlite` is required for regeneration.
+- duplicate cold-scan determinism;
+- zero integrity ERRORs;
+- coverage/gaps generation;
+- uncertainty-challenger consistency;
+- triage ranking consistency;
+- layered-provenance object reconciliation;
+- Blueprint/conformance-manifest generation;
+- parity scenarios equal the MAPPED+REQUIRED contract set;
+- portable parity regeneration.
 
-## Scenario authority
+Failure-mode fixtures additionally require:
 
-Each parity scenario references exactly one embedded conformance contract ID.
+- unsupported CLI content does not invent actionable human surfaces;
+- incomplete acquisition remains explicit and challengeable as external input;
+- ambiguous routing preserves uncertainty rather than manufacturing a required handler contract;
+- resource-budget stops remain explicit coverage gaps rather than silent omission.
 
-The scenario means only:
+## Anti-overfitting rule
 
-1. a reconstruction candidate exists;
-2. SCAN performs a fresh read-only candidate scan;
-3. the source contract must be reported `SATISFIED`.
+The calibration workflow does not assert hand-tuned node/surface counts for new specimens. It asserts structural invariants and records observed metrics.
 
-The scenarios explicitly do **not** claim runtime, visual/pixel, timing, network, performance, or behavioral equivalence beyond what static conformance mechanically establishes.
-
-Scenario JSON retains the original contract identity, expected values, comparison rule, count, and source references. The Gherkin file is a readable rendering of that same projection.
-
-## AGENTS.md distribution
-
-The generated AGENTS pointer is intentionally small. It:
-
-- points to the authoritative Blueprint;
-- records the Blueprint SHA-256;
-- identifies the parity files as derived projections;
-- instructs agents to verify with a fresh SCAN conformance pass;
-- states that candidate self-report is not evidence;
-- preserves uncertainty;
-- repeats that static parity is not runtime equivalence.
-
-SCAN never replaces an existing project-authored `AGENTS.md`. If a non-SCAN AGENTS file already exists, it is preserved unchanged and the distribution result reports `PRESERVED_EXISTING`.
-
-## Authority boundary
-
-- Blueprint embedded conformance manifest remains authoritative for portable static contracts;
-- parity scenarios are projections only;
-- parity scenarios cannot add requirements;
-- candidate self-report has no authority;
-- AGENTS.md is discovery/instruction metadata, not a specification;
-- runtime equivalence is deferred to the later authorized runtime-validation stage.
+No scanner rule may inspect specimen names, repository names, or calibration IDs to satisfy this gate.
 
 ## Explicit non-goals
 
-This tranche does not add:
+This stage does not add:
 
-- new conformance contracts;
-- runtime scenarios;
-- visual/pixel assertions;
-- timing assertions;
-- broader calibration;
-- reconstruction scoring changes;
+- new adapters;
+- new extraction rules;
+- new evidence-promotion rules;
 - runtime execution;
-- evidence promotion.
+- reconstruction scoring changes;
+- calibration-specific exceptions.
 
-## Promotion gates
+The next roadmap stage is independent reconstruction proof.
 
-Before this stage is admitted:
-
-1. all inherited v0.32 tests remain green;
-2. every parity scenario maps 1:1 to an embedded MAPPED+REQUIRED contract;
-3. advisory and uncertain contracts never become required parity scenarios;
-4. parity regeneration from the portable Blueprint is deterministic;
-5. parity regeneration does not modify the Blueprint;
-6. the Gherkin file contains exactly one scenario per JSON scenario;
-7. `AGENTS.md` remains small and contains no copied contract list;
-8. an existing project-authored `AGENTS.md` is never overwritten;
-9. scenario metadata explicitly states that runtime/visual/timing equivalence is not claimed.
-
-v0.28.0 remains the latest released SCAN version while the stacked production-readiness candidates are evaluated.
+v0.28.0 remains the latest released version while stacked production-readiness candidates are evaluated.
