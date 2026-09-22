@@ -10,15 +10,17 @@ from .qmake import QMakeAdapter
 from .scintilla_lexilla import ScintillaLexillaAdapter
 from .typescript_electron import ElectronMetadataAdapter
 from .typescript_electron_final import TypeScriptElectronAdapter
+from .web_frontend import WebFrontendAdapter
 
 DEFAULT_ADAPTERS = [
     QtUiAdapter(), QtResourceAdapter(), CMakeAdapter(), QMakeAdapter(),
     ClangCppAdapter(), CppQtAdapter(), M3CCppAdapter(), ScintillaLexillaAdapter(),
-    TypeScriptElectronAdapter(), ElectronMetadataAdapter(), GenericTextAdapter(),
+    TypeScriptElectronAdapter(), ElectronMetadataAdapter(), WebFrontendAdapter(), GenericTextAdapter(),
 ]
 
 __all__ = [
     "Adapter", "QtUiAdapter", "QtResourceAdapter", "CMakeAdapter", "QMakeAdapter",
     "ClangCppAdapter", "CppQtAdapter", "ScintillaLexillaAdapter", "M3CCppAdapter",
-    "TypeScriptElectronAdapter", "ElectronMetadataAdapter", "GenericTextAdapter", "DEFAULT_ADAPTERS",
+    "TypeScriptElectronAdapter", "ElectronMetadataAdapter", "WebFrontendAdapter",
+    "GenericTextAdapter", "DEFAULT_ADAPTERS",
 ]
