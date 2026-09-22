@@ -1,26 +1,26 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.31
-SCAN Protocol: 0.31
+Working Report Version: 0.32
+SCAN Protocol: 0.32
 Status: COLD SCAN PASS / CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Current project-state note (v0.31 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.25 combines the v0.24 adaptive substrate machinery with bounded Clang recovery and deterministic compiler evidence. Two exact manifest-backed scans were byte- and row-identical; the final certification independently verified 12/12 files. Compiler evidence now covers 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is unchanged at 347 bound, 59 partial, 82 unresolved. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.25/SCAN_v0.25_REPORT.md` and `releases/v0.25/PR5_CALIBRATION_REPORT_v025.md`.
+**Current project-state note (v0.32 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.26 generically corrects the v0.25 surface denominator while preserving all declared/factory surface states. Two exact manifest-backed scans were byte- and row-identical; the final installed-wheel certification independently verified 12/12 files. Compiler evidence remains 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is now 310 bound, 59 partial, and 11 unresolved of 380. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.26/SCAN_v0.26_REPORT.md` and `releases/v0.26/PR5_CALIBRATION_REPORT_v026.md`.
 
-## 0. Current authoritative v0.25 calibration result
+## 0. Current authoritative v0.26 calibration result
 
 - Exact identity: `dail8859/NotepadNext@f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`.
 - Acquisition: 1,928/1,928 provider blobs, 20,875,384 verified bytes, oracle unused.
 - Determinism: two fresh manifest scans emitted 21/21 byte-identical files and zero canonical database-row differences; warm-cache proof recorded 4,186 hits / 0 misses without evidence drift.
-- Mechanical body: 125,066 nodes, 139,567 edges, 137,629 evidence records, 409,175 semantic objects, 1,016,189 semantic relations.
+- Mechanical body: 124,959 nodes, 139,431 edges, 137,559 evidence records, 408,862 semantic objects, 1,015,328 semantic relations.
 - Compiler evidence: 84 `MAPPED`, 294 valid-but-`PARTIAL`, 16 unavailable of 394 translation units; 331 explicit parser gaps.
 - Integrity: `PARTIAL`, 13 WARN-only orphan-evidence issues, zero ERRORs.
-- Human surfaces: 488 total; 347 bound, 59 partial, 82 unresolved.
-- Effect closure: 112 closed, 294 partial, 82 unresolved; feedback observed for 59 surfaces.
-- Packaging: reproducible source ZIP SHA-256 `dbc929892b26bf3d2d61916d8a9e18e0a70a32d3d9a37cb1692ec6ba98dbf6c3`; reproducible wheel SHA-256 `627837b08d6d7d5268edd142baac33cf6b4a285e7225afc8099d2aae620a3dc6`.
-- Sealed certification: 277,741,620 bytes, SHA-256 `0834f44051ce7cf012c391e113905cbccf28754fd6143bd9388c16f7007a7fee`; independent verification 12/12 PASS, zero issues.
+- Human surfaces: 380 total; 310 bound, 59 partial, 11 unresolved. All 330 declared/factory surfaces retain their v0.25 states; only 108 false reference candidates were removed.
+- Effect closure: 87 closed, 282 partial, 11 unresolved; feedback observed for 59 surfaces.
+- Packaging: reproducible source ZIP SHA-256 `4e262e4780a89802dd9ea3ebc390df18bafc3972eaa400cc2d21f0b7550960ba`; reproducible wheel SHA-256 `0fe02da00a32a5074d39b7120b4d41c8a2fbd482b02dac8863ccd1cb08209e41`.
+- Sealed certification: 277,456,091 bytes, SHA-256 `4c3fa6b8438832533864b859ddbd51d7343d30c951d7d0e1aaad831c83c27dcc`; independent verification 12/12 PASS, zero issues.
 - Adaptive assessment: deterministic inert workbench opened for Lua and Python substrate gaps; no generated candidate code was executed or promoted.
 
-Gate decision: **mechanical certification PASS; PR5 calibration PARTIAL**. The next admissible loop is generic correction of the inflated surface denominator followed by two fresh sealed reruns. No NotepadNext-specific rule is admissible.
+Gate decision: **mechanical certification PASS; PR5 calibration PARTIAL**. The next admissible loop is generic analysis of the remaining 11 unresolved and 59 partial surfaces followed by two fresh sealed reruns. No NotepadNext-specific rule is admissible.
 
 ## 0A. Immutable v0.20 PR5 cold result
 
@@ -1680,7 +1680,7 @@ PARTIAL. The engine emits a large evidence/call/effect graph and maps recurrence
 
 ### A7 Map the complete human interaction surface
 
-PARTIAL with a strong Qt-action checkpoint. The machine independently matches 139 MainWindow QActions and 137 routed actions, including both known anomalies. Across the wider human-surface denominator, 347 are bound, 59 partial, and 82 unresolved.
+PARTIAL with a strong Qt-action checkpoint. The machine independently matches 139 MainWindow QActions and 137 routed actions, including both known anomalies. After the generic v0.26 denominator correction, the wider human-surface set contains 310 bound, 59 partial, and 11 unresolved surfaces; all 330 declared/factory surface states are preserved from v0.25.
 
 ### A8 Map the NEST and effective capability boundary
 
