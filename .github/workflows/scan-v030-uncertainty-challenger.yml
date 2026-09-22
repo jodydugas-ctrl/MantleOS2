@@ -1,0 +1,115 @@
+name: SCAN v0.30 uncertainty challenger
+
+on:
+  push:
+    branches:
+      - scan-v0.30-uncertainty-challenger
+    paths:
+      - 'Anchor/engine/v0.30/**'
+      - '.github/workflows/scan-v030-uncertainty-challenger.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.30/**'
+      - '.github/workflows/scan-v030-uncertainty-challenger.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  uncertainty-challenger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.30 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.30
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.30.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.30/PACKAGE_MANIFEST.json
+
+      - name: Run full candidate regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.30/tests
+
+      - name: Prove deterministic scan-time challenger output
+        shell: bash
+        run: |
+          scan-body scan Anchor/engine/v0.30/tests/fixtures/qualification_sample --out results/a --specimen-id v030-challenger-fixture
+          scan-body scan Anchor/engine/v0.30/tests/fixtures/qualification_sample --out results/b --specimen-id v030-challenger-fixture
+          for f in coverage_report.json gaps.json uncertainty_challenges.json uncertainty_challenges.md projection_manifest.json; do
+            cmp "results/a/$f" "results/b/$f"
+          done
+
+      - name: Prove read-only challenger regeneration
+        shell: bash
+        run: |
+          sha256sum results/a/scan_index.sqlite > results/db.before
+          scan-body challenge-uncertainty results/a/scan_index.sqlite --out-dir results/regenerated
+          sha256sum results/a/scan_index.sqlite > results/db.after
+          cmp results/db.before results/db.after
+          cmp results/a/uncertainty_challenges.json results/regenerated/uncertainty_challenges.json
+          cmp results/a/uncertainty_challenges.md results/regenerated/uncertainty_challenges.md
+
+      - name: Audit challenger authority boundary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, sqlite3
+          from pathlib import Path
+
+          report = json.loads(Path("results/a/uncertainty_challenges.json").read_text())
+          gaps = json.loads(Path("results/a/gaps.json").read_text())
+          db = sqlite3.connect("results/a/scan_index.sqlite")
+          evidence_ids = {row[0] for row in db.execute("SELECT id FROM evidence")}
+          gap_ids = {row["gap_id"] for row in gaps["records"]}
+
+          assert report["challenge_count"] == gaps["gap_count"]
+          assert report["authority"]["projection_only"] is True
+          assert report["authority"]["canonical_write_allowed"] is False
+          assert report["authority"]["promotion_allowed"] is False
+          assert report["authority"]["llm_required"] is False
+
+          forbidden = {"new_state", "promoted_state", "confidence", "score", "rank", "priority"}
+          for row in report["challenges"]:
+              assert row["gap_id"] in gap_ids, row
+              assert set(row["candidate_evidence_ids"]).issubset(evidence_ids), row
+              assert row["canonical_write_allowed"] is False
+              assert row["promotion_allowed"] is False
+              assert not (forbidden & set(row)), row
+          PY
+
+      - name: Upload v0.30 challenger evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v030-uncertainty-challenger
+          path: results
+          if-no-files-found: error
+          retention-days: 14
