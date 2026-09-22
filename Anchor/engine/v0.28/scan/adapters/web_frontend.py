@@ -56,7 +56,7 @@ class WebFrontendAdapter(Adapter):
     """
 
     name = "web-frontend"
-    version = "2"
+    version = "3"
 
     def accepts(self, record: FileRecord) -> bool:
         return Path(record.path).suffix.lower() in _HTML_SUFFIXES | {".css"} and not record.is_binary
@@ -159,6 +159,32 @@ class WebFrontendAdapter(Adapter):
             for event_name in [key[2:].lower()]
             if event_name in _HUMAN_DOM_EVENTS
         )
+        # A plain declarative hyperlink proves that navigation markup exists, but not that the
+        # document belongs to the application's reachable control surface. Repositories frequently
+        # contain vendored/reference HTML documentation; admitting every <a> directly into A7 can
+        # turn documentation navigation into thousands of false application controls. Preserve the
+        # link as first-class evidence and let stronger event/runtime reachability promote it later.
+        application_link_roles = {"button", "menuitem", "menuitemcheckbox", "menuitemradio", "tab", "switch", "checkbox", "radio"}
+        if tag == "a" and not inline_human_events and role not in application_link_roles:
+            evid = ev(line, f"html-navigation-candidate:{element_id or label}")
+            node("web_navigation_reference", label, line=line, coverage="PARTIAL", attrs={
+                "surface_type": "html:a",
+                "surface_role": "navigation_candidate",
+                "tag": tag,
+                "role": role,
+                "dom_id": element_id,
+                "element_id": element_id,
+                "href": attrs.get("href"),
+                "target": attrs.get("target"),
+                "human_text": human_text or None,
+                "aria_label": attrs.get("aria-label"),
+                "title": attrs.get("title"),
+                "line": line,
+                "classification": "declarative_hyperlink_candidate",
+                "admission_rule": "requires_event_semantics_or_runtime_document_reachability_for_A7_denominator",
+            }, evidence_ids=[evid], key=f"html-navigation:{record.path}:{element_id or line}:{tag}")
+            return
+
         surface_role = "presented" if tag == "canvas" and not inline_human_events else "input"
         evid = ev(line, f"html-surface:{tag}:{element_id or label}")
         surface = node("human_surface", label, line=line, attrs={
@@ -169,6 +195,8 @@ class WebFrontendAdapter(Adapter):
             "dom_id": element_id,
             "element_id": element_id,
             "name": attrs.get("name"),
+            "href": attrs.get("href"),
+            "target": attrs.get("target"),
             "control_type": input_type,
             "human_text": human_text or None,
             "aria_label": attrs.get("aria-label"),
