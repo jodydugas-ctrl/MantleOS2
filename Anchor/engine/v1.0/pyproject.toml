@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scan-software-body"
-version = "0.37.0"
+version = "1.0.0"
 description = "Evidence-first software anatomy scanning and reconstruction verification"
 requires-python = ">=3.11,<3.14"
 dependencies = []
