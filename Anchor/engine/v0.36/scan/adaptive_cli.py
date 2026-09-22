@@ -20,6 +20,7 @@ from .triage_ranking import write_triage_outputs
 from .layered_provenance import write_layered_provenance_outputs
 from .parity_distribution import write_parity_distribution
 from .refinement_loop import run_refinement_loop
+from .runtime_validation import run_authorized_runtime_validation
 from .store import Store
 
 
@@ -240,6 +241,38 @@ def _parity_scenarios_command(args: list[str]) -> int:
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
+
+def _runtime_validate_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body runtime-validate",
+        description=(
+            "execute one explicitly authorized runtime validation plan in a temporary copy "
+            "with shell disabled and network denied"
+        ),
+    )
+    parser.add_argument("target_root", type=Path)
+    parser.add_argument("plan", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--authorize-plan-sha256",
+        required=True,
+        help="exact SHA-256 of the plan file being authorized for execution",
+    )
+    ns = parser.parse_args(args[1:])
+    result = run_authorized_runtime_validation(
+        ns.target_root,
+        ns.plan,
+        ns.out,
+        authorized_plan_sha256=ns.authorize_plan_sha256,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    if result.get("state") == "PASS":
+        return 0
+    if result.get("state") == "BLOCKED":
+        return 14
+    return 15
+
+
 def _conform_command(args: list[str]) -> int:
     parser = argparse.ArgumentParser(
         prog="scan-body conform",
@@ -325,6 +358,8 @@ def main(argv=None):
         return _provenance_layers_command(args)
     if args and args[0] == "parity-scenarios":
         return _parity_scenarios_command(args)
+    if args and args[0] == "runtime-validate":
+        return _runtime_validate_command(args)
     if args and args[0] == "conform":
         return _conform_command(args)
     if args and args[0] == "refine":
