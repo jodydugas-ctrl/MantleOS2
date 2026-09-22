@@ -246,9 +246,14 @@ jobs:
               for surface in req.get("surface_requirements") or []:
                   surfaces.append(surface)
 
+          qt_surface_types = {
+              "QAction", "QPushButton", "QToolButton", "QCheckBox", "QRadioButton",
+              "QComboBox", "QLineEdit", "QTextEdit", "QPlainTextEdit",
+          }
           qt_surfaces = [
               s for s in surfaces
-              if str(s.get("surface_type") or "").lower().startswith("qt:")
+              if str(s.get("surface_type") or "") in qt_surface_types
+              or str(s.get("surface_type") or "").lower().startswith("qt:")
           ]
           if not qt_surfaces:
               raise SystemExit("reference worker currently qualifies only a source-free Qt surface challenge")
