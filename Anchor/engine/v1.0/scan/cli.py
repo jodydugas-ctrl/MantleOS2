@@ -37,6 +37,7 @@ from .independent_reconstruction import verify_independent_reconstruction_proof
 from .queries import QUERY_SQL
 from .release import (certify_manifest, certify_reconstruction_handoff, certify_specimen, qualify_release,
                       verify_certification, verify_package, verify_projection_manifest, write_package_manifest)
+from .v1_certification import certify_v1_local_release, verify_v1_local_certification
 
 
 
@@ -224,6 +225,19 @@ def main(argv=None):
     p_manifest_build = sub.add_parser("package-manifest", help="regenerate deterministic PACKAGE_MANIFEST.json for a release tree")
     p_manifest_build.add_argument("package_root", type=Path)
 
+    p_v1_cert = sub.add_parser(
+        "release-certify",
+        help="seal the exact v1.0 package bytes plus the packaged mechanical qualification",
+    )
+    p_v1_cert.add_argument("package_root", type=Path)
+    p_v1_cert.add_argument("--out", type=Path, required=True)
+
+    p_v1_verify = sub.add_parser(
+        "verify-release-certification",
+        help="verify a sealed local v1.0 release certification directory",
+    )
+    p_v1_verify.add_argument("certification_root", type=Path)
+
     args = parser.parse_args(argv)
     if args.command == "acquire-github":
         import os
@@ -255,6 +269,14 @@ def main(argv=None):
         result = write_package_manifest(args.package_root)
         print(json.dumps({"state": "PASS", "engine_version": result["engine_version"], "file_count": len(result["files"]), "manifest": str((args.package_root / "PACKAGE_MANIFEST.json").resolve())}, indent=2))
         return 0
+    if args.command == "release-certify":
+        result = certify_v1_local_release(args.package_root, args.out)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0 if result.get("state") == "PASS" else 16
+    if args.command == "verify-release-certification":
+        result = verify_v1_local_certification(args.certification_root)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return 0 if result.get("state") == "PASS" else 17
     if args.command == "self-audit":
         result = {"package": verify_package(args.package_root)}
         if args.scan_output is not None:
