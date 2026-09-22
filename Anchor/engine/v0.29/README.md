@@ -1,90 +1,77 @@
-# SCAN Engine v0.28
+# SCAN Engine v0.29
 
-Status: **integration candidate — not release-qualified**.
+Status: **development candidate — coverage/gaps tranche only**.
 
-v0.28 advances the v0.27 evidence-first scanner into a closed reconstruction-verification loop while preserving the A1-A8 governance contract. The v0.27 scanner is the base; its newer Qt routing, bounded extraction, evidence graph, NEST model, reconstruction-trial machinery, and certification code remain the authority for Stage 1.
+v0.29 begins the production-readiness path from released v0.28. This tranche adds one capability only: a deterministic coverage and unresolved-gap projection over the existing canonical SCAN database and closure calculations.
 
-This candidate intentionally has **no `PACKAGE_MANIFEST.json` yet**. The copied v0.27 manifest was removed because its hashes and version would be false after modification. A new manifest must be generated only after the v0.28 bytes and tests are final.
+No uncertainty challenger, triage ranking, layered-provenance redesign, parity scenarios, or other later roadmap stages are included here.
 
-## What v0.28 adds
+## Authority model
 
-### Anchor Code 0.9
+The authority remains:
 
-`scan/anchor_code.py` projects the canonical semantic graph into a deterministic, line-oriented Anchor Code representation.
+`scan_index.sqlite -> derived projections`
 
-The projection preserves the evidence firewall:
+The new coverage/gaps outputs cannot write to the canonical database, cannot upgrade or downgrade MAPPED/PARTIAL/BLOCKED/UNKNOWN, and do not calculate a scalar confidence score.
 
-- static graph relations are marked as statically derived rather than observed runtime behavior;
-- `UNKNOWN`, `PARTIAL`, and `BLOCKED` coverage survive;
-- source evidence remains traceable;
-- the projection is downstream of `scan_index.sqlite` and cannot rewrite canonical evidence.
+The projection exists to answer two operational questions without manually mining a Blueprint:
 
-Command:
+1. What does SCAN currently know, layer by layer?
+2. What remains unresolved, and which canonical object/evidence IDs should be investigated?
 
-```bash
-scan-body anchor-code .scan/scan_index.sqlite --out-dir .scan
-```
+## New outputs
 
-### Portable Anchor Blueprint
+Every ordinary scan emits:
 
-`scan/agent_blueprint.py` emits one Markdown handoff for a coding agent. It includes the evidence-supported human surface, state/routing anatomy, effects and NEST boundary, build/dependency anatomy, explicit uncertainty, and an embedded machine-readable conformance manifest.
+- `coverage_report.json` — complete machine-readable rollup and gap ledger;
+- `coverage_report.md` — compact human/agent coverage summary;
+- `gaps.md` — unresolved canonical-ID checklist with evidence references and deterministic next-evidence guidance.
 
-Command:
+The report reconciles:
 
-```bash
-scan-body anchor-blueprint .scan/scan_index.sqlite
-```
+- files;
+- mechanical nodes;
+- mechanical edges;
+- findings;
+- semantic objects;
+- semantic relations;
+- completeness dimensions;
+- evidence classes/extractors;
+- acquisition availability;
+- human-surface binding closure;
+- surface-to-effect/state/NEST/feedback closure.
 
-The Blueprint is a derived reconstruction artifact, not a replacement authority for the canonical evidence graph.
-
-### Fresh-scan reconstruction conformance
-
-`scan/conformance.py` implements the important authority separation learned in the terminal branch:
-
-`Blueprint -> coding agent -> candidate -> fresh SCAN -> mechanical comparison`
-
-A coding agent does not certify its own implementation. SCAN rescans the candidate read-only and compares the mechanically recovered contracts with the source Blueprint.
-
-Command:
+Explicit regeneration is also available:
 
 ```bash
-scan-body conform "Example Anchor Blueprint.md" ./candidate --out ./conformance
+scan-body coverage-report .scan/scan_index.sqlite --out-dir .scan
 ```
 
-Static conformance does not claim pixel, runtime, timing, network, or performance equivalence.
+## Non-goals
 
-### Static HTML/CSS human-surface extraction
+This tranche does **not**:
 
-`scan/adapters/web_frontend.py` adds deterministic browser-surface extraction for HTML and CSS without executing the specimen.
+- reinterpret source;
+- run an LLM;
+- review or challenge uncertainty;
+- rank gaps by importance;
+- add another graph/database;
+- create a scalar confidence percentage;
+- change the A1-A8 governance anchors.
 
-It maps:
+Those belong to later stages only after this projection is mechanically proven.
 
-- buttons, inputs, selects, textareas, links, summaries, and canvas surfaces;
-- stable label / aria / associated-label identity;
-- inline DOM event bindings;
-- stylesheet selectors and declarations as visual contracts.
+## Promotion gates
 
-A canvas is treated as a **presented surface by default**. It becomes an actionable input surface only when human-event evidence supports that classification. This mirrors v0.26's Qt surface-denominator correction: visible does not automatically mean actionable.
+Before this tranche can be accepted:
 
-## Preserved v0.27 behavior
+1. full v0.29 regression suite passes;
+2. coverage counts reconcile exactly with canonical SQLite rows;
+3. projection generation leaves the SQLite database byte-identical;
+4. repeated projection generation is byte deterministic;
+5. ordinary scans automatically emit and seal all three new projections;
+6. v0.28 and v0.29 canonical scan rows remain identical on the same fixture;
+7. release qualification requires the new outputs;
+8. no inherited v0.28 package manifest is present.
 
-v0.28 is based on the v0.27 tree rather than the older terminal scanner core. In particular, the v0.27 Qt `QEvent::FileOpen` correction is retained: a file-open surface is bound only when the evidence is inside the actual enclosing `event()` implementation.
-
-The GitHub NEST vocabulary is also retained. Terminal-derived reconstruction contracts recognize both historical `environment_boundary` objects and the current `nest_boundary` representation, but v0.28 does not replace A8's NEST model.
-
-## Qualification state
-
-This branch is deliberately **not frozen** and **not certified**.
-
-Before promotion:
-
-1. add/port focused tests for Anchor Code, Blueprint, conformance, and web surfaces;
-2. run the full v0.28 regression suite;
-3. rerun the frozen calibration specimens and compare against v0.27;
-4. verify deterministic duplicate scans;
-5. inspect newly closed web routes for false joins;
-6. regenerate `PACKAGE_MANIFEST.json` from the final bytes;
-7. run package/self-audit and release qualification;
-8. update project-level evidence/report documents with only executed results.
-
-Until those gates are complete, v0.26 remains the latest frozen release and v0.28 remains an integration candidate.
+v0.28 remains the released line until v0.29 completes its own later release process.
