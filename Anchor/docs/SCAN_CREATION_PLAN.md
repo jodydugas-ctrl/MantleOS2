@@ -1,7 +1,7 @@
 # SCAN CREATION PLAN
 Version: 0.32
 Status: ACTIVE LIVING ROADMAP
-Canonical project: Google Drive `AI Systems/ANCHORCODING`
+Canonical public project: this repository's `Anchor/` directory
 Companion files: `ANCHOR_CODING_PROMPT.md`, `SCAN_PROTOCOL.md`, `SCAN_REPORT.md`
 
 ## v0.32 frozen v0.26 surface-denominator checkpoint
