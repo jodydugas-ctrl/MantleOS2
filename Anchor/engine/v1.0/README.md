@@ -1,6 +1,6 @@
 # SCAN Engine v1.0
 
-Status: **final certification candidate**.
+Status: **v1.0 certified release package**. Certification is exact-commit and exact-byte evidence; any changed or merged revision must rerun the final gate before inheriting that status.
 
 v1.0 is the consolidation release for the production-readiness path:
 
