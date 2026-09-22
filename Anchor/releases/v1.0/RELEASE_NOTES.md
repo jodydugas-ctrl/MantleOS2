@@ -61,6 +61,7 @@ The release publishes:
 - `runtime_validation.json` from the authorized live-runtime gate;
 - `V1_CI_RELEASE_CERTIFICATE.json`;
 - `V1_CI_MANIFEST.json`;
+- `integration_stage_evidence.json`, binding the main merge tree to the successfully checked integration source head;
 - `SHA256SUMS.txt`.
 
 The tag is created only from a successful final certification run on `main`.
