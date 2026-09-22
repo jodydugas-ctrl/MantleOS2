@@ -112,6 +112,11 @@ def build_coverage_report(
     completeness = store.completeness_dimensions()
 
     node_by_id = {row["id"]: row for row in nodes}
+    edge_ids = {row["id"] for row in edges}
+    derived_semantic_types = {
+        "INTERPRETATION", "BEHAVIOR", "ARTERY", "NERVE",
+        "CAPABILITY", "RECONSTRUCTION_ANCHOR",
+    }
     gaps: list[dict[str, Any]] = []
 
     for row in files:
@@ -208,7 +213,7 @@ def build_coverage_report(
 
     for row in semantic_objects:
         state = str(row.get("coverage") or "UNKNOWN").upper()
-        if state not in GAP_STATES:
+        if state not in GAP_STATES or str(row.get("object_type") or "") not in derived_semantic_types:
             continue
         attrs = row.get("attributes") or {}
         gaps.append(_gap(
@@ -224,7 +229,7 @@ def build_coverage_report(
 
     for row in semantic_relations:
         state = str(row.get("status") or "UNKNOWN").upper()
-        if state not in GAP_STATES:
+        if state not in GAP_STATES or row.get("id") in edge_ids:
             continue
         gaps.append(_gap(
             category="semantic-relation",
