@@ -28,7 +28,7 @@ def test_ordinary_scan_emits_readonly_uncertainty_challenges(tmp_path: Path):
     gaps = json.loads((out / "gaps.json").read_text(encoding="utf-8"))
 
     assert report["schema_version"] == "scan-uncertainty-challenges/0.1"
-    assert report["engine_version"] == __version__ == "0.35.0"
+    assert report["engine_version"] == __version__ == "0.36.0"
     assert report["challenge_count"] == gaps["gap_count"]
     assert report["authority"] == {
         "canonical_store": "scan_index.sqlite",
@@ -112,7 +112,7 @@ def test_acquisition_gap_requires_external_input_not_reclassification():
         "state": "BLOCKED", "reason_code": "CONTENT_UNAVAILABLE", "evidence_ids": [],
     }
     report = build_uncertainty_challenges(
-        FakeStore({}), engine_version="0.35.0", coverage_report=_coverage_with_gap(gap),
+        FakeStore({}), engine_version="0.36.0", coverage_report=_coverage_with_gap(gap),
     )
     row = report["challenges"][0]
     assert row["challenge_kind"] == "BLOCKED_ON_ACQUISITION"
@@ -154,7 +154,7 @@ def test_partial_node_with_mapped_neighbor_surfaces_mechanical_recheck():
         ],
     }
     report = build_uncertainty_challenges(
-        FakeStore(rows), engine_version="0.35.0", coverage_report=_coverage_with_gap(gap),
+        FakeStore(rows), engine_version="0.36.0", coverage_report=_coverage_with_gap(gap),
     )
     row = report["challenges"][0]
     assert row["challenge_kind"] == "RECHECK_LOCAL_GRAPH"
