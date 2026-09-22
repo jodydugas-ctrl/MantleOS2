@@ -7,6 +7,7 @@ from pathlib import Path
 
 from scan.cli import main as canonical_main
 from scan.coverage import GAP_STATES, build_coverage_report, write_coverage_outputs
+from scan.evidence_graph import refresh_machine_body_map_projection
 from scan.engine import ScanEngine
 from scan.store import Store
 
@@ -147,3 +148,29 @@ def test_builder_does_not_create_a_scalar_confidence_measure(tmp_path: Path):
 
     assert "confidence_score" not in keys(report)
     assert report["authority"]["scalar_confidence_score"] == "NOT_USED"
+
+
+def test_machine_body_map_refresh_uses_current_coverage_projection(tmp_path: Path):
+    out = tmp_path / "scan"
+    ScanEngine().scan(FIXTURE, out, "v029-refresh")
+
+    report_path = out / "coverage_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["gaps"]["count"] = 987
+    report["gaps"]["state_counts"] = {"UNKNOWN": 987}
+    report["gaps"]["category_counts"] = {"test-only": {"UNKNOWN": 987}}
+    report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+    store = Store(out / "scan_index.sqlite", readonly=True)
+    try:
+        refresh_machine_body_map_projection(store, out / "machine_body_map.json")
+    finally:
+        store.close()
+
+    body = json.loads((out / "machine_body_map.json").read_text(encoding="utf-8"))
+    assert body["coverage_report"] == {
+        "projection_state": "PASS",
+        "gap_count": 987,
+        "gap_state_counts": {"UNKNOWN": 987},
+        "gap_category_counts": {"test-only": {"UNKNOWN": 987}},
+    }
