@@ -1,6 +1,6 @@
 # SCAN v1.0 Certification Contract
 
-Status: **final release-candidate certification contract**.
+Status: **v1.0 release certification contract**. A certificate applies only to the exact commit and package bytes named by its evidence.
 
 v1.0 is the consolidation stage for the production-readiness path:
 
