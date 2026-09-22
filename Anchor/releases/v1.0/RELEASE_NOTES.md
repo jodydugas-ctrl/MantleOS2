@@ -56,7 +56,9 @@ The release publishes:
 - the Python wheel;
 - a deterministic source ZIP;
 - `PACKAGE_MANIFEST.json`;
-- `V1_RELEASE_MANIFEST.json` from the sealed local package certification;
+- `V1_RELEASE_MANIFEST.json` and `v1_local_release_certificate.json` from the sealed local package certification;
+- `release_qualification.json`;
+- `runtime_validation.json` from the authorized live-runtime gate;
 - `V1_CI_RELEASE_CERTIFICATE.json`;
 - `V1_CI_MANIFEST.json`;
 - `SHA256SUMS.txt`.
