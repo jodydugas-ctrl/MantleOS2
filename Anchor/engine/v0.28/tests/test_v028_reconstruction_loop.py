@@ -155,3 +155,20 @@ def test_web_canvas_is_presented_until_human_event_evidence_exists(tmp_path: Pat
     canvas2 = next(node for node in result2.nodes if node.kind == "human_surface")
     assert canvas2.attributes["surface_role"] == "input"
     assert any(edge.kind == "dispatches_to" and edge.src == canvas2.id for edge in result2.edges)
+
+
+def test_plain_hyperlink_is_preserved_without_entering_action_denominator(tmp_path: Path):
+    adapter = WebFrontendAdapter()
+    html = '<a href="manual.html">Manual</a><a href="#" onclick="openPanel()">Panel</a>'
+    record = record_from_bytes("index.html", html.encode("utf-8"))
+    result = adapter.extract(tmp_path, record, html)
+
+    plain = next(node for node in result.nodes if node.kind == "web_navigation_reference")
+    assert plain.name == "Manual"
+    assert plain.attributes["href"] == "manual.html"
+    assert plain.attributes["surface_role"] == "navigation_candidate"
+
+    actionable = [node for node in result.nodes if node.kind == "human_surface"]
+    assert len(actionable) == 1
+    assert actionable[0].name == "Panel"
+    assert any(edge.kind == "dispatches_to" and edge.src == actionable[0].id for edge in result.edges)
