@@ -1,8 +1,25 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.32
-SCAN Protocol: 0.32
-Status: COLD SCAN PASS / CALIBRATION PARTIAL
+Working Report Version: 1.0 release checkpoint
+SCAN Protocol: 0.32 + v1.0 certification contract
+Status: ENGINE V1.0 CERTIFIED / NOTEPADNEXT CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
+
+
+**Current engine-release note (v1.0):** SCAN's generic production-readiness
+upgrade path is mechanically complete through v1.0 certification. The certified
+release package includes deterministic coverage/gaps, uncertainty challenge,
+investigation triage, layered provenance, parity/distribution projections,
+broader calibration gates, independent reconstruction proof infrastructure,
+explicitly authorized runtime validation, operational hardening, and final
+exact-byte CI certification. The final certificate is scoped to the exact tested
+commit/package and does not imply semantic completeness or universal runtime
+equivalence.
+
+This release status does **not** rewrite the NotepadNext specimen record below.
+PR5 remains CALIBRATION PARTIAL wherever its preserved evidence says PARTIAL,
+BLOCKED, or UNKNOWN. Historical sections remain chronology and should not be
+read as the current engine-release ceiling.
+
 
 **Current project-state note (v0.32 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.26 generically corrects the v0.25 surface denominator while preserving all declared/factory surface states. Two exact manifest-backed scans were byte- and row-identical; the final installed-wheel certification independently verified 12/12 files. Compiler evidence remains 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is now 310 bound, 59 partial, and 11 unresolved of 380. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.26/SCAN_v0.26_REPORT.md` and `releases/v0.26/PR5_CALIBRATION_REPORT_v026.md`.
 
