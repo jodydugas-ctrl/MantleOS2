@@ -1,0 +1,135 @@
+name: SCAN v0.33 parity distribution
+
+on:
+  push:
+    branches:
+      - scan-v0.33-parity-distribution
+    paths:
+      - 'Anchor/engine/v0.33/**'
+      - '.github/workflows/scan-v033-parity-distribution.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.33/**'
+      - '.github/workflows/scan-v033-parity-distribution.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity-distribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.33 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.33
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.33.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.33/PACKAGE_MANIFEST.json
+
+      - name: Run full candidate regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.33/tests
+
+      - name: Generate two portable blueprint distributions
+        shell: bash
+        run: |
+          scan-body scan Anchor/engine/v0.33/tests/fixtures/qualification_sample --out results/scan --specimen-id v033-parity-fixture
+          mkdir -p results/dist-a results/dist-b
+          scan-body anchor-blueprint results/scan/scan_index.sqlite --out "results/dist-a/Fixture Anchor Blueprint.md"
+          cp "results/dist-a/Fixture Anchor Blueprint.md" "results/dist-b/Fixture Anchor Blueprint.md"
+          scan-body parity-scenarios "results/dist-b/Fixture Anchor Blueprint.md" --out-dir results/dist-b
+          for f in parity_scenarios.json parity_scenarios.feature AGENTS.md; do
+            cmp "results/dist-a/$f" "results/dist-b/$f"
+          done
+
+      - name: Audit one-to-one contract derivation and static-only boundary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scan.conformance_contract import parse_blueprint_manifest
+
+          root = Path("results/dist-a")
+          blueprint = root / "Fixture Anchor Blueprint.md"
+          manifest = parse_blueprint_manifest(blueprint)
+          parity = json.loads((root / "parity_scenarios.json").read_text())
+          agents = (root / "AGENTS.md").read_text()
+
+          required = {
+              row["contract_id"]: row
+              for row in manifest["contracts"]
+              if row.get("coverage") == "MAPPED" and row.get("enforcement") == "REQUIRED"
+          }
+          scenarios = parity["scenarios"]
+          assert parity["scenario_count"] == len(required)
+          assert {row["source_contract_id"] for row in scenarios} == set(required)
+          assert all(row["execution_class"] == "STATIC_RESCAN" for row in scenarios)
+          assert all(row["runtime_validation_state"] == "NOT_CLAIMED" for row in scenarios)
+          assert parity["authority"]["independent_specification"] is False
+          assert parity["authority"]["runtime_equivalence_claimed"] is False
+          assert parity["authority"]["visual_equivalence_claimed"] is False
+          assert parity["authority"]["timing_equivalence_claimed"] is False
+          assert len(agents.encode("utf-8")) < 4096
+          assert "derived projections" in agents
+          assert "candidate self-report" in agents.lower()
+          assert "does not establish runtime" in agents
+          feature = (root / "parity_scenarios.feature").read_text()
+          assert feature.count("  Scenario: ") == parity["scenario_count"]
+          PY
+
+      - name: Prove project AGENTS.md is never clobbered
+        shell: bash
+        run: |
+          mkdir -p results/preserve
+          printf '# Existing project rules\nDo not replace.\n' > results/preserve/AGENTS.md
+          cp "results/dist-a/Fixture Anchor Blueprint.md" "results/preserve/Fixture Anchor Blueprint.md"
+          BEFORE="$(sha256sum results/preserve/AGENTS.md)"
+          scan-body parity-scenarios "results/preserve/Fixture Anchor Blueprint.md" --out-dir results/preserve > results/preserve/result.json
+          AFTER="$(sha256sum results/preserve/AGENTS.md)"
+          test "$BEFORE" = "$AFTER"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path("results/preserve/result.json").read_text())
+          assert result["agents"]["state"] == "PRESERVED_EXISTING"
+          assert result["agents"]["existing_project_instructions_preserved"] is True
+          assert result["files"]["agents"] is None
+          PY
+
+      - name: Upload v0.33 parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v033-parity-distribution
+          path: results
+          if-no-files-found: error
+          retention-days: 14

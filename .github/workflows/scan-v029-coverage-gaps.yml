@@ -1,0 +1,118 @@
+name: SCAN v0.29 coverage gaps
+
+on:
+  push:
+    branches:
+      - scan-v0.29-coverage-gaps
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-coverage-gaps.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-coverage-gaps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-gaps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.29 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.29
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.29.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.29/PACKAGE_MANIFEST.json
+
+      - name: Run full candidate regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.29/tests
+
+      - name: Prove ordinary scan emits deterministic coverage projections
+        shell: bash
+        run: |
+          scan-body scan Anchor/engine/v0.29/tests/fixtures/qualification_sample --out results/a --specimen-id v029-coverage-fixture
+          scan-body scan Anchor/engine/v0.29/tests/fixtures/qualification_sample --out results/b --specimen-id v029-coverage-fixture
+          for f in coverage_report.json coverage_report.md gaps.json gaps.md projection_manifest.json; do
+            cmp "results/a/$f" "results/b/$f"
+          done
+
+      - name: Prove read-only regeneration is byte stable
+        shell: bash
+        run: |
+          sha256sum results/a/scan_index.sqlite > results/db.before
+          scan-body coverage-gaps results/a/scan_index.sqlite --out-dir results/regenerated
+          sha256sum results/a/scan_index.sqlite > results/db.after
+          cmp results/db.before results/db.after
+          cmp results/a/coverage_report.json results/regenerated/coverage_report.json
+          cmp results/a/coverage_report.md results/regenerated/coverage_report.md
+          cmp results/a/gaps.json results/regenerated/gaps.json
+          cmp results/a/gaps.md results/regenerated/gaps.md
+
+      - name: Reconcile report counts to canonical database
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, sqlite3
+          from pathlib import Path
+
+          report = json.loads(Path("results/a/coverage_report.json").read_text())
+          db = sqlite3.connect("results/a/scan_index.sqlite")
+          db.row_factory = sqlite3.Row
+          domains = {
+              "files": ("files", "coverage"),
+              "nodes": ("nodes", "coverage"),
+              "edges": ("edges", "coverage"),
+              "findings": ("findings", "status"),
+              "semantic_objects": ("semantic_objects", "coverage"),
+              "semantic_relations": ("semantic_relations", "status"),
+              "completeness_dimensions": ("completeness_dimensions", "state"),
+          }
+          for key, (table, state) in domains.items():
+              rows = list(db.execute(f"SELECT {state} FROM {table}"))
+              assert report["coverage"][key]["total"] == len(rows), key
+          assert report["authority"]["projection_only"] is True
+          assert report["authority"]["may_modify_canonical_state"] is False
+          assert report["authority"]["scalar_confidence_score"] is False
+          assert report["gaps"]["gap_count"] == len(report["gaps"]["records"])
+          assert all("priority" not in row and "rank" not in row and "score" not in row for row in report["gaps"]["records"])
+          PY
+
+      - name: Upload v0.29 coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v029-coverage-gaps
+          path: results
+          if-no-files-found: error
+          retention-days: 14

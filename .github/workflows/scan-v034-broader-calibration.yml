@@ -1,0 +1,374 @@
+name: SCAN v0.34 broader calibration
+
+on:
+  push:
+    branches:
+      - scan-v0.34-broader-calibration
+    paths:
+      - 'Anchor/engine/v0.34/**'
+      - '.github/workflows/scan-v034-broader-calibration.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.34/**'
+      - '.github/workflows/scan-v034-broader-calibration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  broader-calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      NOTEPAD_COMMIT: f57db52d6760a2ce4149a37190c3adaa586845f5
+      NOTEPAD_TREE: f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b
+      MOJI_COMMIT: 7793dbabc880a950b5003dcfd57c1222b279b807
+      MOJI_TREE: b4e0e6a4d2010a6d584f40b01ab5ffad7bf18fea
+      PELL_COMMIT: d5556baa2e0bfc1411621ee4d780752200b367fd
+      PELL_TREE: 88933d9507f02aa6bbec003b3e163cb8c2899949
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.34 calibration candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.34
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.34.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.34/PACKAGE_MANIFEST.json
+
+      - name: Prove calibration has no specimen-name branches in scanner runtime
+        shell: bash
+        run: |
+          ! grep -R -n -E 'NotepadNext|alexishida/Moji|jaredreich/pell|v034-(python|mixed|ambiguous|incomplete|budget)' Anchor/engine/v0.34/scan
+
+      - name: Run full inherited regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.34/tests
+
+      - name: Checkout frozen NotepadNext
+        uses: actions/checkout@v4
+        with:
+          repository: dail8859/NotepadNext
+          ref: f57db52d6760a2ce4149a37190c3adaa586845f5
+          path: specimen-notepad
+          fetch-depth: 1
+
+      - name: Checkout frozen Moji
+        uses: actions/checkout@v4
+        with:
+          repository: alexishida/Moji
+          ref: 7793dbabc880a950b5003dcfd57c1222b279b807
+          path: specimen-moji
+          fetch-depth: 1
+
+      - name: Checkout frozen pell
+        uses: actions/checkout@v4
+        with:
+          repository: jaredreich/pell
+          ref: d5556baa2e0bfc1411621ee4d780752200b367fd
+          path: specimen-pell
+          fetch-depth: 1
+
+      - name: Verify frozen specimen identities
+        shell: bash
+        run: |
+          test "$(git -C specimen-notepad rev-parse HEAD)" = "$NOTEPAD_COMMIT"
+          test "$(git -C specimen-notepad rev-parse HEAD^{tree})" = "$NOTEPAD_TREE"
+          test "$(git -C specimen-moji rev-parse HEAD)" = "$MOJI_COMMIT"
+          test "$(git -C specimen-moji rev-parse HEAD^{tree})" = "$MOJI_TREE"
+          test "$(git -C specimen-pell rev-parse HEAD)" = "$PELL_COMMIT"
+          test "$(git -C specimen-pell rev-parse HEAD^{tree})" = "$PELL_TREE"
+
+      - name: Create deterministic adversarial fixtures
+        shell: bash
+        run: |
+          mkdir -p calibration/python-cli calibration/mixed calibration/ambiguous calibration/budget calibration/incomplete
+          cat > calibration/python-cli/cli.py <<'PY'
+          import argparse
+
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument("--output")
+              args = parser.parse_args()
+              if args.output:
+                  with open(args.output, "w", encoding="utf-8") as f:
+                      f.write("done\n")
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+          cat > calibration/mixed/CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.16)
+          project(MixedFixture)
+          add_executable(mixed main.cpp)
+          EOF
+          cat > calibration/mixed/main.cpp <<'CPP'
+          #include <fstream>
+          int main() {
+              std::ofstream out("state.txt");
+              out << "saved";
+              return 0;
+          }
+          CPP
+          cat > calibration/mixed/index.html <<'HTML'
+          <!doctype html>
+          <html><body>
+            <button id="save" onclick="saveNow()">Save</button>
+            <canvas id="preview"></canvas>
+            <script src="ui.js"></script>
+          </body></html>
+          HTML
+          cat > calibration/mixed/ui.ts <<'TS'
+          export function saveNow(): void {
+            console.log("save");
+          }
+          TS
+          cat > calibration/mixed/tool.py <<'PY'
+          print("helper")
+          PY
+
+          cat > calibration/ambiguous/index.html <<'HTML'
+          <!doctype html>
+          <html><body>
+            <button id="mystery" onclick="missingHandler()">Mystery</button>
+          </body></html>
+          HTML
+
+          python - <<'PY'
+          from pathlib import Path
+          Path("calibration/budget/large.cpp").write_text(
+              '#include <string>\n' + ('int x = 1; // padding\n' * 800),
+              encoding='utf-8',
+          )
+          PY
+
+          cat > calibration/incomplete/manifest.json <<'JSON'
+          {
+            "schema_version": "scan-source-manifest/0.1",
+            "specimen": {
+              "specimen_id": "calibration/incomplete@1",
+              "provider": "fixture",
+              "tree_sha": "1111111111111111111111111111111111111111"
+            },
+            "files": [
+              {"path": "src/main.cpp", "size": 42, "sha": "2222222222222222222222222222222222222222", "type": "blob", "mode": "100644"},
+              {"path": "ui/Main.ui", "size": 99, "sha": "3333333333333333333333333333333333333333", "type": "blob", "mode": "100644"}
+            ]
+          }
+          JSON
+
+      - name: Run duplicate cold scans across calibration matrix
+        shell: bash
+        run: |
+          mkdir -p results
+          scan_pair () {
+            name="$1"
+            root="$2"
+            sid="$3"
+            shift 3
+            scan-body scan "$root" --out "results/$name-a" --specimen-id "$sid" "$@"
+            scan-body scan "$root" --out "results/$name-b" --specimen-id "$sid" "$@"
+          }
+          scan_pair notepad specimen-notepad "dail8859/NotepadNext@$NOTEPAD_COMMIT"
+          scan_pair moji specimen-moji "alexishida/Moji@$MOJI_COMMIT"
+          scan_pair pell specimen-pell "jaredreich/pell@$PELL_COMMIT"
+          scan_pair python calibration/python-cli "v034-python-cli"
+          scan_pair mixed calibration/mixed "v034-mixed-language"
+          scan_pair ambiguous calibration/ambiguous "v034-ambiguous-routing"
+          scan_pair budget calibration/budget "v034-budget-stop" --max-file-bytes 64
+
+          scan-body scan-manifest calibration/incomplete/manifest.json --out results/incomplete-a --specimen-id v034-incomplete-acquisition
+          scan-body scan-manifest calibration/incomplete/manifest.json --out results/incomplete-b --specimen-id v034-incomplete-acquisition
+
+      - name: Generate portable blueprint and parity companions for every scan
+        shell: bash
+        run: |
+          for name in notepad moji pell python mixed ambiguous budget incomplete; do
+            for run in a b; do
+              root="results/$name-$run"
+              scan-body anchor-blueprint "$root/scan_index.sqlite" --out "$root/Blueprint.md"
+            done
+          done
+
+      - name: Prove duplicate determinism across all substrates
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sqlite3
+
+          names = ["notepad", "moji", "pell", "python", "mixed", "ambiguous", "budget", "incomplete"]
+          files = [
+              "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
+              "completeness_vector.json", "integrity_report.json", "surface_closure.json",
+              "effect_closure.json", "nest_capability_map.json", "coverage_report.json",
+              "coverage_report.md", "gaps.json", "gaps.md", "uncertainty_challenges.json",
+              "uncertainty_challenges.md", "triage_ranking.json", "triage_ranking.md",
+              "layered_provenance.json", "layered_provenance.md", "stage1_summary.md",
+              "projection_manifest.json", "Blueprint.md", "parity_scenarios.json",
+              "parity_scenarios.feature", "AGENTS.md",
+          ]
+          tables = [
+              "files", "nodes", "edges", "evidence", "findings",
+              "semantic_objects", "semantic_relations", "completeness_dimensions",
+          ]
+
+          def table_rows(db_path, table):
+              db = sqlite3.connect(db_path)
+              try:
+                  return sorted(db.execute(f"SELECT * FROM {table}").fetchall(), key=repr)
+              finally:
+                  db.close()
+
+          for name in names:
+              a = Path(f"results/{name}-a")
+              b = Path(f"results/{name}-b")
+              for file_name in files:
+                  assert (a / file_name).read_bytes() == (b / file_name).read_bytes(), (name, file_name)
+              for table in tables:
+                  assert table_rows(a / "scan_index.sqlite", table) == table_rows(b / "scan_index.sqlite", table), (name, table)
+          PY
+
+      - name: Audit broad calibration invariants and failure semantics
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import sqlite3
+          from pathlib import Path
+          from scan.conformance_contract import parse_blueprint_manifest
+
+          names = ["notepad", "moji", "pell", "python", "mixed", "ambiguous", "budget", "incomplete"]
+          report = {
+              "schema_version": "scan-v034-broad-calibration/0.1",
+              "state": "PASS",
+              "engine_version": "0.34.0",
+              "real_specimens": ["notepad", "moji", "pell"],
+              "adversarial_fixtures": ["python", "mixed", "ambiguous", "budget", "incomplete"],
+              "determinism": "PASS",
+              "specimens": {},
+          }
+
+          for name in names:
+              root = Path(f"results/{name}-a")
+              integrity = json.loads((root / "integrity_report.json").read_text())
+              coverage = json.loads((root / "coverage_report.json").read_text())
+              challenges = json.loads((root / "uncertainty_challenges.json").read_text())
+              triage = json.loads((root / "triage_ranking.json").read_text())
+              provenance = json.loads((root / "layered_provenance.json").read_text())
+              surface = json.loads((root / "surface_closure.json").read_text())
+              parity = json.loads((root / "parity_scenarios.json").read_text())
+              manifest = parse_blueprint_manifest(root / "Blueprint.md")
+
+              assert integrity.get("severity_counts", {}).get("ERROR", 0) == 0, (name, integrity)
+              assert challenges["challenge_count"] == coverage["gaps"]["gap_count"], name
+              assert triage["ranked_count"] == coverage["gaps"]["gap_count"], name
+              assert provenance["unclassified_object_types"] == {}, (name, provenance["unclassified_object_types"])
+              assert provenance["authority"]["duplicates_canonical_graph"] is False
+              assert provenance["authority"]["coverage_preserved_per_object"] is True
+              required = {
+                  c["contract_id"] for c in manifest["contracts"]
+                  if c.get("coverage") == "MAPPED" and c.get("enforcement") == "REQUIRED"
+              }
+              assert {x["source_contract_id"] for x in parity["scenarios"]} == required, name
+              assert parity["scenario_count"] == len(required), name
+
+              db = sqlite3.connect(root / "scan_index.sqlite")
+              semantic_count = db.execute("SELECT COUNT(*) FROM semantic_objects").fetchone()[0]
+              db.close()
+              assert provenance["object_count"] == semantic_count, name
+
+              report["specimens"][name] = {
+                  "surface_count": surface.get("surface_count", 0),
+                  "gap_count": coverage["gaps"]["gap_count"],
+                  "challenge_dispositions": challenges.get("by_disposition", {}),
+                  "triage_buckets": triage.get("buckets", {}),
+                  "semantic_object_count": semantic_count,
+                  "parity_scenario_count": parity["scenario_count"],
+                  "integrity_error_count": 0,
+              }
+
+          # Unsupported Python CLI: account for it without inventing a human GUI surface.
+          python_surface = json.loads(Path("results/python-a/surface_closure.json").read_text())
+          assert python_surface.get("surface_count", 0) == 0, python_surface
+
+          # Incomplete acquisition: the missing bytes stay explicit and require external input.
+          incomplete_cov = json.loads(Path("results/incomplete-a/coverage_report.json").read_text())
+          incomplete_ch = json.loads(Path("results/incomplete-a/uncertainty_challenges.json").read_text())
+          assert incomplete_cov["gaps"]["by_category"].get("acquisition", 0) >= 2, incomplete_cov["gaps"]
+          assert incomplete_ch["by_disposition"].get("EXTERNAL_INPUT_REQUIRED", 0) >= 2, incomplete_ch["by_disposition"]
+
+          # Forced byte budget: resource-limited content stays unavailable and visible as gaps.
+          db = sqlite3.connect("results/budget-a/scan_index.sqlite")
+          blocked = db.execute(
+              "SELECT COUNT(*) FROM files WHERE content_available=0 AND acquisition_state='RESOURCE_LIMIT'"
+          ).fetchone()[0]
+          db.close()
+          assert blocked >= 1, blocked
+          budget_cov = json.loads(Path("results/budget-a/coverage_report.json").read_text())
+          assert budget_cov["gaps"]["gap_count"] >= 1, budget_cov["gaps"]
+
+          # Ambiguous inline routing remains uncertain; advisory handler references never become parity requirements.
+          db = sqlite3.connect("results/ambiguous-a/scan_index.sqlite")
+          partial_handlers = db.execute(
+              "SELECT COUNT(*) FROM nodes WHERE kind='handler_reference' AND coverage='PARTIAL'"
+          ).fetchone()[0]
+          db.close()
+          assert partial_handlers >= 1, partial_handlers
+          ambiguous_parity = json.loads(Path("results/ambiguous-a/parity_scenarios.json").read_text())
+          assert not any(x.get("kind") == "handler_reference" for x in ambiguous_parity["scenarios"]), ambiguous_parity
+
+          Path("results/V034_BROAD_CALIBRATION.json").write_text(
+              json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(report, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Verify portable parity regeneration on real specimens
+        shell: bash
+        run: |
+          for name in notepad moji pell; do
+            mkdir -p "results/$name-portable"
+            cp "results/$name-a/Blueprint.md" "results/$name-portable/Blueprint.md"
+            scan-body parity-scenarios "results/$name-portable/Blueprint.md" --out-dir "results/$name-portable"
+            cmp "results/$name-a/parity_scenarios.json" "results/$name-portable/parity_scenarios.json"
+            cmp "results/$name-a/parity_scenarios.feature" "results/$name-portable/parity_scenarios.feature"
+            cmp "results/$name-a/AGENTS.md" "results/$name-portable/AGENTS.md"
+          done
+
+      - name: Upload v0.34 broader-calibration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v034-broader-calibration
+          path: results
+          if-no-files-found: error
+          retention-days: 14

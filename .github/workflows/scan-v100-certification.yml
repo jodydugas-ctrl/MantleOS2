@@ -1,0 +1,688 @@
+name: SCAN v1.0 final certification
+
+on:
+  push:
+    branches:
+      - scan-v1.0-certification
+      - main
+    paths:
+      - 'Anchor/engine/v1.0/**'
+      - 'Anchor/releases/v1.0/**'
+      - '.github/workflows/scan-v100-certification.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v1.0/**'
+      - 'Anchor/releases/v1.0/**'
+      - '.github/workflows/scan-v100-certification.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: scan-v100-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  platform-certification:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.11', '3.12', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install v1.0 candidate
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v1.0
+          python -c "import scan; assert scan.__version__ == '1.0.0', scan.__version__"
+
+      - name: Run final focused certification and hardening suite
+        run: >-
+          python -m pytest -q
+          Anchor/engine/v1.0/tests/test_v037_operational_hardening.py
+          Anchor/engine/v1.0/tests/test_v100_certification.py
+
+      - name: Installed CLI smoke
+        run: scan-body --help
+
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      test_count: ${{ steps.count.outputs.test_count }}
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      AZURE_OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+      XAI_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install candidate and deterministic TypeScript parser dependency
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v1.0
+          mkdir -p .scan-tools proof
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "1.0.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v1.0/PACKAGE_MANIFEST.json
+
+      - name: Run complete inherited plus v1.0 regression suite
+        shell: bash
+        run: python -m pytest -q Anchor/engine/v1.0/tests --junitxml=proof/full-tests.xml
+
+      - name: Record regression count
+        id: count
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          root = ET.parse("proof/full-tests.xml").getroot()
+          suites = [root] if root.tag == "testsuite" else list(root.findall("testsuite"))
+          tests = sum(int(s.attrib.get("tests", 0)) for s in suites)
+          failures = sum(int(s.attrib.get("failures", 0)) for s in suites)
+          errors = sum(int(s.attrib.get("errors", 0)) for s in suites)
+          skipped = sum(int(s.attrib.get("skipped", 0)) for s in suites)
+          assert failures == 0 and errors == 0
+          passed = tests - skipped
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"test_count={passed}\n")
+          print({"tests": tests, "passed": passed, "skipped": skipped})
+          PY
+
+      - name: Upload regression receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v100-full-regression
+          path: proof/full-tests.xml
+          if-no-files-found: error
+          retention-days: 30
+
+  live-authorized-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      AZURE_OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+      XAI_API_KEY: ''
+      SCAN_TEST_SECRET: 'MUST_NOT_REACH_RUNTIME_TARGET'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install v1.0 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e Anchor/engine/v1.0
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "1.0.0"
+          PY
+
+      - name: Build authorized runtime fixture and plan
+        shell: bash
+        run: |
+          mkdir -p proof/runtime/target
+          cat > proof/runtime/target/app.py <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          state = {
+              "phase": "after",
+              "saved": True,
+              "secret_present": "SCAN_TEST_SECRET" in os.environ,
+          }
+          Path("state.json").write_text(json.dumps(state) + "\n", encoding="utf-8")
+          Path("persisted.txt").write_text("persisted\n", encoding="utf-8")
+          print("V1_RUNTIME_READY")
+          PY
+
+          cat > proof/runtime/plan.json <<'JSON'
+          {
+            "schema_version": "scan-runtime-validation-plan/0.1",
+            "plan_id": "v100-final-live-runtime",
+            "network": "DENY",
+            "command": ["python3", "app.py"],
+            "cwd": ".",
+            "timeout_seconds": 10,
+            "max_output_bytes": 65536,
+            "source_refs": ["V1-CERT-RUNTIME"],
+            "assertions": [
+              {"id": "exit", "kind": "EXIT_CODE_EQUALS", "equals": 0},
+              {"id": "ready", "kind": "STDOUT_CONTAINS", "value": "V1_RUNTIME_READY"},
+              {"id": "persisted", "kind": "FILE_EXISTS", "path": "persisted.txt"},
+              {"id": "phase", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/phase", "equals": "after"},
+              {"id": "secret-not-forwarded", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/secret_present", "equals": false},
+              {"id": "duration", "kind": "DURATION_MS_MAX", "max": 10000}
+            ]
+          }
+          JSON
+
+          sha256sum proof/runtime/target/app.py > proof/runtime/source.before
+          sha256sum proof/runtime/plan.json > proof/runtime/plan.sha256
+
+      - name: Prove authorization mismatch blocks before execution
+        shell: bash
+        run: |
+          set +e
+          scan-body runtime-validate \
+            proof/runtime/target \
+            proof/runtime/plan.json \
+            --out proof/runtime/not-authorized \
+            --authorize-plan-sha256 "$(printf '0%.0s' {1..64})"
+          RC=$?
+          set -e
+          test "$RC" -eq 14
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("proof/runtime/not-authorized/runtime_validation.json").read_text())
+          assert report["state"] == "BLOCKED"
+          assert report["reason"] == "PLAN_NOT_AUTHORIZED"
+          assert report["authorization"]["matched"] is False
+          PY
+          test ! -e proof/runtime/target/state.json
+          test ! -e proof/runtime/target/persisted.txt
+
+      - name: Run real network-denied authorized validation
+        shell: bash
+        run: |
+          PLAN_SHA="$(cut -d' ' -f1 proof/runtime/plan.sha256)"
+          SCAN_BIN="$(command -v scan-body)"
+          sudo -E "$SCAN_BIN" runtime-validate \
+            proof/runtime/target \
+            proof/runtime/plan.json \
+            --out proof/runtime/result \
+            --authorize-plan-sha256 "$PLAN_SHA"
+
+      - name: Audit final live runtime evidence
+        shell: bash
+        run: |
+          sha256sum proof/runtime/target/app.py > proof/runtime/source.after
+          cmp proof/runtime/source.before proof/runtime/source.after
+          test ! -e proof/runtime/target/state.json
+          test ! -e proof/runtime/target/persisted.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("proof/runtime/result/runtime_validation.json").read_text())
+          assert report["state"] == "PASS"
+          assert report["plan_id"] == "v100-final-live-runtime"
+          assert report["authorization"]["matched"] is True
+          assert report["assertion_count"] == 6
+          assert report["assertion_failures"] == 0
+          assert report["source_integrity"]["unchanged"] is True
+          assert report["isolation"]["working_copy"] == "TEMPORARY_COPY"
+          assert report["isolation"]["shell"] is False
+          assert report["isolation"]["environment"] == "SANITIZED"
+          assert report["isolation"]["network"]["state"] == "PASS"
+          assert report["isolation"]["network"]["mechanism"] == "LINUX_NETWORK_NAMESPACE"
+          assert report["isolation"]["network"]["interfaces"] == ["lo"]
+          secret = next(x for x in report["assertions"] if x["id"] == "secret-not-forwarded")
+          assert secret["actual"] is False
+          assert report["authority"]["automatic_promotion"] is False
+          assert report["authority"]["runtime_result_may_override_static_uncertainty"] is False
+          PY
+
+      - name: Upload live runtime evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v100-live-runtime
+          path: proof/runtime/
+          if-no-files-found: error
+          retention-days: 30
+
+  final-release-certificate:
+    needs: [platform-certification, full-regression, live-authorized-runtime]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      AZURE_OPENAI_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+      XAI_API_KEY: ''
+      FULL_TEST_COUNT: ${{ needs.full-regression.outputs.test_count }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v1.0 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e Anchor/engine/v1.0
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: scan-v100-live-runtime
+          path: proof/live-runtime-evidence
+
+      - name: Bind pre-merge stage evidence to the main release commit
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p proof
+          read -r HEAD_SHA PARENT_ONE SOURCE_HEAD EXTRA <<< "$(git rev-list --parents -n 1 "$GITHUB_SHA")"
+          if [ -n "${EXTRA:-}" ] || [ -z "${SOURCE_HEAD:-}" ]; then
+            echo "v1.0 publication requires a two-parent integration merge commit" >&2
+            exit 1
+          fi
+
+          HEAD_TREE="$(git rev-parse "$GITHUB_SHA^{tree}")"
+          SOURCE_TREE="$(git rev-parse "$SOURCE_HEAD^{tree}")"
+          if [ "$HEAD_TREE" != "$SOURCE_TREE" ]; then
+            echo "integration merge tree differs from the certified source-head tree" >&2
+            exit 1
+          fi
+
+          gh api             -H "Accept: application/vnd.github+json"             "repos/$GITHUB_REPOSITORY/commits/$SOURCE_HEAD/check-runs?per_page=100"             > proof/source-head-check-runs.json
+
+          SOURCE_HEAD="$SOURCE_HEAD" HEAD_TREE="$HEAD_TREE" python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = json.loads(Path("proof/source-head-check-runs.json").read_text())
+          runs = payload.get("check_runs", [])
+          required = {
+              "broader-calibration",
+              "regression",
+              "prepare",
+              "worker",
+              "adjudicate",
+          }
+          passed = {
+              row.get("name")
+              for row in runs
+              if row.get("status") == "completed" and row.get("conclusion") == "success"
+          }
+          missing = sorted(required - passed)
+          if missing:
+              raise SystemExit(f"required pre-merge stage checks missing successful evidence: {missing}")
+
+          evidence = {
+              "schema_version": "scan-v1-integration-stage-evidence/1.0",
+              "state": "PASS",
+              "release_commit_sha": os.environ["GITHUB_SHA"],
+              "certified_source_head_sha": os.environ["SOURCE_HEAD"],
+              "shared_tree_sha": os.environ["HEAD_TREE"],
+              "required_successful_checks": sorted(required),
+              "meaning": (
+                  "The release merge tree is byte-identical to the PR source head, "
+                  "and that source head has successful broader-calibration and "
+                  "independent-reconstruction isolation/adjudication checks."
+              ),
+          }
+          Path("proof/integration_stage_evidence.json").write_text(
+              json.dumps(evidence, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(evidence, indent=2))
+          PY
+
+      - name: Stage and seal exact v1.0 package
+        shell: bash
+        run: |
+          mkdir -p proof/release
+          cp -a Anchor/engine/v1.0 proof/release/scan-software-body-1.0.0
+          find proof/release/scan-software-body-1.0.0 -type d \( -name __pycache__ -o -name .pytest_cache \) -prune -exec rm -rf {} +
+          find proof/release/scan-software-body-1.0.0 -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+          scan-body package-manifest proof/release/scan-software-body-1.0.0
+          scan-body self-audit proof/release/scan-software-body-1.0.0
+
+      - name: Run sealed local v1.0 certification
+        shell: bash
+        run: |
+          scan-body release-certify \
+            proof/release/scan-software-body-1.0.0 \
+            --out proof/local-certification
+          scan-body verify-release-certification proof/local-certification
+
+      - name: Build and install release wheel
+        shell: bash
+        run: |
+          mkdir -p proof/dist
+          python -m pip wheel --no-deps proof/release/scan-software-body-1.0.0 -w proof/dist
+          python -m venv proof/wheel-smoke
+          . proof/wheel-smoke/bin/activate
+          python -m pip install --no-index --find-links proof/dist scan-software-body==1.0.0
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "1.0.0"
+          PY
+          mkdir -p proof/wheel-fixture
+          printf 'void certified(){}\n' > proof/wheel-fixture/main.cpp
+          scan-body scan proof/wheel-fixture --out proof/wheel-scan --specimen-id v100-wheel-smoke
+          test -f proof/wheel-scan/projection_manifest.json
+          test ! -e proof/wheel-scan/.scan-write.lock
+
+      - name: Create deterministic sealed source archive
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          root = Path("proof/release/scan-software-body-1.0.0")
+          out = Path("proof/SCAN_v1.0.0_source.zip")
+          with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+              for path in sorted(p for p in root.rglob("*") if p.is_file()):
+                  rel = Path("scan-software-body-1.0.0") / path.relative_to(root)
+                  info = zipfile.ZipInfo(rel.as_posix(), date_time=(1980, 1, 1, 0, 0, 0))
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = 0o100644 << 16
+                  zf.writestr(info, path.read_bytes())
+          PY
+
+      - name: Emit aggregate v1.0 CI certificate and manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          from hashlib import sha256
+          import json
+          import os
+          from pathlib import Path
+
+          def digest(path):
+              data = Path(path).read_bytes()
+              return {"path": str(path), "bytes": len(data), "sha256": sha256(data).hexdigest()}
+
+          wheel = next(Path("proof/dist").glob("scan_software_body-1.0.0-*.whl"))
+          package_manifest = Path("proof/release/scan-software-body-1.0.0/PACKAGE_MANIFEST.json")
+          local_manifest = Path("proof/local-certification/V1_RELEASE_MANIFEST.json")
+          runtime_report = Path("proof/live-runtime-evidence/result/runtime_validation.json")
+          source_zip = Path("proof/SCAN_v1.0.0_source.zip")
+          integration_evidence_path = Path("proof/integration_stage_evidence.json")
+          integration_evidence = (
+              json.loads(integration_evidence_path.read_text())
+              if integration_evidence_path.is_file()
+              else {
+                  "state": "NOT_APPLICABLE_OUTSIDE_MAIN_MERGE",
+                  "release_commit_sha": os.environ["GITHUB_SHA"],
+              }
+          )
+
+          local_certificate = json.loads(
+              Path("proof/local-certification/v1_local_release_certificate.json").read_text()
+          )
+          runtime = json.loads(runtime_report.read_text())
+          assert local_certificate["state"] == "PASS"
+          assert runtime["state"] == "PASS"
+
+          certificate = {
+              "schema_version": "scan-v1-ci-release-certificate/1.0",
+              "engine_version": "1.0.0",
+              "state": "PASS",
+              "commit_sha": os.environ["GITHUB_SHA"],
+              "workflow_run_id": os.environ["GITHUB_RUN_ID"],
+              "gates": {
+                  "platform_matrix": {
+                      "state": "PASS",
+                      "operating_systems": ["ubuntu-latest", "macos-latest", "windows-latest"],
+                      "python_versions": ["3.11", "3.12", "3.13"],
+                  },
+                  "full_regression": {
+                      "state": "PASS",
+                      "passed_tests": int(os.environ["FULL_TEST_COUNT"]),
+                  },
+                  "local_package_certification": {
+                      "state": "PASS",
+                      "scope": "LOCAL_MECHANICAL_PACKAGE",
+                  },
+                  "live_authorized_runtime": {
+                      "state": "PASS",
+                      "network": "DENY",
+                      "mechanism": runtime["isolation"]["network"]["mechanism"],
+                      "assertions": runtime["assertion_count"],
+                      "failures": runtime["assertion_failures"],
+                  },
+                  "independent_reconstruction_regression": {
+                      "state": "PASS",
+                      "evidence": "FULL_INHERITED_REGRESSION_SUITE",
+                  },
+                  "operational_hardening": {
+                      "state": "PASS",
+                      "evidence": "CROSS_PLATFORM_FOCUSED_MATRIX",
+                  },
+                  "integration_stage_lineage": integration_evidence,
+              },
+              "artifacts": {
+                  "package_manifest": digest(package_manifest),
+                  "local_certification_manifest": digest(local_manifest),
+                  "live_runtime_report": digest(runtime_report),
+                  "wheel": digest(wheel),
+                  "source_zip": digest(source_zip),
+                  "integration_stage_evidence": (
+                      digest(integration_evidence_path)
+                      if integration_evidence_path.is_file()
+                      else None
+                  ),
+              },
+              "authority": {
+                  "exact_commit_and_bytes_only": True,
+                  "semantic_completeness_implied": False,
+                  "universal_runtime_equivalence_implied": False,
+                  "hostile_code_sandbox_implied": False,
+                  "distributed_locking_implied": False,
+                  "production_sla_implied": False,
+              },
+          }
+
+          cert_path = Path("proof/V1_CI_RELEASE_CERTIFICATE.json")
+          cert_path.write_text(json.dumps(certificate, indent=2) + "\n", encoding="utf-8")
+
+          sealed = [
+              package_manifest,
+              local_manifest,
+              runtime_report,
+              wheel,
+              source_zip,
+              cert_path,
+          ]
+          if integration_evidence_path.is_file():
+              sealed.append(integration_evidence_path)
+          manifest = {
+              "schema_version": "scan-v1-ci-release-manifest/1.0",
+              "engine_version": "1.0.0",
+              "commit_sha": os.environ["GITHUB_SHA"],
+              "files": [digest(path) for path in sealed],
+          }
+          Path("proof/V1_CI_MANIFEST.json").write_text(
+              json.dumps(manifest, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(certificate, indent=2))
+          PY
+
+      - name: Stage publishable v1.0 assets and checksums
+        shell: bash
+        run: |
+          rm -rf proof/publish
+          mkdir -p proof/publish
+          cp proof/release/scan-software-body-1.0.0/PACKAGE_MANIFEST.json proof/publish/PACKAGE_MANIFEST.json
+          cp proof/local-certification/V1_RELEASE_MANIFEST.json proof/publish/V1_RELEASE_MANIFEST.json
+          cp proof/local-certification/v1_local_release_certificate.json proof/publish/v1_local_release_certificate.json
+          cp proof/local-certification/release_qualification.json proof/publish/release_qualification.json
+          cp proof/live-runtime-evidence/result/runtime_validation.json proof/publish/runtime_validation.json
+          cp proof/V1_CI_RELEASE_CERTIFICATE.json proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+          cp proof/V1_CI_MANIFEST.json proof/publish/V1_CI_MANIFEST.json
+          if [ -f proof/integration_stage_evidence.json ]; then
+            cp proof/integration_stage_evidence.json proof/publish/integration_stage_evidence.json
+          fi
+          cp proof/SCAN_v1.0.0_source.zip proof/publish/SCAN_v1.0.0_source.zip
+          cp proof/dist/scan_software_body-1.0.0-*.whl proof/publish/
+
+          (
+            cd proof/publish
+            sha256sum \
+              PACKAGE_MANIFEST.json \
+              V1_RELEASE_MANIFEST.json \
+              v1_local_release_certificate.json \
+              release_qualification.json \
+              runtime_validation.json \
+              V1_CI_RELEASE_CERTIFICATE.json \
+              V1_CI_MANIFEST.json \
+              SCAN_v1.0.0_source.zip \
+              scan_software_body-1.0.0-*.whl \
+              > SHA256SUMS.txt
+            if [ -f integration_stage_evidence.json ]; then
+              sha256sum integration_stage_evidence.json >> SHA256SUMS.txt
+            fi
+            cat SHA256SUMS.txt
+          )
+
+      - name: Upload certified v1.0 release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v1.0-certified-release
+          path: |
+            proof/publish/
+            proof/local-certification/
+          if-no-files-found: error
+          retention-days: 90
+
+  publish-release:
+    needs: final-release-certificate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download certified v1.0 release evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: scan-v1.0-certified-release
+          path: proof
+
+      - name: Verify publication payload
+        shell: bash
+        run: |
+          test -f proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+          test -f proof/publish/V1_CI_MANIFEST.json
+          test -f proof/publish/SHA256SUMS.txt
+          (
+            cd proof/publish
+            sha256sum -c SHA256SUMS.txt
+          )
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          cert = json.loads(Path("proof/publish/V1_CI_RELEASE_CERTIFICATE.json").read_text())
+          assert cert["state"] == "PASS"
+          assert cert["engine_version"] == "1.0.0"
+          assert cert["commit_sha"] == os.environ["GITHUB_SHA"]
+          lineage = cert["gates"]["integration_stage_lineage"]
+          assert lineage["state"] == "PASS"
+          assert lineage["release_commit_sha"] == os.environ["GITHUB_SHA"]
+          PY
+
+      - name: Publish immutable SCAN v1.0.0 GitHub release
+        shell: bash
+        run: |
+          git fetch --tags --force
+          if git rev-parse -q --verify refs/tags/v1.0.0 >/dev/null; then
+            TAG_SHA="$(git rev-list -n 1 v1.0.0)"
+            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+              echo "v1.0.0 already points to $TAG_SHA; refusing to move the immutable release tag to $GITHUB_SHA" >&2
+              exit 1
+            fi
+            gh release view v1.0.0 >/dev/null
+            echo "SCAN v1.0.0 is already published at this exact commit; leaving it unchanged."
+            exit 0
+          fi
+
+          assets=(
+            proof/publish/scan_software_body-1.0.0-*.whl
+            proof/publish/SCAN_v1.0.0_source.zip
+            proof/publish/PACKAGE_MANIFEST.json
+            proof/publish/V1_RELEASE_MANIFEST.json
+            proof/publish/v1_local_release_certificate.json
+            proof/publish/release_qualification.json
+            proof/publish/runtime_validation.json
+            proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+            proof/publish/V1_CI_MANIFEST.json
+            proof/publish/SHA256SUMS.txt
+          )
+          if [ -f proof/publish/integration_stage_evidence.json ]; then
+            assets+=(proof/publish/integration_stage_evidence.json)
+          fi
+
+          gh release create v1.0.0 \
+            --target "$GITHUB_SHA" \
+            --title "SCAN v1.0.0" \
+            --notes-file Anchor/releases/v1.0/RELEASE_NOTES.md \
+            "${assets[@]}"

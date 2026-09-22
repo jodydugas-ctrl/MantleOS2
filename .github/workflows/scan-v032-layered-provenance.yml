@@ -1,0 +1,112 @@
+name: SCAN v0.32 layered provenance
+
+on:
+  push:
+    branches:
+      - scan-v0.32-layered-provenance
+    paths:
+      - 'Anchor/engine/v0.32/**'
+      - '.github/workflows/scan-v032-layered-provenance.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.32/**'
+      - '.github/workflows/scan-v032-layered-provenance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  layered-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.32 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.32
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.32.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.32/PACKAGE_MANIFEST.json
+
+      - name: Run full candidate regression suite
+        shell: bash
+        run: pytest -q Anchor/engine/v0.32/tests
+
+      - name: Prove deterministic scan-time provenance output
+        shell: bash
+        run: |
+          scan-body scan Anchor/engine/v0.32/tests/fixtures/qualification_sample --out results/a --specimen-id v032-provenance-fixture
+          scan-body scan Anchor/engine/v0.32/tests/fixtures/qualification_sample --out results/b --specimen-id v032-provenance-fixture
+          for f in layered_provenance.json layered_provenance.md projection_manifest.json; do
+            cmp "results/a/$f" "results/b/$f"
+          done
+
+      - name: Prove read-only provenance regeneration
+        shell: bash
+        run: |
+          sha256sum results/a/scan_index.sqlite > results/db.before
+          scan-body provenance-layers results/a/scan_index.sqlite --out-dir results/regenerated
+          sha256sum results/a/scan_index.sqlite > results/db.after
+          cmp results/db.before results/db.after
+          cmp results/a/layered_provenance.json results/regenerated/layered_provenance.json
+          cmp results/a/layered_provenance.md results/regenerated/layered_provenance.md
+
+      - name: Audit layer reconciliation and authority boundary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, sqlite3
+          from pathlib import Path
+
+          report = json.loads(Path("results/a/layered_provenance.json").read_text())
+          db = sqlite3.connect("results/a/scan_index.sqlite")
+          db.row_factory = sqlite3.Row
+          rows = list(db.execute("SELECT id,object_type,coverage FROM semantic_objects ORDER BY id"))
+
+          projected = {row["object_id"]: row for row in report["objects"]}
+          assert set(projected) == {row["id"] for row in rows}
+          for row in rows:
+              assert projected[row["id"]]["coverage"] == str(row["coverage"]).upper()
+
+          assert report["authority"]["projection_only"] is True
+          assert report["authority"]["duplicates_canonical_graph"] is False
+          assert report["authority"]["canonical_write_allowed"] is False
+          assert report["authority"]["coverage_preserved_per_object"] is True
+          assert report["authority"]["higher_layer_text_does_not_upgrade_lower_layer_evidence"] is True
+          assert report["layer_model"]["E4"]["canonical"] is False
+          PY
+
+      - name: Upload v0.32 provenance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v032-layered-provenance
+          path: results
+          if-no-files-found: error
+          retention-days: 14

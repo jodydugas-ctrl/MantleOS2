@@ -1,8 +1,30 @@
 # SCAN CREATION PLAN
-Version: 0.32
-Status: ACTIVE LIVING ROADMAP
+Version: 1.0 release checkpoint
+Status: V1.0 PRODUCTION-READINESS PATH COMPLETE / POST-V1 ROADMAP REMAINS ACTIVE
 Canonical public project: this repository's `Anchor/` directory
 Companion files: `ANCHOR_CODING_PROMPT.md`, `SCAN_PROTOCOL.md`, `SCAN_REPORT.md`
+
+
+## v1.0 production-readiness completion checkpoint
+
+The generic SCAN engine has completed the staged production-readiness path through
+v1.0 certification:
+
+`coverage/gaps → uncertainty challenger → triage ranking → layered provenance → parity scenarios/distribution → broader calibration → independent reconstruction proof → authorized runtime validation → operational hardening → v1.0 certification`
+
+The final release gate is exact-commit and exact-byte scoped. It combines the
+complete inherited regression suite, supported Python/platform matrix, sealed
+package qualification, independent-reconstruction regressions, real authorized
+runtime validation under Linux network denial, operational-hardening checks,
+fresh wheel installation, and aggregate artifact sealing.
+
+This closes the **v1.0 scanner production-readiness roadmap**, not every research
+question in this document. In particular, PR5 NotepadNext calibration remains
+PARTIAL as specimen-specific evidence; unresolved semantic, dynamic, runtime,
+visual, lifecycle, persistence, or platform facts remain unresolved unless their
+own evidence says otherwise. Future work belongs to a post-v1 roadmap and must
+not retroactively strengthen the v1.0 certificate.
+
 
 ## v0.32 frozen v0.26 surface-denominator checkpoint
 

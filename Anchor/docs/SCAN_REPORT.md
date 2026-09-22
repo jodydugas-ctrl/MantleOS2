@@ -1,12 +1,29 @@
 # NOTEPADNEXT SOFTWARE BODY SCAN
-Working Report Version: 0.32
-SCAN Protocol: 0.32
-Status: COLD SCAN PASS / CALIBRATION PARTIAL
+Working Report Version: 1.0 release checkpoint
+SCAN Protocol: 0.32 + v1.0 certification contract
+Status: ENGINE V1.0 CERTIFIED / NOTEPADNEXT CALIBRATION PARTIAL
 This file is intended to be edited in place as deterministic SCAN coverage increases.
 
-**Current project-state note (v0.32 checkpoint):** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.26 generically corrects the v0.25 surface denominator while preserving all declared/factory surface states. Two exact manifest-backed scans were byte- and row-identical; the final installed-wheel certification independently verified 12/12 files. Compiler evidence remains 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is now 310 bound, 59 partial, and 11 unresolved of 380. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.26/SCAN_v0.26_REPORT.md` and `releases/v0.26/PR5_CALIBRATION_REPORT_v026.md`.
 
-## 0. Current authoritative v0.26 calibration result
+**Current engine-release note (v1.0):** SCAN's generic production-readiness
+upgrade path is mechanically complete through v1.0 certification. The certified
+release package includes deterministic coverage/gaps, uncertainty challenge,
+investigation triage, layered provenance, parity/distribution projections,
+broader calibration gates, independent reconstruction proof infrastructure,
+explicitly authorized runtime validation, operational hardening, and final
+exact-byte CI certification. The final certificate is scoped to the exact tested
+commit/package and does not imply semantic completeness or universal runtime
+equivalence.
+
+This release status does **not** rewrite the NotepadNext specimen record below.
+PR5 remains CALIBRATION PARTIAL wherever its preserved evidence says PARTIAL,
+BLOCKED, or UNKNOWN. Historical sections remain chronology and should not be
+read as the current engine-release ceiling.
+
+
+**Historical v0.32 project-state note:** the v0.20 cold LLM-disabled NotepadNext certification remains the immutable pre-oracle baseline. Frozen Engine v0.26 generically corrects the v0.25 surface denominator while preserving all declared/factory surface states. Two exact manifest-backed scans were byte- and row-identical; the final installed-wheel certification independently verified 12/12 files. Compiler evidence remains 84 mapped plus 294 partial of 394 translation units, with 16 unavailable and 331 explicit parser gaps. PR5 remains PARTIAL, not converged: human-surface closure is now 310 bound, 59 partial, and 11 unresolved of 380. H-001 is frozen and source-uninspected. Earlier sections remain chronology, not current gate claims. See `releases/v0.26/SCAN_v0.26_REPORT.md` and `releases/v0.26/PR5_CALIBRATION_REPORT_v026.md`.
+
+## 0. Historical authoritative v0.26 NotepadNext calibration result
 
 - Exact identity: `dail8859/NotepadNext@f57db52d6760a2ce4149a37190c3adaa586845f5`, tree `f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b`.
 - Acquisition: 1,928/1,928 provider blobs, 20,875,384 verified bytes, oracle unused.
@@ -113,7 +130,7 @@ This limitation is intentional. Missing understanding is not being replaced with
 
 ### 2.1 Scanner Engine Implementation Checkpoint
 
-TOOLING STATUS, not specimen evidence: SCAN now contains a reusable Stage 1 engine under `scan_engine/` rather than relying on disposable scripts or manual LLM repository walks. The current **v0.20** implementation provides:
+TOOLING STATUS, not specimen evidence: SCAN now contains a reusable Stage 1 engine under `scan_engine/` rather than relying on disposable scripts or manual LLM repository walks. The then-current **v0.20** implementation provides:
 
 - recursive read-only local file inventory;
 - SHA-256 content hashing for materialized bytes;

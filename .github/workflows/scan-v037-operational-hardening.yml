@@ -1,0 +1,157 @@
+name: SCAN v0.37 operational hardening
+
+on:
+  push:
+    branches:
+      - scan-v0.37-operational-hardening
+    paths:
+      - 'Anchor/engine/v0.37/**'
+      - '.github/workflows/scan-v037-operational-hardening.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.37/**'
+      - '.github/workflows/scan-v037-operational-hardening.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: scan-v037-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  focused-hardening:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install v0.37 candidate
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.37
+          python -c "import scan; assert scan.__version__ == '0.37.0', scan.__version__"
+
+      - name: Run focused operational hardening suite
+        run: python -m pytest -q Anchor/engine/v0.37/tests/test_v037_operational_hardening.py
+
+      - name: Console entry point smoke test
+        run: scan-body --help
+
+  full-regression-and-envelope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install candidate and deterministic TypeScript parser dependency
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.37
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.37.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.37/PACKAGE_MANIFEST.json
+
+      - name: Run full inherited plus v0.37 regression suite
+        shell: bash
+        run: python -m pytest -q Anchor/engine/v0.37/tests
+
+      - name: Build and smoke-test clean wheel
+        shell: bash
+        run: |
+          rm -rf dist-v037
+          python -m pip wheel --no-deps Anchor/engine/v0.37 -w dist-v037
+          python -m venv .wheel-smoke
+          . .wheel-smoke/bin/activate
+          python -m pip install --no-index --find-links dist-v037 scan-software-body==0.37.0
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.37.0"
+          PY
+          scan-body --help >/dev/null
+
+      - name: Exercise bounded synthetic large-repository envelope
+        shell: bash
+        run: |
+          rm -rf proof
+          mkdir -p proof/specimen
+          python - <<'PY'
+          from pathlib import Path
+          root = Path("proof/specimen")
+          for i in range(1000):
+              (root / f"f{i:04d}.cpp").write_text(f"void f{i}(){{}}\n", encoding="utf-8")
+          PY
+          scan-body scan proof/specimen --out proof/scan --specimen-id v037-large-envelope --max-materialized-files 64
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          body = json.loads(Path("proof/scan/machine_body_map.json").read_text())
+          assert body["inventory"]["file_count"] == 1000
+          assert body["inventory"]["materialized_file_count"] == 64
+          assert body["inventory"]["acquisition_counts"]["RESOURCE_LIMIT_TOTAL_FILES"] == 936
+          assert body["budget"]["triggered"] is True
+          assert not (Path("proof/scan") / ".scan-write.lock").exists()
+          assert (Path("proof/scan") / "projection_manifest.json").is_file()
+          PY
+
+      - name: Prove live writer contention fails closed
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from scan import __version__
+          from scan.operational_hardening import OutputBusyError, OutputLease
+
+          out = Path("proof/contention")
+          with OutputLease(out, engine_version=__version__):
+              try:
+                  OutputLease(out, engine_version=__version__).acquire()
+              except OutputBusyError:
+                  pass
+              else:
+                  raise SystemExit("second writer unexpectedly acquired the same output")
+          assert not (out / ".scan-write.lock").exists()
+          PY
+
+      - name: Upload v0.37 operational evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v037-operational-hardening
+          path: proof/
+          if-no-files-found: warn
+          retention-days: 14
