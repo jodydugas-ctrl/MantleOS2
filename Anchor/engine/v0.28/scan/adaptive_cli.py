@@ -6,10 +6,15 @@ from pathlib import Path
 import sys
 from typing import Sequence
 
+from . import __version__
+from .anchor_code import export_anchor_code
+from .agent_blueprint import blueprint_filename, export_agent_blueprint
 from .assimilation import prepare_assimilation_workbench
 from .assimilation_candidate import validate_assimilation_candidate
 from .assimilation_context import files_for_assimilation_detection
 from .cli import main as canonical_main
+from .conformance import evaluate_candidate
+from .store import Store
 
 
 def _option(args: Sequence[str], name: str, default: str | None = None) -> str | None:
@@ -78,16 +83,97 @@ def _validate_assimilation_command(args: list[str]) -> int:
     return 0 if report.get("mechanical_gate") == "PASS" else 2
 
 
-def main(argv=None):
-    """Run canonical SCAN plus the post-scan adaptive-assimilation engineering layer.
+def _specimen_from_store(store: Store) -> dict:
+    rows = [row for row in store.semantic_objects() if row.get("object_type") == "SPECIMEN"]
+    return dict(rows[0].get("attributes") or {}) if rows else {}
 
-    Canonical scanning remains deterministic and LLM-free. Ordinary scanning never executes generated
-    candidate code. `validate-assimilation` is an explicit engineering command that loads candidate scanner
-    code and mechanically compares it with the trusted baseline without promoting it.
+
+def _anchor_code_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body anchor-code",
+        description="project canonical SCAN evidence into deterministic Anchor Code 0.9",
+    )
+    parser.add_argument("db", type=Path)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    ns = parser.parse_args(args[1:])
+    ns.out_dir.mkdir(parents=True, exist_ok=True)
+    store = Store(ns.db.resolve(strict=True), readonly=True)
+    try:
+        specimen = _specimen_from_store(store)
+        result = export_anchor_code(
+            store,
+            specimen,
+            ns.out_dir / "anchor_code.txt",
+            ns.out_dir / "anchor_blueprint.json",
+            engine_version=__version__,
+            body_map_path=(ns.db.parent / "machine_body_map.json"),
+        )
+    finally:
+        store.close()
+    print(json.dumps({"state": "PASS", **result}, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _anchor_blueprint_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body anchor-blueprint",
+        description="export one self-contained, evidence-bound coding-agent Anchor Blueprint",
+    )
+    parser.add_argument("db", type=Path)
+    parser.add_argument("--out", type=Path, default=None)
+    ns = parser.parse_args(args[1:])
+    store = Store(ns.db.resolve(strict=True), readonly=True)
+    try:
+        specimen = _specimen_from_store(store)
+        out = ns.out or (ns.db.parent / blueprint_filename(specimen))
+        result = export_agent_blueprint(
+            store, specimen, out, engine_version=__version__,
+        )
+    finally:
+        store.close()
+    print(json.dumps({"state": "PASS", **result, "path": str(out)}, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _conform_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body conform",
+        description="rescan a reconstruction read-only and compare it with an Anchor Blueprint",
+    )
+    parser.add_argument("blueprint", type=Path)
+    parser.add_argument("candidate_root", type=Path)
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--specimen-id", default=None)
+    parser.add_argument("--previous-report", type=Path, default=None)
+    ns = parser.parse_args(args[1:])
+    result = evaluate_candidate(
+        ns.blueprint,
+        ns.candidate_root,
+        ns.out,
+        engine_version=__version__,
+        specimen_id=ns.specimen_id,
+        previous_report_path=ns.previous_report,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result.get("state") == "PASS" else 12
+
+
+def main(argv=None):
+    """Run canonical SCAN plus explicit downstream engineering layers.
+
+    Stage 1 remains deterministic and LLM-free. Anchor Code and Anchor Blueprint
+    are derived projections of canonical evidence. Conformance always rescans the
+    candidate and does not accept a coding agent's self-report as evidence.
     """
     args = list(sys.argv[1:] if argv is None else argv)
     if args and args[0] == "validate-assimilation":
         return _validate_assimilation_command(args)
+    if args and args[0] == "anchor-code":
+        return _anchor_code_command(args)
+    if args and args[0] == "anchor-blueprint":
+        return _anchor_blueprint_command(args)
+    if args and args[0] == "conform":
+        return _conform_command(args)
 
     result = canonical_main(args)
     status = _post_scan_assimilation(args)
