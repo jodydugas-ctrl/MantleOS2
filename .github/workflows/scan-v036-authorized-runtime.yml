@@ -1,0 +1,254 @@
+name: SCAN v0.36 authorized runtime validation
+
+on:
+  push:
+    branches:
+      - scan-v0.36-authorized-runtime
+    paths:
+      - 'Anchor/engine/v0.36/**'
+      - '.github/workflows/scan-v036-authorized-runtime.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.36/**'
+      - '.github/workflows/scan-v036-authorized-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  authorized-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+      GROQ_API_KEY: ''
+      MISTRAL_API_KEY: ''
+      COHERE_API_KEY: ''
+      SCAN_TEST_SECRET: 'MUST_NOT_REACH_RUNTIME_TARGET'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install v0.36 candidate
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install -e Anchor/engine/v0.36
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.36.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.36/PACKAGE_MANIFEST.json
+
+      - name: Run full inherited plus v0.36 tests
+        shell: bash
+        run: pytest -q Anchor/engine/v0.36/tests
+
+      - name: Prove ordinary scan remains non-executing
+        shell: bash
+        run: |
+          mkdir -p proof/static-target
+          cat > proof/static-target/danger.py <<'PY'
+          from pathlib import Path
+          Path("EXECUTED_BY_STATIC_SCAN").write_text("bad", encoding="utf-8")
+          PY
+          scan-body scan proof/static-target --out proof/static-scan --specimen-id v036-static-nonexecution
+          test ! -e proof/static-target/EXECUTED_BY_STATIC_SCAN
+          test ! -e proof/static-scan/runtime_validation.json
+          test ! -e proof/static-scan/runtime_validation.md
+
+      - name: Create authorized runtime fixture and plan
+        shell: bash
+        run: |
+          mkdir -p proof/runtime-target
+          cat > proof/runtime-target/app.py <<'PY'
+          import json
+          import os
+          import time
+          from pathlib import Path
+
+          before = {"phase": "before", "saved": False}
+          Path("before.json").write_text(json.dumps(before) + "\n", encoding="utf-8")
+
+          started = time.monotonic()
+          state = {
+              "phase": "after",
+              "saved": True,
+              "dynamic_controls": ["RuntimeButton"],
+              "secret_present": "SCAN_TEST_SECRET" in os.environ,
+          }
+          Path("state.json").write_text(json.dumps(state) + "\n", encoding="utf-8")
+          Path("persisted.txt").write_text("persisted\n", encoding="utf-8")
+          print("RUNTIME_READY")
+          print(json.dumps({"elapsed_ms": (time.monotonic() - started) * 1000.0}))
+          PY
+
+          cat > proof/runtime-plan.json <<'JSON'
+          {
+            "schema_version": "scan-runtime-validation-plan/0.1",
+            "plan_id": "v036-runtime-state-persistence-dynamic-probe",
+            "network": "DENY",
+            "command": ["python3", "app.py"],
+            "cwd": ".",
+            "timeout_seconds": 10,
+            "max_output_bytes": 65536,
+            "source_refs": ["AC-V036-RUNTIME", "PS-V036-RUNTIME"],
+            "assertions": [
+              {"id": "process-exit", "kind": "EXIT_CODE_EQUALS", "equals": 0},
+              {"id": "runtime-ready", "kind": "STDOUT_CONTAINS", "value": "RUNTIME_READY"},
+              {"id": "persistence-file", "kind": "FILE_EXISTS", "path": "persisted.txt"},
+              {"id": "state-transition", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/phase", "equals": "after", "source_refs": ["AC-V036-RUNTIME"]},
+              {"id": "saved-state", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/saved", "equals": true},
+              {"id": "dynamic-control", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/dynamic_controls/0", "equals": "RuntimeButton"},
+              {"id": "secret-not-forwarded", "kind": "JSON_POINTER_EQUALS", "path": "state.json", "pointer": "/secret_present", "equals": false},
+              {"id": "elapsed-bound", "kind": "DURATION_MS_MAX", "max": 10000}
+            ]
+          }
+          JSON
+
+          sha256sum proof/runtime-target/app.py > proof/source.before
+          sha256sum proof/runtime-plan.json > proof/plan.sha256
+
+      - name: Prove wrong authorization fails closed
+        shell: bash
+        run: |
+          set +e
+          scan-body runtime-validate             proof/runtime-target             proof/runtime-plan.json             --out proof/not-authorized             --authorize-plan-sha256 "$(printf '0%.0s' {1..64})"
+          RC=$?
+          set -e
+          test "$RC" -eq 14
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("proof/not-authorized/runtime_validation.json").read_text())
+          assert report["state"] == "BLOCKED"
+          assert report["reason"] == "PLAN_NOT_AUTHORIZED"
+          assert report["authorization"]["matched"] is False
+          PY
+          test ! -e proof/runtime-target/state.json
+          test ! -e proof/runtime-target/persisted.txt
+
+      - name: Run explicitly authorized runtime validation with network denied
+        shell: bash
+        run: |
+          PLAN_SHA="$(cut -d' ' -f1 proof/plan.sha256)"
+          SCAN_BIN="$(command -v scan-body)"
+          sudo -E "$SCAN_BIN" runtime-validate             proof/runtime-target             proof/runtime-plan.json             --out proof/runtime-result             --authorize-plan-sha256 "$PLAN_SHA"
+
+      - name: Audit runtime observation boundaries
+        shell: bash
+        run: |
+          sha256sum proof/runtime-target/app.py > proof/source.after
+          cmp proof/source.before proof/source.after
+          test ! -e proof/runtime-target/state.json
+          test ! -e proof/runtime-target/persisted.txt
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("proof/runtime-result/runtime_validation.json").read_text())
+
+          assert report["state"] == "PASS", report
+          assert report["authorization"]["matched"] is True
+          assert report["plan_id"] == "v036-runtime-state-persistence-dynamic-probe"
+          assert report["source_refs"] == ["AC-V036-RUNTIME", "PS-V036-RUNTIME"]
+
+          isolation = report["isolation"]
+          assert isolation["working_copy"] == "TEMPORARY_COPY"
+          assert isolation["source_execution"] is False
+          assert isolation["shell"] is False
+          assert isolation["environment"] == "SANITIZED"
+          assert isolation["forwarded_environment_keys"] == ["PATH"]
+          assert isolation["network"]["state"] == "PASS"
+          assert isolation["network"]["mechanism"] == "LINUX_NETWORK_NAMESPACE"
+          assert isolation["network"]["interfaces"] == ["lo"]
+
+          assert report["source_integrity"]["unchanged"] is True
+          assert report["workspace"]["changed"] is True
+          assert report["workspace"]["retained"] is False
+          assert report["process"]["returncode"] == 0
+          assert report["process"]["timed_out"] is False
+          assert report["process"]["stdout_truncated"] is False
+          assert report["process"]["stderr_truncated"] is False
+
+          assert report["assertion_count"] == 8
+          assert report["assertion_failures"] == 0
+          assert all(row["state"] == "PASS" for row in report["assertions"])
+
+          dynamic = next(row for row in report["assertions"] if row["id"] == "dynamic-control")
+          assert dynamic["actual"] == "RuntimeButton"
+          secret = next(row for row in report["assertions"] if row["id"] == "secret-not-forwarded")
+          assert secret["actual"] is False
+
+          authority = report["authority"]
+          assert authority["runtime_observation_only"] is True
+          assert authority["static_store_mutated"] is False
+          assert authority["automatic_promotion"] is False
+          assert authority["ordinary_scan_execution_changed"] is False
+          assert authority["runtime_result_may_override_static_uncertainty"] is False
+          PY
+
+      - name: Prove failed runtime observation remains a failure
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          plan = json.loads(Path("proof/runtime-plan.json").read_text())
+          plan["plan_id"] = "v036-runtime-negative-observation"
+          plan["assertions"].append({
+              "id": "intentional-negative",
+              "kind": "JSON_POINTER_EQUALS",
+              "path": "state.json",
+              "pointer": "/saved",
+              "equals": False
+          })
+          Path("proof/runtime-plan-negative.json").write_text(json.dumps(plan, indent=2) + "\n")
+          PY
+
+          NEG_SHA="$(sha256sum proof/runtime-plan-negative.json | cut -d' ' -f1)"
+          SCAN_BIN="$(command -v scan-body)"
+          set +e
+          sudo -E "$SCAN_BIN" runtime-validate             proof/runtime-target             proof/runtime-plan-negative.json             --out proof/runtime-negative             --authorize-plan-sha256 "$NEG_SHA"
+          RC=$?
+          set -e
+          test "$RC" -eq 15
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("proof/runtime-negative/runtime_validation.json").read_text())
+          assert report["state"] == "FAIL"
+          assert report["assertion_failures"] == 1
+          row = next(x for x in report["assertions"] if x["id"] == "intentional-negative")
+          assert row["state"] == "FAIL"
+          assert row["actual"] is True
+          assert report["authority"]["automatic_promotion"] is False
+          assert report["authority"]["runtime_result_may_override_static_uncertainty"] is False
+          PY
+
+      - name: Upload v0.36 runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v036-authorized-runtime
+          path: proof/
+          if-no-files-found: error
+          retention-days: 14
