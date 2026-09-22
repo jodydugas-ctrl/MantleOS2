@@ -262,6 +262,12 @@ jobs:
                   if attrs.get("tag") == "canvas" and attrs.get("surface_role") == "presented":
                       assert nid not in closure_ids, (specimen, nid, "presented-canvas-in-action-denominator")
 
+              # Neither frozen calibration specimen exposes a runtime HTML application shell.
+              # Any newly actionable static-web denominator here is therefore a false promotion.
+              # Candidate/reference HTML nodes may exist, but they must remain outside A7 until a
+              # runtime/event coupling proves they are part of the application surface.
+              assert not reviewed, (specimen, "unexpected-actionable-web-surfaces", reviewed[:20])
+
               assert (base_root / "nest_capability_map.json").read_bytes() == (cand_root / "nest_capability_map.json").read_bytes(), (specimen, "NEST-projection-drift")
 
               report["specimens"][specimen] = {
