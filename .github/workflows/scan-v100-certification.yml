@@ -282,6 +282,7 @@ jobs:
     permissions:
       contents: write
       actions: read
+      checks: read
     env:
       OPENAI_API_KEY: ''
       ANTHROPIC_API_KEY: ''
@@ -321,6 +322,68 @@ jobs:
         with:
           name: scan-v100-live-runtime
           path: proof/live-runtime-evidence
+
+      - name: Bind pre-merge stage evidence to the main release commit
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          mkdir -p proof
+          read -r HEAD_SHA PARENT_ONE SOURCE_HEAD EXTRA <<< "$(git rev-list --parents -n 1 "$GITHUB_SHA")"
+          if [ -n "${EXTRA:-}" ] || [ -z "${SOURCE_HEAD:-}" ]; then
+            echo "v1.0 publication requires a two-parent integration merge commit" >&2
+            exit 1
+          fi
+
+          HEAD_TREE="$(git rev-parse "$GITHUB_SHA^{tree}")"
+          SOURCE_TREE="$(git rev-parse "$SOURCE_HEAD^{tree}")"
+          if [ "$HEAD_TREE" != "$SOURCE_TREE" ]; then
+            echo "integration merge tree differs from the certified source-head tree" >&2
+            exit 1
+          fi
+
+          gh api             -H "Accept: application/vnd.github+json"             "repos/$GITHUB_REPOSITORY/commits/$SOURCE_HEAD/check-runs?per_page=100"             > proof/source-head-check-runs.json
+
+          SOURCE_HEAD="$SOURCE_HEAD" HEAD_TREE="$HEAD_TREE" python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          payload = json.loads(Path("proof/source-head-check-runs.json").read_text())
+          runs = payload.get("check_runs", [])
+          required = {
+              "broader-calibration",
+              "regression",
+              "prepare",
+              "worker",
+              "adjudicate",
+          }
+          passed = {
+              row.get("name")
+              for row in runs
+              if row.get("status") == "completed" and row.get("conclusion") == "success"
+          }
+          missing = sorted(required - passed)
+          if missing:
+              raise SystemExit(f"required pre-merge stage checks missing successful evidence: {missing}")
+
+          evidence = {
+              "schema_version": "scan-v1-integration-stage-evidence/1.0",
+              "state": "PASS",
+              "release_commit_sha": os.environ["GITHUB_SHA"],
+              "certified_source_head_sha": os.environ["SOURCE_HEAD"],
+              "shared_tree_sha": os.environ["HEAD_TREE"],
+              "required_successful_checks": sorted(required),
+              "meaning": (
+                  "The release merge tree is byte-identical to the PR source head, "
+                  "and that source head has successful broader-calibration and "
+                  "independent-reconstruction isolation/adjudication checks."
+              ),
+          }
+          Path("proof/integration_stage_evidence.json").write_text(
+              json.dumps(evidence, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(evidence, indent=2))
+          PY
 
       - name: Stage and seal exact v1.0 package
         shell: bash
@@ -394,6 +457,15 @@ jobs:
           local_manifest = Path("proof/local-certification/V1_RELEASE_MANIFEST.json")
           runtime_report = Path("proof/live-runtime-evidence/result/runtime_validation.json")
           source_zip = Path("proof/SCAN_v1.0.0_source.zip")
+          integration_evidence_path = Path("proof/integration_stage_evidence.json")
+          integration_evidence = (
+              json.loads(integration_evidence_path.read_text())
+              if integration_evidence_path.is_file()
+              else {
+                  "state": "NOT_APPLICABLE_OUTSIDE_MAIN_MERGE",
+                  "release_commit_sha": os.environ["GITHUB_SHA"],
+              }
+          )
 
           local_certificate = json.loads(
               Path("proof/local-certification/v1_local_release_certificate.json").read_text()
@@ -437,6 +509,7 @@ jobs:
                       "state": "PASS",
                       "evidence": "CROSS_PLATFORM_FOCUSED_MATRIX",
                   },
+                  "integration_stage_lineage": integration_evidence,
               },
               "artifacts": {
                   "package_manifest": digest(package_manifest),
@@ -444,6 +517,11 @@ jobs:
                   "live_runtime_report": digest(runtime_report),
                   "wheel": digest(wheel),
                   "source_zip": digest(source_zip),
+                  "integration_stage_evidence": (
+                      digest(integration_evidence_path)
+                      if integration_evidence_path.is_file()
+                      else None
+                  ),
               },
               "authority": {
                   "exact_commit_and_bytes_only": True,
@@ -466,6 +544,8 @@ jobs:
               source_zip,
               cert_path,
           ]
+          if integration_evidence_path.is_file():
+              sealed.append(integration_evidence_path)
           manifest = {
               "schema_version": "scan-v1-ci-release-manifest/1.0",
               "engine_version": "1.0.0",
@@ -491,6 +571,9 @@ jobs:
           cp proof/live-runtime-evidence/result/runtime_validation.json proof/publish/runtime_validation.json
           cp proof/V1_CI_RELEASE_CERTIFICATE.json proof/publish/V1_CI_RELEASE_CERTIFICATE.json
           cp proof/V1_CI_MANIFEST.json proof/publish/V1_CI_MANIFEST.json
+          if [ -f proof/integration_stage_evidence.json ]; then
+            cp proof/integration_stage_evidence.json proof/publish/integration_stage_evidence.json
+          fi
           cp proof/SCAN_v1.0.0_source.zip proof/publish/SCAN_v1.0.0_source.zip
           cp proof/dist/scan_software_body-1.0.0-*.whl proof/publish/
           (
