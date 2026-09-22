@@ -185,5 +185,5 @@ def test_output_root_symlink_is_rejected(tmp_path: Path):
         OutputLease(alias, engine_version=__version__).acquire()
 
 
-def test_candidate_version_is_v037():
-    assert __version__ == "0.37.0"
+def test_final_candidate_version_is_v100():
+    assert __version__ == "1.0.0"
