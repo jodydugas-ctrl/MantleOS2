@@ -1,135 +1,86 @@
-# SCAN Engine v0.36
+# SCAN Engine v0.37
 
-Status: **authorized-runtime-validation candidate — not release-qualified**.
+Status: **operational-hardening candidate — not release-qualified**.
 
-v0.36 is stacked on the v0.35 independent-reconstruction-proof candidate and implements the eighth production-readiness stage: opt-in runtime validation where the operator has explicitly authorized execution.
+v0.37 is stacked on the v0.36 authorized-runtime-validation candidate and implements the ninth production-readiness stage: operational hardening before final v1.0 certification.
 
-Ordinary SCAN remains static, read-only, and non-executing.
+The purpose of this stage is not to add another interpretation layer. It is to make the existing scanner fail predictably under hostile, malformed, interrupted, concurrent, oversized, or otherwise inconvenient operating conditions while preserving its evidence boundaries.
 
-## Runtime authorization model
+## New writer-safety boundary
 
-Runtime execution is available only through:
+Every canonical `scan` and `scan-manifest` operation now acquires an exclusive scanner-owned output lease:
 
-```bash
-scan-body runtime-validate <target_root> <plan.json> \
-  --out <runtime_output> \
-  --authorize-plan-sha256 <exact-plan-sha256>
-```
+`.scan-write.lock`
 
-The authorization hash must exactly match the bytes of the plan file presented for execution.
+The lease:
 
-If the hash does not match, SCAN returns `BLOCKED / PLAN_NOT_AUTHORIZED` before network setup or target execution.
+- is created atomically with `O_CREAT | O_EXCL`;
+- records schema, engine version, PID, host, and process-start token;
+- refuses a second live writer targeting the same output directory;
+- recovers a stale lock only when the previous writer is provably dead on the same host;
+- fails closed for unreadable locks and foreign-host ownership;
+- is released on ordinary completion and on propagated exceptions;
+- rejects an output root that is itself a symlink.
 
-## Plan scope
+The lease is operational metadata only. It is not canonical evidence and it is removed before a successful scan returns.
 
-The v0.36 runtime-plan schema is intentionally narrow:
+## Hardening coverage
 
-`scan-runtime-validation-plan/0.1`
+The v0.37 regression and CI gates exercise the operational failure surface accumulated across earlier versions, including:
 
-A plan supplies:
+- malformed and non-UTF-8 repository content;
+- parser/adaptor exceptions versus catastrophic `MemoryError`;
+- local symlink containment and manifest path traversal;
+- per-file and aggregate resource ceilings;
+- extraction cancellation and safe-boundary partial completion;
+- budget-limited resume using valid extraction cache;
+- corrupt SQLite quarantine and clean rebuild;
+- deterministic fresh rebuilds and projection hashes;
+- exclusive output-writer behavior and stale-lock recovery;
+- bounded synthetic large-repository degradation;
+- clean wheel/CLI installation checks;
+- Linux, macOS, and Windows execution of the focused hardening suite.
 
-- a stable `plan_id`;
-- an argv-style command array;
-- a relative working directory;
-- a bounded timeout;
-- a bounded captured-output size;
-- optional static contract/scenario source references;
-- explicit runtime assertions.
+Inherited runtime-validation behavior remains unchanged: ordinary SCAN is static and non-executing; `runtime-validate` remains explicit, plan-hash authorized, network-denied, and sidecar-only.
 
-Supported assertions:
+## Failure semantics
 
-- `EXIT_CODE_EQUALS`
-- `STDOUT_CONTAINS`
-- `STDERR_CONTAINS`
-- `FILE_EXISTS`
-- `FILE_SHA256_EQUALS`
-- `JSON_POINTER_EQUALS`
-- `DURATION_MS_MAX`
+Operational hardening keeps three classes distinct:
 
-A structured observer or test harness can therefore emit JSON describing runtime state, persistence, dynamically created controls, extension loading, or other observations; SCAN asserts only the fields named in the authorized plan.
+1. **Explicit degradation** — unsafe, unavailable, malformed, or resource-limited specimen regions remain visible as PARTIAL/BLOCKED/UNKNOWN states rather than disappearing.
+2. **Recoverable scanner state failure** — derived-state corruption may be quarantined and mechanically rebuilt when the existing recovery policy authorizes it.
+3. **Catastrophic process failure** — conditions such as `MemoryError` propagate instead of being mislabeled as ordinary parser uncertainty. Writer leases are still released by the caller boundary.
 
-## Execution boundary
+A hardening PASS therefore means the tested failure mode produced the expected bounded outcome. It does not mean every possible hostile repository or operating-system failure has been exhausted.
 
-Authorized execution uses:
+## Operational acceptance boundary
 
-- a temporary copy of the target;
-- shell disabled;
-- stdin disabled;
-- sanitized environment;
-- no arbitrary environment forwarding beyond `PATH`;
-- timeout enforcement;
-- bounded recorded stdout/stderr;
-- relative-path validation;
-- symlink rejection;
-- Linux network namespace isolation with loopback only;
-- source-tree hash verification before/after execution.
+The v0.37 stage is intended to prove that:
 
-v0.36 supports `network = DENY` only.
+- no specimen symlink/path-traversal case can escape the scanner's source authority boundary;
+- concurrent writers cannot silently interleave one output tree;
+- interrupted or crashed same-host writers do not permanently poison that output path;
+- malformed inputs degrade explicitly rather than erasing the rest of the specimen;
+- resource exhaustion controls remain coverage statements, not false-success claims;
+- corrupt derived state can be distinguished from source evidence and recovered under the existing policy;
+- unchanged fresh scans remain reproducible;
+- focused hardening behavior survives the supported Python range and the three primary desktop CI operating systems.
 
-If the platform cannot mechanically establish the network-denied executor, validation returns `BLOCKED` and does not execute the target.
+## Explicit limits
 
-The Linux network namespace is an execution-isolation control for cooperative authorized validation, not a hostile-code security sandbox.
+This stage does **not** claim:
 
-## Evidence semantics
+- hostile-code sandboxing beyond the already documented authorized-runtime isolation controls;
+- distributed or multi-host writer coordination;
+- correctness on network filesystems with weak/novel locking semantics;
+- power-loss atomicity for every projection file on every storage stack;
+- exhaustive fuzz coverage of every parser grammar;
+- a production SLA for repository size, latency, CPU, or memory;
+- universal GUI/visual/runtime equivalence;
+- final v1.0 certification.
 
-Runtime output is emitted as:
+Those claims require evidence beyond this tranche.
 
-- `runtime_validation.json`
-- `runtime_validation.md`
+The next and final roadmap stage is **v1.0 certification**.
 
-The report records:
-
-- exact authorized plan SHA-256;
-- static/parity source references;
-- network-isolation mechanism and observed namespace interfaces;
-- source and workspace tree hashes;
-- process return code and elapsed time;
-- bounded stdout/stderr plus hashes;
-- assertion-level PASS/FAIL observations;
-- whether the original source tree remained unchanged.
-
-Runtime evidence remains a sidecar observation layer.
-
-It does not:
-
-- write `scan_index.sqlite`;
-- update static coverage;
-- resolve a PARTIAL/UNKNOWN automatically;
-- create a semantic overlay;
-- promote reconstruction anchors;
-- change ordinary SCAN behavior.
-
-A runtime PASS means only that the assertions in that exact authorized plan were observed to pass during that execution.
-
-## Qualification coverage
-
-The v0.36 gate proves:
-
-1. ordinary `scan-body scan` still never executes specimen code;
-2. a wrong plan hash blocks before execution;
-3. network modes other than DENY are rejected;
-4. unsafe relative paths are rejected;
-5. runtime execution occurs only in a temporary copy;
-6. source bytes remain unchanged;
-7. runner secrets are not forwarded to the target;
-8. Linux runtime execution sees loopback only;
-9. state-transition/persistence/dynamic-probe assertions can be witnessed mechanically;
-10. timing can be observed without turning it into a static claim;
-11. failed runtime assertions remain failed observations and do not promote static evidence.
-
-## Explicit non-goals
-
-This stage does not add:
-
-- general network-enabled runtime execution;
-- automatic GUI-driving logic;
-- pixel/visual equivalence;
-- automatic static-to-runtime promotion;
-- hostile-code sandbox guarantees;
-- new static adapters or extraction rules.
-
-Those would require separate review and evidence.
-
-The next roadmap stage is operational hardening.
-
-v0.28.0 remains the latest released version while stacked production-readiness candidates are evaluated.
+v0.28.0 remains the latest released version while the stacked production-readiness candidates are evaluated.
