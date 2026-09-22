@@ -1,3 +1,3 @@
 """SCAN reusable mechanical scanning and reconstruction-verification engine."""
 
-__version__ = "0.30.0"
+__version__ = "0.31.0"
