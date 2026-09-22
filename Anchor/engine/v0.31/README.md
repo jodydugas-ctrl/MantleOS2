@@ -1,85 +1,81 @@
-# SCAN Engine v0.30
+# SCAN Engine v0.31
 
-Status: **uncertainty-challenger integration candidate — not release-qualified**.
+Status: **triage-ranking integration candidate — not release-qualified**.
 
-v0.30 is stacked on the v0.29 coverage/gaps candidate and implements only the second production-readiness stage: a read-only uncertainty challenger.
+v0.31 is stacked on the v0.30 uncertainty challenger and implements only the third production-readiness stage: deterministic investigation triage.
 
 ## Purpose
 
-The challenger interrogates unresolved `PARTIAL`, `UNKNOWN`, `BLOCKED`, and closure gaps after the deterministic coverage projection is generated.
+The triage layer answers one operational question:
 
-It does not re-grade SCAN, assign confidence, promote evidence, or write canonical state.
+> Which unresolved gaps are most useful to investigate first?
 
-For each gap it may surface:
-
-- directly attached evidence IDs;
-- one-hop graph relations and neighboring objects;
-- MAPPED neighboring objects that may justify a mechanical recheck;
-- semantic relations already present in the canonical evidence graph;
-- a deterministic challenge kind;
-- a named list of mechanical checks that could resolve or further bound the gap.
+It does **not** answer which claims are more true, more confident, or eligible for promotion.
 
 Ordinary scans emit:
 
-- `uncertainty_challenges.json`
-- `uncertainty_challenges.md`
+- `triage_ranking.json`
+- `triage_ranking.md`
 
-The same second pass can be regenerated from an existing database:
+The same ranking can be regenerated from an existing canonical database:
 
 ```bash
-scan-body challenge-uncertainty .scan/scan_index.sqlite --out-dir ./challenge
+scan-body triage-gaps .scan/scan_index.sqlite --out-dir ./triage
 ```
+
+## Transparent scoring
+
+The maximum investigation score is 100 points, composed only from explicit graph-impact signals:
+
+- structural connectivity: 20 max;
+- reachable actionable human surfaces: 30 max;
+- reachable effect/state/NEST/feedback terminals: 20 max;
+- reconstruction-anchor dependency: 20 max;
+- challenger mechanical-recheck support: 10 max.
+
+Every component and raw count is emitted in the JSON report.
+
+Coverage state and gap category are **not scoring weights**. A `BLOCKED` item does not automatically rank above or below a `PARTIAL` item.
+
+Structural connectivity is capped at 20 points so generic utilities, dispatchers, logging hubs, or framework wrappers cannot dominate the ranking simply because many edges touch them.
 
 ## Authority boundary
 
-The challenger is deliberately powerless over canonical state:
+The ranking is downstream operational metadata only:
 
+- `importance_not_truth = true`
+- `confidence_effect = NONE`
+- `promotion_effect = NONE`
 - `canonical_write_allowed = false`
-- `promotion_allowed = false`
-- no `new_state` or `promoted_state` field exists;
-- no scalar confidence is generated;
-- no priority, score, or rank is generated;
-- a state change still requires a deterministic rescan or an already-governed promotion gate.
+- `llm_required = false`
 
-This keeps the later triage-ranking stage separate from evidence review.
-
-## Challenge classes
-
-The initial deterministic vocabulary is:
-
-- `BLOCKED_ON_ACQUISITION`
-- `PARSER_COVERAGE_REQUIRED`
-- `RECHECK_LOCAL_GRAPH`
-- `RECHECK_SURFACE_ROUTE`
-- `RECHECK_EFFECT_ROUTE`
-- `RECHECK_COMPLETENESS_DEPENDENCIES`
-- `REVIEW_RECORDED_FINDING`
-
-Dispositions distinguish external-input blockers, scanner-work requirements, available mechanical rechecks, and gaps where no local support was found.
+Ranking never changes the gap, challenge, evidence, coverage, or conformance state.
 
 ## Explicit non-goals
 
 This tranche does not add:
 
-- centrality or triage ranking;
+- confidence scoring;
+- evidence promotion;
 - layered provenance schema changes;
 - parity scenarios;
 - AGENTS.md distribution;
 - runtime execution;
-- autonomous LLM authority;
-- any new evidence-promotion path.
+- calibration expansion.
+
+Those remain later roadmap stages.
 
 ## Promotion gates
 
 Before this stage is admitted:
 
-1. all inherited v0.29 coverage/gaps tests remain green;
-2. full v0.30 regression suite passes;
-3. challenger output is deterministic;
-4. regeneration from a read-only DB does not mutate canonical bytes;
-5. every candidate evidence ID exists in the canonical evidence table;
-6. every challenge references an existing projected gap;
-7. blocked acquisition remains blocked rather than being semantically reclassified;
-8. local mapped-neighbor support can produce a mechanical recheck proposal without changing canonical state.
+1. all inherited v0.30 tests remain green;
+2. triage output is deterministic;
+3. regeneration from a read-only DB does not mutate canonical bytes;
+4. every investigation score equals the sum of emitted components and stays within 0..100;
+5. ranking is sorted deterministically with stable tie-breaking;
+6. graph-impact tests prove a load-bearing unresolved node outranks an isolated unresolved node without state weighting;
+7. a high-degree generic hub is capped and cannot dominate solely through degree;
+8. projection metadata explicitly states that importance has no confidence or promotion effect.
 
-v0.28.0 remains the latest released SCAN version until the stacked candidates complete later release qualification.
+v0.28.0 remains the latest released SCAN version while the stacked production-readiness candidates are evaluated.
