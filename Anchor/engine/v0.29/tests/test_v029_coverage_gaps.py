@@ -138,6 +138,12 @@ def test_builder_does_not_create_a_scalar_confidence_measure(tmp_path: Path):
     finally:
         store.close()
 
-    payload = json.dumps(report, sort_keys=True)
-    assert "confidence_score" not in payload
+    def keys(value):
+        if isinstance(value, dict):
+            return set(value) | set().union(*(keys(v) for v in value.values()), set())
+        if isinstance(value, list):
+            return set().union(*(keys(v) for v in value), set())
+        return set()
+
+    assert "confidence_score" not in keys(report)
     assert report["authority"]["scalar_confidence_score"] == "NOT_USED"
