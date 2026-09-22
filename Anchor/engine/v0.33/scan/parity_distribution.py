@@ -15,6 +15,7 @@ from typing import Any
 from .conformance_contract import parse_blueprint_manifest
 
 PARITY_SCHEMA = "scan-parity-scenarios/0.1"
+AGENTS_MARKER = "<!-- SCAN_GENERATED_AGENT_POINTER -->"
 
 
 def _hash_bytes(data: bytes) -> str:
@@ -145,6 +146,7 @@ def render_agents_md(
     parity_feature_sha256: str,
 ) -> str:
     return "\n".join([
+        AGENTS_MARKER,
         "# SCAN / Anchor Agent Instructions",
         "",
         f"Primary reconstruction contract: {blueprint_file}",
@@ -194,15 +196,23 @@ def write_parity_distribution(
     feature_bytes = render_feature(report).encode("utf-8")
     json_path.write_bytes(json_bytes)
     feature_path.write_bytes(feature_bytes)
-    agents_path.write_text(
-        render_agents_md(
-            blueprint_file=blueprint_path.name,
-            blueprint_sha256=blueprint_sha,
-            parity_json_sha256=_hash_bytes(json_bytes),
-            parity_feature_sha256=_hash_bytes(feature_bytes),
-        ),
-        encoding="utf-8",
+
+    agents_text = render_agents_md(
+        blueprint_file=blueprint_path.name,
+        blueprint_sha256=blueprint_sha,
+        parity_json_sha256=_hash_bytes(json_bytes),
+        parity_feature_sha256=_hash_bytes(feature_bytes),
     )
+    agents_state = "CREATED"
+    if agents_path.exists():
+        existing = agents_path.read_text(encoding="utf-8")
+        if existing.startswith(AGENTS_MARKER):
+            agents_state = "REFRESHED"
+            agents_path.write_text(agents_text, encoding="utf-8")
+        else:
+            agents_state = "PRESERVED_EXISTING"
+    else:
+        agents_path.write_text(agents_text, encoding="utf-8")
 
     return {
         "schema_version": PARITY_SCHEMA,
@@ -215,11 +225,16 @@ def write_parity_distribution(
         "files": {
             "json": json_path.name,
             "feature": feature_path.name,
-            "agents": agents_path.name,
+            "agents": agents_path.name if agents_state != "PRESERVED_EXISTING" else None,
+        },
+        "agents": {
+            "state": agents_state,
+            "path": agents_path.name,
+            "existing_project_instructions_preserved": agents_state == "PRESERVED_EXISTING",
         },
         "sha256": {
             json_path.name: _hash_bytes(json_bytes),
             feature_path.name: _hash_bytes(feature_bytes),
-            agents_path.name: _hash_bytes(agents_path.read_bytes()),
+            **({agents_path.name: _hash_bytes(agents_path.read_bytes())} if agents_state != "PRESERVED_EXISTING" else {}),
         },
     }
