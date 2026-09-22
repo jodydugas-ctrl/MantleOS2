@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .conformance_contract import build_conformance_manifest, render_manifest_block
+from .parity_distribution import write_parity_distribution
 
 BLUEPRINT_SCHEMA = "scan-anchor-blueprint-md/0.4"
 
@@ -230,6 +231,11 @@ def export_agent_blueprint(
         scan_summary=scan_summary,
     )
     output_path.write_text(text, encoding="utf-8")
+    companions = write_parity_distribution(
+        output_path,
+        output_path.parent,
+        engine_version=engine_version,
+    )
     return {
         "schema_version": BLUEPRINT_SCHEMA,
         "file": output_path.name,
@@ -237,5 +243,6 @@ def export_agent_blueprint(
         "bytes": len(text.encode("utf-8")),
         "sha256": sha256(text.encode("utf-8")).hexdigest(),
         "runtime_observation_claimed": False,
-        "purpose": "single-file coding-agent reconstruction handoff",
+        "purpose": "portable coding-agent reconstruction handoff with derived parity/discovery companions",
+        "companions": companions,
     }
