@@ -14,7 +14,8 @@ from .assimilation_candidate import validate_assimilation_candidate
 from .assimilation_context import files_for_assimilation_detection
 from .cli import main as canonical_main
 from .conformance import evaluate_candidate
-from .coverage_report import write_coverage_outputs
+from .coverage_report import build_coverage_report, write_coverage_outputs
+from .uncertainty_challenger import write_uncertainty_outputs
 from .refinement_loop import run_refinement_loop
 from .store import Store
 
@@ -153,6 +154,26 @@ def _coverage_gaps_command(args: list[str]) -> int:
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
+
+def _challenge_uncertainty_command(args: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="scan-body challenge-uncertainty",
+        description="review unresolved SCAN gaps for existing mechanical support without changing canonical state",
+    )
+    parser.add_argument("db", type=Path)
+    parser.add_argument("--out-dir", type=Path, required=True)
+    ns = parser.parse_args(args[1:])
+    store = Store(ns.db.resolve(strict=True), readonly=True)
+    try:
+        coverage = build_coverage_report(store, engine_version=__version__)
+        result = write_uncertainty_outputs(
+            store, ns.out_dir, engine_version=__version__, coverage_report=coverage,
+        )
+    finally:
+        store.close()
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
 def _conform_command(args: list[str]) -> int:
     parser = argparse.ArgumentParser(
         prog="scan-body conform",
@@ -230,6 +251,8 @@ def main(argv=None):
         return _anchor_blueprint_command(args)
     if args and args[0] == "coverage-gaps":
         return _coverage_gaps_command(args)
+    if args and args[0] == "challenge-uncertainty":
+        return _challenge_uncertainty_command(args)
     if args and args[0] == "conform":
         return _conform_command(args)
     if args and args[0] == "refine":
