@@ -66,6 +66,20 @@ jobs:
           mkdir -p results
           pytest -q Anchor/engine/v0.28/tests | tee results/V028_REGRESSION.txt
 
+      - name: Verify committed package manifest
+        shell: bash
+        run: |
+          test -f Anchor/engine/v0.28/PACKAGE_MANIFEST.json
+          scan-body self-audit Anchor/engine/v0.28 --out results/V028_COMMITTED_PACKAGE_SELF_AUDIT.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          audit = json.loads(Path("results/V028_COMMITTED_PACKAGE_SELF_AUDIT.json").read_text())
+          assert audit["state"] == "PASS", audit
+          assert audit["package"]["manifest_file_count"] == 90, audit
+          assert audit["package"]["verified_file_count"] == 90, audit
+          PY
+
       - name: Create clean release tree
         shell: bash
         run: |
