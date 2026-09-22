@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sqlite3
 
+from . import __version__
 from .engine import ScanEngine
 from .inventory import DEFAULT_MAX_FILE_BYTES
 from .acquire_github import DEFAULT_MAX_BLOB_BYTES, GitHubAcquirer
