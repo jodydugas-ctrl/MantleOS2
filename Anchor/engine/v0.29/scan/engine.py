@@ -17,6 +17,7 @@ from .evidence_graph import (
 )
 from .integrity import refresh_refinement_completeness, write_integrity_outputs, write_projection_manifest
 from .capabilities import write_nest_capability_map
+from .coverage_report import write_coverage_outputs
 from .budget import ScanBudget, BudgetController
 
 
@@ -239,6 +240,13 @@ class ScanEngine:
         semantic_counts["completeness_dimensions"] = len(store.completeness_dimensions())
         integrity_outputs = write_integrity_outputs(store, output)
         capability_map = write_nest_capability_map(store, output / "nest_capability_map.json")
+        coverage_outputs = write_coverage_outputs(
+            store,
+            output,
+            engine_version=__version__,
+            surface=integrity_outputs["surface_closure"],
+            effect=integrity_outputs["effect_closure"],
+        )
         file_rows = store.query("SELECT * FROM files ORDER BY path")
         nodes = store.query("SELECT * FROM nodes ORDER BY kind,name,id")
         edges = store.query("SELECT * FROM edges ORDER BY kind,src,dst")
@@ -286,13 +294,18 @@ class ScanEngine:
                 **semantic_counts,
                 "canonical_store": "scan_index.sqlite",
                 "interchange": "evidence_graph.json",
-                "projections": ["machine_body_map.json", "evidence_graph.json", "evidence_catalog.json", "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "projection_manifest.json"],
+                "projections": ["machine_body_map.json", "evidence_graph.json", "evidence_catalog.json", "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md", "projection_manifest.json"],
             },
             "completeness_vector": store.completeness_dimensions(),
             "integrity": {k: v for k, v in integrity_outputs["integrity"].items() if k != "issues"},
             "surface_closure": {k: v for k, v in integrity_outputs["surface_closure"].items() if k != "records"},
             "effect_closure": {k: v for k, v in integrity_outputs["effect_closure"].items() if k != "records"},
             "nest_capability_map": {k: v for k, v in capability_map.items() if k not in {"capabilities", "effects", "boundaries", "extensions", "persistence", "guards_errors_retries"}},
+            "coverage_gap_projection": {
+                "schema_version": coverage_outputs["schema_version"],
+                "gap_count": coverage_outputs["gap_count"],
+                "projection_only": True,
+            },
             "files": file_rows, "nodes": nodes, "edges": edges, "findings": findings, "evidence": evidence,
         }
         (output / "machine_body_map.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -302,7 +315,8 @@ class ScanEngine:
         (output / "stage1_summary.md").write_text(self._summary_markdown(summary), encoding="utf-8")
         write_projection_manifest(output, [
             "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
-            "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "stage1_summary.md",
+            "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json",
+            "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md", "stage1_summary.md",
         ])
         store.close()
         return summary
