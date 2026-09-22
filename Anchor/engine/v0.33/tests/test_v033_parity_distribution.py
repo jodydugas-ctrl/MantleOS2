@@ -203,3 +203,28 @@ def test_feature_file_has_one_static_scenario_per_json_scenario(tmp_path: Path):
     assert feature.count("  Scenario: ") == parity["scenario_count"]
     assert "@static" in feature
     assert "runtime/visual/timing equivalence is not claimed" in feature
+
+
+def test_existing_project_agents_file_is_preserved(tmp_path: Path):
+    scan = _scan(tmp_path)
+    store = Store(scan / "scan_index.sqlite", readonly=True)
+    try:
+        specimen = next(
+            row["attributes"]
+            for row in store.semantic_objects()
+            if row["object_type"] == "SPECIMEN"
+        )
+        dist = tmp_path / "dist"
+        dist.mkdir()
+        existing = dist / "AGENTS.md"
+        original = "# Project agent rules\n\nDo not overwrite me.\n"
+        existing.write_text(original, encoding="utf-8")
+        blueprint = dist / "Blueprint.md"
+        result = export_agent_blueprint(store, specimen, blueprint, engine_version=__version__)
+    finally:
+        store.close()
+
+    assert existing.read_text(encoding="utf-8") == original
+    assert result["companions"]["agents"]["state"] == "PRESERVED_EXISTING"
+    assert result["companions"]["agents"]["existing_project_instructions_preserved"] is True
+    assert result["companions"]["files"]["agents"] is None
