@@ -145,3 +145,26 @@ v0.20 adds the first reproducible blind-reconstruction experiment boundary. Rele
 - deterministic challenge generation produces byte-identical public ZIPs for an unchanged parent certification.
 
 This gate is **M6A static reconstruction proof infrastructure**, not full PR7. The current evaluator does not execute the reconstructed application. Runtime behavior tests require separately authorized isolated execution and remain future M6B work under A1. A full PR7 pass also requires an external capable coding agent that has not seen the original source.
+
+
+## v0.37 operational-hardening qualification
+
+v0.37 adds a final pre-certification operational gate without changing the authority of canonical evidence.
+
+The focused gate requires:
+
+- an exclusive scanner-owned output lease for `scan` and `scan-manifest`;
+- live same-host writer contention to fail closed;
+- dead same-host writer leases to recover mechanically;
+- unreadable or foreign-host lease ownership to remain blocking rather than guessed stale;
+- output-root symlinks to be rejected;
+- propagated catastrophic failures to release the writer lease without being relabeled as parser uncertainty;
+- malformed/non-UTF-8 fixture content to remain accounted for without escaping the specimen boundary;
+- manifest path traversal to fail before scan-output creation;
+- bounded synthetic large-repository fixtures to retain a complete visible census while excess parser materialization is explicitly marked `RESOURCE_LIMIT_TOTAL_FILES`.
+
+The full inherited regression suite remains mandatory and carries forward the existing malformed-parser containment, local symlink accounting, resource ceilings, cancellation, resume-after-budget, corrupt SQLite quarantine/rebuild, deterministic projection, package integrity, and release-query gates.
+
+The CI hardening matrix runs the focused v0.37 tests on Linux, macOS, and Windows across the supported Python range. A separate Ubuntu job runs the complete inherited plus v0.37 suite and a clean wheel/console-entry-point smoke test.
+
+This gate is intentionally narrower than final v1.0 certification. It does not claim distributed/multi-host locking, network-filesystem semantics, power-loss atomicity for every projection, exhaustive parser fuzzing, or a production performance SLA.
