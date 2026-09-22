@@ -576,9 +576,23 @@ jobs:
           fi
           cp proof/SCAN_v1.0.0_source.zip proof/publish/SCAN_v1.0.0_source.zip
           cp proof/dist/scan_software_body-1.0.0-*.whl proof/publish/
+
           (
             cd proof/publish
-            sha256sum               PACKAGE_MANIFEST.json               V1_RELEASE_MANIFEST.json               v1_local_release_certificate.json               release_qualification.json               runtime_validation.json               V1_CI_RELEASE_CERTIFICATE.json               V1_CI_MANIFEST.json               SCAN_v1.0.0_source.zip               scan_software_body-1.0.0-*.whl               > SHA256SUMS.txt
+            sha256sum \
+              PACKAGE_MANIFEST.json \
+              V1_RELEASE_MANIFEST.json \
+              v1_local_release_certificate.json \
+              release_qualification.json \
+              runtime_validation.json \
+              V1_CI_RELEASE_CERTIFICATE.json \
+              V1_CI_MANIFEST.json \
+              SCAN_v1.0.0_source.zip \
+              scan_software_body-1.0.0-*.whl \
+              > SHA256SUMS.txt
+            if [ -f integration_stage_evidence.json ]; then
+              sha256sum integration_stage_evidence.json >> SHA256SUMS.txt
+            fi
             cat SHA256SUMS.txt
           )
 
@@ -608,4 +622,25 @@ jobs:
             exit 0
           fi
 
-          gh release create v1.0.0             --target "$GITHUB_SHA"             --title "SCAN v1.0.0"             --notes-file Anchor/releases/v1.0/RELEASE_NOTES.md             proof/publish/scan_software_body-1.0.0-*.whl             proof/publish/SCAN_v1.0.0_source.zip             proof/publish/PACKAGE_MANIFEST.json             proof/publish/V1_RELEASE_MANIFEST.json             proof/publish/v1_local_release_certificate.json             proof/publish/release_qualification.json             proof/publish/runtime_validation.json             proof/publish/V1_CI_RELEASE_CERTIFICATE.json             proof/publish/V1_CI_MANIFEST.json             proof/publish/SHA256SUMS.txt
+          assets=(
+            proof/publish/scan_software_body-1.0.0-*.whl
+            proof/publish/SCAN_v1.0.0_source.zip
+            proof/publish/PACKAGE_MANIFEST.json
+            proof/publish/V1_RELEASE_MANIFEST.json
+            proof/publish/v1_local_release_certificate.json
+            proof/publish/release_qualification.json
+            proof/publish/runtime_validation.json
+            proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+            proof/publish/V1_CI_MANIFEST.json
+            proof/publish/SHA256SUMS.txt
+          )
+          if [ -f proof/publish/integration_stage_evidence.json ]; then
+            assets+=(proof/publish/integration_stage_evidence.json)
+          fi
+
+          gh release create v1.0.0 \
+            --target "$GITHUB_SHA" \
+            --title "SCAN v1.0.0" \
+            --notes-file Anchor/releases/v1.0/RELEASE_NOTES.md \
+            "${assets[@]}"
+
