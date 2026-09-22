@@ -27,7 +27,7 @@ def test_ordinary_scan_emits_triage_projection(tmp_path: Path):
     report = json.loads((out / "triage_ranking.json").read_text(encoding="utf-8"))
     gaps = json.loads((out / "gaps.json").read_text(encoding="utf-8"))
     assert report["schema_version"] == "scan-triage-ranking/0.1"
-    assert report["engine_version"] == __version__ == "0.33.0"
+    assert report["engine_version"] == __version__ == "0.34.0"
     assert report["ranked_count"] == gaps["gap_count"]
     assert report["authority"] == {
         "canonical_store": "scan_index.sqlite",
@@ -197,7 +197,7 @@ def test_graph_impact_outranks_isolated_gap_without_using_state_weight():
     }
     report = build_triage_ranking(
         FakeStore(rows),
-        engine_version="0.33.0",
+        engine_version="0.34.0",
         coverage_report=_coverage(gaps),
         challenge_report=_challenges(challenges),
     )
@@ -240,7 +240,7 @@ def test_connectivity_is_capped_so_hubs_cannot_dominate_every_other_signal():
             "semantic_objects": [],
             "semantic_relations": [],
         }),
-        engine_version="0.33.0",
+        engine_version="0.34.0",
         coverage_report=_coverage(gaps),
         challenge_report=_challenges([{
             "gap_id": "gap-hub", "challenge_kind": "RECHECK_LOCAL_GRAPH",
