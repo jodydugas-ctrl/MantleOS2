@@ -1,4 +1,5 @@
 name: SCAN v0.28 reconstruction loop
+# Release-path touch: keep this required context present for v0.28.0 publication PRs.
 
 on:
   push:
