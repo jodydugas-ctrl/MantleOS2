@@ -24,6 +24,7 @@ jobs:
       GROQ_API_KEY: ''
       MISTRAL_API_KEY: ''
       COHERE_API_KEY: ''
+      SOURCE_DATE_EPOCH: '315532800'
 
     steps:
       - name: Checkout candidate
@@ -131,12 +132,31 @@ jobs:
           assert q["queries"]["passed_query_count"] == q["queries"]["required_query_count"] == 12, q
           PY
 
-      - name: Build source and wheel artifacts
+      - name: Build source and reproducible wheel artifacts
         shell: bash
         run: |
-          mkdir -p results/dist
+          mkdir -p results/dist results/dist-repeat
           python -m build results/release-tree --outdir results/dist
+          python -m build results/release-tree --outdir results/dist-repeat
           sha256sum results/dist/* | sort > results/V028_DIST_SHA256.txt
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          first = next(Path("results/dist").glob("*.whl"))
+          second = next(Path("results/dist-repeat").glob("*.whl"))
+          a = first.read_bytes()
+          b = second.read_bytes()
+          result = {
+              "schema_version": "scan-v028-wheel-determinism/0.1",
+              "state": "PASS" if a == b else "FAIL",
+              "source_date_epoch": "315532800",
+              "first": {"file": first.name, "bytes": len(a), "sha256": hashlib.sha256(a).hexdigest()},
+              "second": {"file": second.name, "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()},
+          }
+          Path("results/V028_WHEEL_DETERMINISM.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+          assert result["state"] == "PASS", result
+          PY
 
       - name: Create deterministic source ZIP
         shell: bash
@@ -211,6 +231,7 @@ jobs:
           manifest=digest("results/V028_PACKAGE_MANIFEST.json")
           qualify=json.loads(Path("results/V028_RELEASE_QUALIFICATION.json").read_text())
           wheelq=json.loads(Path("results/V028_WHEEL_QUALIFICATION.json").read_text())
+          wheeldet=json.loads(Path("results/V028_WHEEL_DETERMINISM.json").read_text())
           artifacts=[digest(p) for p in sorted(Path("results/dist").iterdir()) if p.is_file()]
           artifacts.append(digest("results/scan-software-body-0.28.0.zip"))
           receipt={
@@ -229,6 +250,7 @@ jobs:
                   "integrity_error_count":qualify["mechanical_independence"]["integrity_error_count"],
               },
               "wheel_qualification":{"state":wheelq["state"],"python":"3.13","queries_passed":wheelq["query_acceptance"]["passed_query_count"]},
+              "wheel_determinism":{"state":wheeldet["state"],"source_date_epoch":wheeldet["source_date_epoch"],"sha256":wheeldet["first"]["sha256"]},
               "artifacts":artifacts,
           }
           Path("results/V028_RELEASE_CANDIDATE_RECEIPT.json").write_text(json.dumps(receipt,indent=2)+"\n",encoding="utf-8")
