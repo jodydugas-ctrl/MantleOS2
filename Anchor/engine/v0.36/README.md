@@ -1,110 +1,135 @@
-# SCAN Engine v0.35
+# SCAN Engine v0.36
 
-Status: **independent-reconstruction-proof candidate — not release-qualified**.
+Status: **authorized-runtime-validation candidate — not release-qualified**.
 
-v0.35 is stacked on the v0.34 broader-calibration candidate and implements the seventh production-readiness stage: mechanically verifiable source-isolated reconstruction trials.
+v0.36 is stacked on the v0.35 independent-reconstruction-proof candidate and implements the eighth production-readiness stage: opt-in runtime validation where the operator has explicitly authorized execution.
 
-This stage does not add extraction rules or scanner adapters.
+Ordinary SCAN remains static, read-only, and non-executing.
 
-## Goal
+## Runtime authorization model
 
-A reconstruction result must be distinguishable from a reconstruction that merely *claims* it was blind.
-
-The qualification path is split into three trust domains:
-
-1. **Preparation** — SCAN verifies/certifies the private source and emits a sealed source-free reconstruction challenge plus a separate private evaluator.
-2. **Independent worker** — a separate clean job receives only the public challenge. It has no repository checkout and no private evaluator. Candidate generation runs inside an enforced network namespace.
-3. **Adjudication** — a separate trusted job receives the private evaluator and candidate, performs a fresh read-only SCAN of the candidate, seals the trial, and verifies the complete lineage.
-
-The worker does not grade itself.
-
-## Independent proof artifact
-
-v0.35 adds:
+Runtime execution is available only through:
 
 ```bash
-scan-body verify-independent-reconstruction \
-  challenge/ candidate/ submission.json worker_receipt.json trial/ \
-  --out independent_proof.json
+scan-body runtime-validate <target_root> <plan.json> \
+  --out <runtime_output> \
+  --authorize-plan-sha256 <exact-plan-sha256>
 ```
 
-The verifier binds:
+The authorization hash must exactly match the bytes of the plan file presented for execution.
 
-- the sealed public challenge manifest hash;
-- the worker isolation receipt;
-- the candidate tree hash;
-- the submission hash and source-isolation declaration;
-- the private reconstruction-trial lineage;
-- the fresh candidate scan and scorecard.
+If the hash does not match, SCAN returns `BLOCKED / PLAN_NOT_AUTHORIZED` before network setup or target execution.
 
-A worker receipt passes only when it records:
+## Plan scope
 
-- repository checkout: `ABSENT`;
-- original source: `NOT_PRESENT`;
-- private evaluator: `NOT_PRESENT`;
-- input artifacts: exactly `["challenge"]`;
-- worker network: mechanically disabled by an approved isolation mechanism.
+The v0.36 runtime-plan schema is intentionally narrow:
 
-A `DECLARED_ONLY` network state is insufficient.
+`scan-runtime-validation-plan/0.1`
 
-## What a PASS means
+A plan supplies:
 
-A v0.35 independent proof PASS means:
+- a stable `plan_id`;
+- an argv-style command array;
+- a relative working directory;
+- a bounded timeout;
+- a bounded captured-output size;
+- optional static contract/scenario source references;
+- explicit runtime assertions.
 
-- the public challenge was mechanically source-free and untampered;
-- the reconstruction worker ran through the isolated handoff path;
-- the candidate bytes match the worker receipt;
-- SCAN independently rescanned the candidate;
-- the private evaluator/trial lineage matches the public challenge;
-- all mechanically scorable required reconstruction anchors passed.
+Supported assertions:
 
-It does **not** establish:
+- `EXIT_CODE_EQUALS`
+- `STDOUT_CONTAINS`
+- `STDERR_CONTAINS`
+- `FILE_EXISTS`
+- `FILE_SHA256_EQUALS`
+- `JSON_POINTER_EQUALS`
+- `DURATION_MS_MAX`
 
-- runtime equivalence;
+A structured observer or test harness can therefore emit JSON describing runtime state, persistence, dynamically created controls, extension loading, or other observations; SCAN asserts only the fields named in the authorized plan.
+
+## Execution boundary
+
+Authorized execution uses:
+
+- a temporary copy of the target;
+- shell disabled;
+- stdin disabled;
+- sanitized environment;
+- no arbitrary environment forwarding beyond `PATH`;
+- timeout enforcement;
+- bounded recorded stdout/stderr;
+- relative-path validation;
+- symlink rejection;
+- Linux network namespace isolation with loopback only;
+- source-tree hash verification before/after execution.
+
+v0.36 supports `network = DENY` only.
+
+If the platform cannot mechanically establish the network-denied executor, validation returns `BLOCKED` and does not execute the target.
+
+The Linux network namespace is an execution-isolation control for cooperative authorized validation, not a hostile-code security sandbox.
+
+## Evidence semantics
+
+Runtime output is emitted as:
+
+- `runtime_validation.json`
+- `runtime_validation.md`
+
+The report records:
+
+- exact authorized plan SHA-256;
+- static/parity source references;
+- network-isolation mechanism and observed namespace interfaces;
+- source and workspace tree hashes;
+- process return code and elapsed time;
+- bounded stdout/stderr plus hashes;
+- assertion-level PASS/FAIL observations;
+- whether the original source tree remained unchanged.
+
+Runtime evidence remains a sidecar observation layer.
+
+It does not:
+
+- write `scan_index.sqlite`;
+- update static coverage;
+- resolve a PARTIAL/UNKNOWN automatically;
+- create a semantic overlay;
+- promote reconstruction anchors;
+- change ordinary SCAN behavior.
+
+A runtime PASS means only that the assertions in that exact authorized plan were observed to pass during that execution.
+
+## Qualification coverage
+
+The v0.36 gate proves:
+
+1. ordinary `scan-body scan` still never executes specimen code;
+2. a wrong plan hash blocks before execution;
+3. network modes other than DENY are rejected;
+4. unsafe relative paths are rejected;
+5. runtime execution occurs only in a temporary copy;
+6. source bytes remain unchanged;
+7. runner secrets are not forwarded to the target;
+8. Linux runtime execution sees loopback only;
+9. state-transition/persistence/dynamic-probe assertions can be witnessed mechanically;
+10. timing can be observed without turning it into a static claim;
+11. failed runtime assertions remain failed observations and do not promote static evidence.
+
+## Explicit non-goals
+
+This stage does not add:
+
+- general network-enabled runtime execution;
+- automatic GUI-driving logic;
 - pixel/visual equivalence;
-- timing equivalence;
-- universal behavioral equivalence;
-- external-LLM quality or generality.
+- automatic static-to-runtime promotion;
+- hostile-code sandbox guarantees;
+- new static adapters or extraction rules.
 
-## Reference-worker qualification
+Those would require separate review and evidence.
 
-The CI qualification uses a deterministic reference reconstruction worker. This is intentional.
-
-Its purpose is to prove that the isolation, handoff, lineage, and independent-scoring machinery works end-to-end without depending on an external model service or secret API key.
-
-The reference worker executes in a separate GitHub Actions job that:
-
-- performs no repository checkout;
-- downloads only the public challenge artifact;
-- verifies private evaluator/source artifacts are absent;
-- enters a Linux network namespace before candidate generation;
-- records the candidate and submission hashes in a worker receipt.
-
-The reference worker is **not** presented as an external LLM benchmark. Future external coding agents can occupy the same isolated worker slot and produce the same receipt/submission contract.
-
-## Authority boundary
-
-- candidate self-report: no scoring authority;
-- worker receipt: proves handoff/isolation lineage, not correctness;
-- private SCAN fresh scan: measurement authority;
-- source uncertainty remains source uncertainty;
-- candidate scanner gaps remain scanner-attributed;
-- reconstruction failures remain reconstruction-attributed.
-
-## Promotion gates
-
-Before this stage is admitted:
-
-1. all inherited tests remain green;
-2. public challenge tampering/leakage is rejected;
-3. worker receipt rejects declared-only network isolation;
-4. candidate tampering breaks worker lineage;
-5. separate-job CI worker has no checkout/evaluator/source access;
-6. network isolation is mechanically enforced during worker execution;
-7. fresh private scoring passes for the reference reconstruction;
-8. final independent proof verifies challenge → worker → candidate → trial lineage;
-9. no runtime/visual/timing or external-LLM benchmark claim is made.
-
-The next roadmap stage is authorized runtime validation.
+The next roadmap stage is operational hardening.
 
 v0.28.0 remains the latest released version while stacked production-readiness candidates are evaluated.
