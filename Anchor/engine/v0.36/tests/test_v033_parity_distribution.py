@@ -125,7 +125,7 @@ def test_generator_does_not_promote_advisory_or_partial_contracts():
         manifest,
         blueprint_file="Blueprint.md",
         blueprint_sha256="a" * 64,
-        engine_version="0.35.0",
+        engine_version="0.36.0",
     )
     assert report["scenario_count"] == 1
     assert report["scenarios"][0]["source_contract_id"] == "REQ"
