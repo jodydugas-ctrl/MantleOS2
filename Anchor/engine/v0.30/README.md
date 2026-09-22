@@ -1,61 +1,85 @@
-# SCAN Engine v0.29
+# SCAN Engine v0.30
 
-Status: **coverage/gaps integration candidate — not release-qualified**.
+Status: **uncertainty-challenger integration candidate — not release-qualified**.
 
-v0.29 starts the production-readiness upgrade path from the sealed v0.28.0 release. This tranche adds only the first planned step: deterministic coverage and unresolved-gap projections.
+v0.30 is stacked on the v0.29 coverage/gaps candidate and implements only the second production-readiness stage: a read-only uncertainty challenger.
 
-## Added in this tranche
+## Purpose
 
-Ordinary scans now emit:
+The challenger interrogates unresolved `PARTIAL`, `UNKNOWN`, `BLOCKED`, and closure gaps after the deterministic coverage projection is generated.
 
-- `coverage_report.json`
-- `coverage_report.md`
-- `gaps.json`
-- `gaps.md`
+It does not re-grade SCAN, assign confidence, promote evidence, or write canonical state.
 
-These artifacts are projections of `scan_index.sqlite`. They do not create a second authority, assign scalar confidence, rank gaps, or promote evidence.
+For each gap it may surface:
 
-The report reconciles existing canonical state across:
+- directly attached evidence IDs;
+- one-hop graph relations and neighboring objects;
+- MAPPED neighboring objects that may justify a mechanical recheck;
+- semantic relations already present in the canonical evidence graph;
+- a deterministic challenge kind;
+- a named list of mechanical checks that could resolve or further bound the gap.
 
-- files, nodes, edges, findings;
-- semantic objects and relations;
-- completeness dimensions;
-- acquisition/content availability;
-- human-surface closure;
-- deep effect closure.
+Ordinary scans emit:
 
-Each gap record carries a canonical object ID, state, reason code, evidence IDs when available, and a resolution target.
+- `uncertainty_challenges.json`
+- `uncertainty_challenges.md`
 
-The same projections can be regenerated without rescanning:
+The same second pass can be regenerated from an existing database:
 
 ```bash
-scan-body coverage-gaps .scan/scan_index.sqlite --out-dir ./coverage
+scan-body challenge-uncertainty .scan/scan_index.sqlite --out-dir ./challenge
 ```
+
+## Authority boundary
+
+The challenger is deliberately powerless over canonical state:
+
+- `canonical_write_allowed = false`
+- `promotion_allowed = false`
+- no `new_state` or `promoted_state` field exists;
+- no scalar confidence is generated;
+- no priority, score, or rank is generated;
+- a state change still requires a deterministic rescan or an already-governed promotion gate.
+
+This keeps the later triage-ranking stage separate from evidence review.
+
+## Challenge classes
+
+The initial deterministic vocabulary is:
+
+- `BLOCKED_ON_ACQUISITION`
+- `PARSER_COVERAGE_REQUIRED`
+- `RECHECK_LOCAL_GRAPH`
+- `RECHECK_SURFACE_ROUTE`
+- `RECHECK_EFFECT_ROUTE`
+- `RECHECK_COMPLETENESS_DEPENDENCIES`
+- `REVIEW_RECORDED_FINDING`
+
+Dispositions distinguish external-input blockers, scanner-work requirements, available mechanical rechecks, and gaps where no local support was found.
 
 ## Explicit non-goals
 
-This tranche does **not** implement:
+This tranche does not add:
 
-- uncertainty challenger/reviewer behavior;
 - centrality or triage ranking;
-- layered provenance changes;
-- parity-scenario generation;
+- layered provenance schema changes;
+- parity scenarios;
 - AGENTS.md distribution;
-- new runtime observation;
-- any new evidence-promotion mechanism.
-
-Those remain later production-readiness stages and must be admitted separately after this projection proves deterministic and useful.
+- runtime execution;
+- autonomous LLM authority;
+- any new evidence-promotion path.
 
 ## Promotion gates
 
-Before this candidate advances:
+Before this stage is admitted:
 
-1. focused coverage/gaps tests pass;
-2. full v0.29 regression suite passes;
-3. ordinary scan outputs remain deterministic;
-4. coverage counts reconcile exactly to the canonical database;
-5. regeneration from a read-only DB does not mutate canonical bytes;
-6. v0.28 calibration behavior is not regressed;
-7. no stale package manifest is carried forward.
+1. all inherited v0.29 coverage/gaps tests remain green;
+2. full v0.30 regression suite passes;
+3. challenger output is deterministic;
+4. regeneration from a read-only DB does not mutate canonical bytes;
+5. every candidate evidence ID exists in the canonical evidence table;
+6. every challenge references an existing projected gap;
+7. blocked acquisition remains blocked rather than being semantically reclassified;
+8. local mapped-neighbor support can produce a mechanical recheck proposal without changing canonical state.
 
-Until those gates are executed, v0.28.0 remains the latest released SCAN version.
+v0.28.0 remains the latest released SCAN version until the stacked candidates complete later release qualification.
