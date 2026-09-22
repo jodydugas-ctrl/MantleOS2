@@ -18,6 +18,7 @@ from .evidence_graph import (
 from .integrity import refresh_refinement_completeness, write_integrity_outputs, write_projection_manifest
 from .capabilities import write_nest_capability_map
 from .coverage_report import write_coverage_outputs
+from .uncertainty_challenger import write_uncertainty_outputs
 from .budget import ScanBudget, BudgetController
 
 
@@ -247,6 +248,13 @@ class ScanEngine:
             surface=integrity_outputs["surface_closure"],
             effect=integrity_outputs["effect_closure"],
         )
+        coverage_report = json.loads((output / "coverage_report.json").read_text(encoding="utf-8"))
+        uncertainty_outputs = write_uncertainty_outputs(
+            store,
+            output,
+            engine_version=__version__,
+            coverage_report=coverage_report,
+        )
         file_rows = store.query("SELECT * FROM files ORDER BY path")
         nodes = store.query("SELECT * FROM nodes ORDER BY kind,name,id")
         edges = store.query("SELECT * FROM edges ORDER BY kind,src,dst")
@@ -294,7 +302,7 @@ class ScanEngine:
                 **semantic_counts,
                 "canonical_store": "scan_index.sqlite",
                 "interchange": "evidence_graph.json",
-                "projections": ["machine_body_map.json", "evidence_graph.json", "evidence_catalog.json", "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md", "projection_manifest.json"],
+                "projections": ["machine_body_map.json", "evidence_graph.json", "evidence_catalog.json", "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json", "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md", "uncertainty_challenges.json", "uncertainty_challenges.md", "projection_manifest.json"],
             },
             "completeness_vector": store.completeness_dimensions(),
             "integrity": {k: v for k, v in integrity_outputs["integrity"].items() if k != "issues"},
@@ -306,6 +314,14 @@ class ScanEngine:
                 "gap_count": coverage_outputs["gap_count"],
                 "projection_only": True,
             },
+            "uncertainty_challenger": {
+                "schema_version": uncertainty_outputs["schema_version"],
+                "challenge_count": uncertainty_outputs["challenge_count"],
+                "by_disposition": uncertainty_outputs["by_disposition"],
+                "projection_only": True,
+                "canonical_write_allowed": False,
+                "promotion_allowed": False,
+            },
             "files": file_rows, "nodes": nodes, "edges": edges, "findings": findings, "evidence": evidence,
         }
         (output / "machine_body_map.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -316,7 +332,8 @@ class ScanEngine:
         write_projection_manifest(output, [
             "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
             "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json", "nest_capability_map.json",
-            "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md", "stage1_summary.md",
+            "coverage_report.json", "coverage_report.md", "gaps.json", "gaps.md",
+            "uncertainty_challenges.json", "uncertainty_challenges.md", "stage1_summary.md",
         ])
         store.close()
         return summary
