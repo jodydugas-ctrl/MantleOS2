@@ -30,6 +30,40 @@ class UnsafeOutputPathError(ValueError):
 def _pid_alive(pid: int) -> bool:
     if pid <= 0:
         return False
+
+    # On Windows, os.kill(pid, 0) is not a harmless POSIX-style liveness
+    # probe: signal 0 maps to CTRL_C_EVENT and can interrupt the runner.
+    # Query the process handle instead and keep ambiguous failures blocking.
+    if os.name == "nt":
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            open_process = kernel32.OpenProcess
+            open_process.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+            open_process.restype = wintypes.HANDLE
+            close_handle = kernel32.CloseHandle
+            close_handle.argtypes = (wintypes.HANDLE,)
+            close_handle.restype = wintypes.BOOL
+
+            process_query_limited_information = 0x1000
+            handle = open_process(process_query_limited_information, False, pid)
+            if handle:
+                close_handle(handle)
+                return True
+
+            error = ctypes.get_last_error()
+            if error == 87:  # ERROR_INVALID_PARAMETER: no such PID
+                return False
+            if error == 5:   # ERROR_ACCESS_DENIED: process exists but is protected
+                return True
+            return True
+        except Exception:
+            # Liveness uncertainty must not be turned into permission to
+            # discard another writer's lease.
+            return True
+
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
