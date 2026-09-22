@@ -26,7 +26,7 @@ def test_ordinary_scan_emits_coverage_and_gap_projections(tmp_path: Path):
 
     report = json.loads((out / "coverage_report.json").read_text(encoding="utf-8"))
     assert report["schema_version"] == "scan-coverage-report/0.1"
-    assert report["engine_version"] == __version__ == "0.35.0"
+    assert report["engine_version"] == __version__ == "0.36.0"
     assert report["authority"] == {
         "canonical_store": "scan_index.sqlite",
         "projection_only": True,
