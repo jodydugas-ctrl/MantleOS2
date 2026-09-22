@@ -278,12 +278,9 @@ jobs:
   final-release-certificate:
     needs: [platform-certification, full-regression, live-authorized-runtime]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: read
     timeout-minutes: 35
     permissions:
-      contents: write
+      contents: read
       actions: read
       checks: read
     env:
@@ -297,7 +294,6 @@ jobs:
       COHERE_API_KEY: ''
       XAI_API_KEY: ''
       FULL_TEST_COUNT: ${{ needs.full-regression.outputs.test_count }}
-      GH_TOKEN: ${{ github.token }}
 
     steps:
       - uses: actions/checkout@v4
