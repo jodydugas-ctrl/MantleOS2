@@ -55,7 +55,10 @@ CERTIFICATION_RECEIPT = "certification_receipt.json"
 @contextmanager
 def _llm_disabled_environment():
     """Temporarily remove common LLM credentials and advertise mechanical-only execution."""
-    names = ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "AZURE_OPENAI_API_KEY")
+    names = (
+        "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "AZURE_OPENAI_API_KEY",
+        "GEMINI_API_KEY", "GROQ_API_KEY", "MISTRAL_API_KEY", "COHERE_API_KEY", "XAI_API_KEY",
+    )
     prior = {name: os.environ.pop(name, None) for name in names}
     prior_disabled = os.environ.get("SCAN_LLM_DISABLED")
     os.environ["SCAN_LLM_DISABLED"] = "1"
@@ -642,9 +645,27 @@ def qualify_release(package_root: Path, *, output_path: Path | None = None) -> d
             projections = verify_projection_manifest(scan_out)
             queries = run_query_acceptance(scan_out / "scan_index.sqlite")
             required_outputs = [
-                "scan_index.sqlite", "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
-                "completeness_vector.json", "integrity_report.json", "surface_closure.json", "effect_closure.json",
-                "nest_capability_map.json", "projection_manifest.json", "stage1_summary.md",
+                "scan_index.sqlite",
+                "machine_body_map.json",
+                "evidence_graph.json",
+                "evidence_catalog.json",
+                "completeness_vector.json",
+                "integrity_report.json",
+                "surface_closure.json",
+                "effect_closure.json",
+                "nest_capability_map.json",
+                "coverage_report.json",
+                "coverage_report.md",
+                "gaps.json",
+                "gaps.md",
+                "uncertainty_challenges.json",
+                "uncertainty_challenges.md",
+                "triage_ranking.json",
+                "triage_ranking.md",
+                "layered_provenance.json",
+                "layered_provenance.md",
+                "projection_manifest.json",
+                "stage1_summary.md",
             ]
             missing_outputs = [name for name in required_outputs if not (scan_out / name).is_file()]
             mechanical = {
