@@ -128,8 +128,14 @@ The updated manual's requirements, preserved decisions and evidence gaps are
 mapped in [the edition 2.1 reconciliation](docs/MANUAL_21_RECONCILIATION.md).
 
 The separate SCAN evidence-first software reverse-engineering project is tracked
-under [`Anchor/`](Anchor/README.md), including its frozen v0.23 scanner source,
-sealed PR5 calibration receipts, governing anchors, protocol, and roadmap. It is
-not installed with MantleOS2; future integration requires an explicit decision.
+under [`Anchor/`](Anchor/README.md). Its current source package is
+[`Anchor/engine/v1.0/`](Anchor/engine/v1.0/README.md), with the production-readiness
+path carried through coverage/gaps, uncertainty challenge, triage, provenance,
+parity/distribution, broader calibration, independent reconstruction proof,
+explicitly authorized runtime validation, operational hardening, and v1.0
+certification. Historical frozen calibration evidence remains under
+[`Anchor/releases/`](Anchor/releases/README.md). SCAN is not installed with
+MantleOS2; repository co-location still does not admit it into the MantleOS2
+product or authority model.
 
 Copyright 2026 Jody Dugas. Released under the [MIT License](LICENSE).
