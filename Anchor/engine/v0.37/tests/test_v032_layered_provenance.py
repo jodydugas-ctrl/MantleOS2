@@ -25,7 +25,7 @@ def test_ordinary_scan_emits_layered_provenance_without_duplicate_authority(tmp_
     report = json.loads((out / "layered_provenance.json").read_text(encoding="utf-8"))
 
     assert report["schema_version"] == "scan-layered-provenance/0.1"
-    assert report["engine_version"] == __version__ == "0.36.0"
+    assert report["engine_version"] == __version__ == "0.37.0"
     assert report["authority"] == {
         "canonical_store": "scan_index.sqlite",
         "projection_only": True,
@@ -105,7 +105,7 @@ def test_layers_preserve_independent_epistemic_states_and_e0_lineage():
         {"id": "r5", "src": "anchor:1", "dst": "human:1", "kind": "supports", "status": "PARTIAL", "attributes": {}, "evidence_ids": []},
     ]
 
-    report = build_layered_provenance(FakeStore(objects, relations), engine_version="0.36.0")
+    report = build_layered_provenance(FakeStore(objects, relations), engine_version="0.37.0")
     by_id = {row["object_id"]: row for row in report["objects"]}
 
     assert by_id["ev:1"]["layer"] == "E0"
@@ -133,7 +133,7 @@ def test_unknown_object_types_are_visible_not_silently_assigned():
             [{"id": "x:1", "object_type": "NEW_FUTURE_TYPE", "subtype": "x", "label": "x", "coverage": "UNKNOWN", "attributes": {}}],
             [],
         ),
-        engine_version="0.36.0",
+        engine_version="0.37.0",
     )
     assert report["objects"][0]["layer"] == "UNCLASSIFIED"
     assert report["unclassified_object_types"] == {"NEW_FUTURE_TYPE": 1}
