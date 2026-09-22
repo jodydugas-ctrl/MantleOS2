@@ -1,67 +1,80 @@
-# SCAN Engine v0.31
+# SCAN Engine v0.32
 
-Status: **triage-ranking integration candidate — not release-qualified**.
+Status: **layered-provenance integration candidate — not release-qualified**.
 
-v0.31 is stacked on the v0.30 uncertainty challenger and implements only the third production-readiness stage: deterministic investigation triage.
+v0.32 is stacked on the v0.31 triage-ranking candidate and implements only the fourth production-readiness stage: explicit provenance layers over the existing canonical semantic graph.
 
-## Purpose
+## Layer model
 
-The triage layer answers one operational question:
+The canonical graph remains singular. v0.32 projects its objects into:
 
-> Which unresolved gaps are most useful to investigate first?
+- **E0 — source/evidence:** specimen identity, files, direct evidence;
+- **E1 — mechanical anatomy:** extracted anatomical objects, graph-relation claims, scanner findings;
+- **E2 — semantic interpretation:** interpretations and behavior contracts;
+- **E3 — reconstruction contract:** reconstruction anchors;
+- **E4 — human description:** presentation-only prose/description objects.
 
-It does **not** answer which claims are more true, more confident, or eligible for promotion.
+E4 is deliberately non-canonical. Human-readable explanation may cite lower-layer IDs but cannot upgrade source evidence or mechanical claims.
+
+## Output
 
 Ordinary scans emit:
 
-- `triage_ranking.json`
-- `triage_ranking.md`
+- `layered_provenance.json`
+- `layered_provenance.md`
 
-The same ranking can be regenerated from an existing canonical database:
+The projection can be regenerated from an existing canonical database:
 
 ```bash
-scan-body triage-gaps .scan/scan_index.sqlite --out-dir ./triage
+scan-body provenance-layers .scan/scan_index.sqlite --out-dir ./provenance
 ```
 
-## Transparent scoring
+Semantic-overlay ingestion and reconstruction promotion also refresh the layered projection so E2/E3 state cannot silently lag behind the canonical store.
 
-The maximum investigation score is 100 points, composed only from explicit graph-impact signals:
+## What is preserved
 
-- structural connectivity: 20 max;
-- reachable actionable human surfaces: 30 max;
-- reachable effect/state/NEST/feedback terminals: 20 max;
-- reconstruction-anchor dependency: 20 max;
-- challenger mechanical-recheck support: 10 max.
+Each object retains its own coverage state. The projection does not derive one flat confidence value.
 
-Every component and raw count is emitted in the JSON report.
+This means, for example:
 
-Coverage state and gap category are **not scoring weights**. A `BLOCKED` item does not automatically rank above or below a `PARTIAL` item.
+- direct evidence can be `MAPPED`;
+- the mechanical function/call relationship can be `MAPPED`;
+- the behavioral interpretation can remain `PARTIAL`;
+- the reconstruction anchor can remain `PARTIAL`;
+- a human description can be readable while remaining presentation-only.
 
-Structural connectivity is capped at 20 points so generic utilities, dispatchers, logging hubs, or framework wrappers cannot dominate the ranking simply because many edges touch them.
+For each object the projection exposes:
+
+- layer identity;
+- original coverage state;
+- immediate proof support;
+- lower-layer support;
+- evidence IDs reachable through typed proof relations;
+- source-file IDs;
+- contradiction relation IDs;
+- whether a proof path reaches E0.
+
+Unknown future object types are emitted as `UNCLASSIFIED`, never silently assigned to a layer.
 
 ## Authority boundary
 
-The ranking is downstream operational metadata only:
-
-- `importance_not_truth = true`
-- `confidence_effect = NONE`
-- `promotion_effect = NONE`
-- `canonical_write_allowed = false`
-- `llm_required = false`
-
-Ranking never changes the gap, challenge, evidence, coverage, or conformance state.
+- one canonical graph: `scan_index.sqlite`;
+- no duplicate provenance database;
+- no canonical writes from the projection;
+- no confidence aggregation;
+- no automatic promotion;
+- higher-layer prose cannot alter lower-layer evidence.
 
 ## Explicit non-goals
 
 This tranche does not add:
 
-- confidence scoring;
-- evidence promotion;
-- layered provenance schema changes;
-- parity scenarios;
+- parity/Gherkin scenarios;
 - AGENTS.md distribution;
-- runtime execution;
-- calibration expansion.
+- calibration expansion;
+- new runtime evidence;
+- new reconstruction scoring;
+- evidence promotion rules.
 
 Those remain later roadmap stages.
 
@@ -69,13 +82,14 @@ Those remain later roadmap stages.
 
 Before this stage is admitted:
 
-1. all inherited v0.30 tests remain green;
-2. triage output is deterministic;
-3. regeneration from a read-only DB does not mutate canonical bytes;
-4. every investigation score equals the sum of emitted components and stays within 0..100;
-5. ranking is sorted deterministically with stable tie-breaking;
-6. graph-impact tests prove a load-bearing unresolved node outranks an isolated unresolved node without state weighting;
-7. a high-degree generic hub is capped and cannot dominate solely through degree;
-8. projection metadata explicitly states that importance has no confidence or promotion effect.
+1. all inherited v0.31 tests remain green;
+2. projection generation and regeneration are deterministic;
+3. read-only regeneration leaves the canonical DB unchanged;
+4. projected object IDs exactly reconcile with canonical semantic objects;
+5. per-object coverage is unchanged by layer classification;
+6. a synthetic E0→E4 chain proves independent coverage at each layer;
+7. promoted semantic overlays refresh E2/E3 projections;
+8. unclassified object types remain visible;
+9. E4 remains explicitly presentation-only.
 
 v0.28.0 remains the latest released SCAN version while the stacked production-readiness candidates are evaluated.
