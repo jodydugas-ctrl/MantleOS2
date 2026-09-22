@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - scan-v1.0-certification
+      - main
     paths:
       - 'Anchor/engine/v1.0/**'
+      - 'Anchor/releases/v1.0/**'
       - '.github/workflows/scan-v100-certification.yml'
   pull_request:
     paths:
       - 'Anchor/engine/v1.0/**'
+      - 'Anchor/releases/v1.0/**'
       - '.github/workflows/scan-v100-certification.yml'
   workflow_dispatch:
 
@@ -276,6 +279,9 @@ jobs:
     needs: [platform-certification, full-regression, live-authorized-runtime]
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    permissions:
+      contents: write
+      actions: read
     env:
       OPENAI_API_KEY: ''
       ANTHROPIC_API_KEY: ''
@@ -287,9 +293,12 @@ jobs:
       COHERE_API_KEY: ''
       XAI_API_KEY: ''
       FULL_TEST_COUNT: ${{ needs.full-regression.outputs.test_count }}
+      GH_TOKEN: ${{ github.token }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -470,17 +479,50 @@ jobs:
           print(json.dumps(certificate, indent=2))
           PY
 
+      - name: Stage publishable v1.0 assets and checksums
+        shell: bash
+        run: |
+          rm -rf proof/publish
+          mkdir -p proof/publish
+          cp proof/release/scan-software-body-1.0.0/PACKAGE_MANIFEST.json proof/publish/PACKAGE_MANIFEST.json
+          cp proof/local-certification/V1_RELEASE_MANIFEST.json proof/publish/V1_RELEASE_MANIFEST.json
+          cp proof/local-certification/v1_local_release_certificate.json proof/publish/v1_local_release_certificate.json
+          cp proof/local-certification/release_qualification.json proof/publish/release_qualification.json
+          cp proof/live-runtime-evidence/result/runtime_validation.json proof/publish/runtime_validation.json
+          cp proof/V1_CI_RELEASE_CERTIFICATE.json proof/publish/V1_CI_RELEASE_CERTIFICATE.json
+          cp proof/V1_CI_MANIFEST.json proof/publish/V1_CI_MANIFEST.json
+          cp proof/SCAN_v1.0.0_source.zip proof/publish/SCAN_v1.0.0_source.zip
+          cp proof/dist/scan_software_body-1.0.0-*.whl proof/publish/
+          (
+            cd proof/publish
+            sha256sum               PACKAGE_MANIFEST.json               V1_RELEASE_MANIFEST.json               v1_local_release_certificate.json               release_qualification.json               runtime_validation.json               V1_CI_RELEASE_CERTIFICATE.json               V1_CI_MANIFEST.json               SCAN_v1.0.0_source.zip               scan_software_body-1.0.0-*.whl               > SHA256SUMS.txt
+            cat SHA256SUMS.txt
+          )
+
       - name: Upload certified v1.0 release evidence
         uses: actions/upload-artifact@v4
         with:
           name: scan-v1.0-certified-release
           path: |
-            proof/V1_CI_RELEASE_CERTIFICATE.json
-            proof/V1_CI_MANIFEST.json
-            proof/SCAN_v1.0.0_source.zip
-            proof/dist/*.whl
+            proof/publish/
             proof/local-certification/
-            proof/live-runtime-evidence/result/runtime_validation.json
-            proof/release/scan-software-body-1.0.0/PACKAGE_MANIFEST.json
           if-no-files-found: error
           retention-days: 90
+
+      - name: Publish immutable SCAN v1.0.0 GitHub release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          git fetch --tags --force
+          if git rev-parse -q --verify refs/tags/v1.0.0 >/dev/null; then
+            TAG_SHA="$(git rev-list -n 1 v1.0.0)"
+            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+              echo "v1.0.0 already points to $TAG_SHA; refusing to move the immutable release tag to $GITHUB_SHA" >&2
+              exit 1
+            fi
+            gh release view v1.0.0 >/dev/null
+            echo "SCAN v1.0.0 is already published at this exact commit; leaving it unchanged."
+            exit 0
+          fi
+
+          gh release create v1.0.0             --target "$GITHUB_SHA"             --title "SCAN v1.0.0"             --notes-file Anchor/releases/v1.0/RELEASE_NOTES.md             proof/publish/scan_software_body-1.0.0-*.whl             proof/publish/SCAN_v1.0.0_source.zip             proof/publish/PACKAGE_MANIFEST.json             proof/publish/V1_RELEASE_MANIFEST.json             proof/publish/v1_local_release_certificate.json             proof/publish/release_qualification.json             proof/publish/runtime_validation.json             proof/publish/V1_CI_RELEASE_CERTIFICATE.json             proof/publish/V1_CI_MANIFEST.json             proof/publish/SHA256SUMS.txt
