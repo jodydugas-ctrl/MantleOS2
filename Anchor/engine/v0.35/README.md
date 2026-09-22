@@ -1,71 +1,110 @@
-# SCAN Engine v0.34
+# SCAN Engine v0.35
 
-Status: **broader-calibration candidate — no scanner feature changes**.
+Status: **independent-reconstruction-proof candidate — not release-qualified**.
 
-v0.34 is stacked on the v0.33 parity/distribution candidate. This stage changes the test and qualification envelope rather than adding scanner behavior.
+v0.35 is stacked on the v0.34 broader-calibration candidate and implements the seventh production-readiness stage: mechanically verifiable source-isolated reconstruction trials.
 
-## Calibration objective
+This stage does not add extraction rules or scanner adapters.
 
-The production-readiness mechanisms added in v0.29-v0.33 must transfer across different software shapes and failure modes without specimen-specific rules.
+## Goal
 
-The matrix combines frozen real repositories with deterministic adversarial fixtures.
+A reconstruction result must be distinguishable from a reconstruction that merely *claims* it was blind.
 
-### Frozen real repositories
+The qualification path is split into three trust domains:
 
-- **NotepadNext** — Qt/C++ desktop application.
-- **Moji** — TypeScript/Electron application.
-- **pell** — plain JavaScript/web editor.
+1. **Preparation** — SCAN verifies/certifies the private source and emits a sealed source-free reconstruction challenge plus a separate private evaluator.
+2. **Independent worker** — a separate clean job receives only the public challenge. It has no repository checkout and no private evaluator. Candidate generation runs inside an enforced network namespace.
+3. **Adjudication** — a separate trusted job receives the private evaluator and candidate, performs a fresh read-only SCAN of the candidate, seals the trial, and verifies the complete lineage.
 
-Every external specimen is pinned to an exact commit and tree identity.
+The worker does not grade itself.
 
-### Deterministic adversarial fixtures
+## Independent proof artifact
 
-- unsupported Python CLI;
-- mixed-language C++/HTML/TypeScript/Python specimen;
-- metadata-only/incomplete acquisition manifest;
-- ambiguous static web routing;
-- forced resource-budget interruption.
+v0.35 adds:
 
-These fixtures are deliberately small. They test epistemic behavior and failure handling, not application-specific extraction quality.
+```bash
+scan-body verify-independent-reconstruction \
+  challenge/ candidate/ submission.json worker_receipt.json trial/ \
+  --out independent_proof.json
+```
 
-## Calibration invariants
+The verifier binds:
 
-For every applicable specimen the gate checks:
+- the sealed public challenge manifest hash;
+- the worker isolation receipt;
+- the candidate tree hash;
+- the submission hash and source-isolation declaration;
+- the private reconstruction-trial lineage;
+- the fresh candidate scan and scorecard.
 
-- duplicate cold-scan determinism;
-- zero integrity ERRORs;
-- coverage/gaps generation;
-- uncertainty-challenger consistency;
-- triage ranking consistency;
-- layered-provenance object reconciliation;
-- Blueprint/conformance-manifest generation;
-- parity scenarios equal the MAPPED+REQUIRED contract set;
-- portable parity regeneration.
+A worker receipt passes only when it records:
 
-Failure-mode fixtures additionally require:
+- repository checkout: `ABSENT`;
+- original source: `NOT_PRESENT`;
+- private evaluator: `NOT_PRESENT`;
+- input artifacts: exactly `["challenge"]`;
+- worker network: mechanically disabled by an approved isolation mechanism.
 
-- unsupported CLI content does not invent actionable human surfaces;
-- incomplete acquisition remains explicit and challengeable as external input;
-- ambiguous routing preserves uncertainty rather than manufacturing a required handler contract;
-- resource-budget stops remain explicit coverage gaps rather than silent omission.
+A `DECLARED_ONLY` network state is insufficient.
 
-## Anti-overfitting rule
+## What a PASS means
 
-The calibration workflow does not assert hand-tuned node/surface counts for new specimens. It asserts structural invariants and records observed metrics.
+A v0.35 independent proof PASS means:
 
-No scanner rule may inspect specimen names, repository names, or calibration IDs to satisfy this gate.
+- the public challenge was mechanically source-free and untampered;
+- the reconstruction worker ran through the isolated handoff path;
+- the candidate bytes match the worker receipt;
+- SCAN independently rescanned the candidate;
+- the private evaluator/trial lineage matches the public challenge;
+- all mechanically scorable required reconstruction anchors passed.
 
-## Explicit non-goals
+It does **not** establish:
 
-This stage does not add:
+- runtime equivalence;
+- pixel/visual equivalence;
+- timing equivalence;
+- universal behavioral equivalence;
+- external-LLM quality or generality.
 
-- new adapters;
-- new extraction rules;
-- new evidence-promotion rules;
-- runtime execution;
-- reconstruction scoring changes;
-- calibration-specific exceptions.
+## Reference-worker qualification
 
-The next roadmap stage is independent reconstruction proof.
+The CI qualification uses a deterministic reference reconstruction worker. This is intentional.
+
+Its purpose is to prove that the isolation, handoff, lineage, and independent-scoring machinery works end-to-end without depending on an external model service or secret API key.
+
+The reference worker executes in a separate GitHub Actions job that:
+
+- performs no repository checkout;
+- downloads only the public challenge artifact;
+- verifies private evaluator/source artifacts are absent;
+- enters a Linux network namespace before candidate generation;
+- records the candidate and submission hashes in a worker receipt.
+
+The reference worker is **not** presented as an external LLM benchmark. Future external coding agents can occupy the same isolated worker slot and produce the same receipt/submission contract.
+
+## Authority boundary
+
+- candidate self-report: no scoring authority;
+- worker receipt: proves handoff/isolation lineage, not correctness;
+- private SCAN fresh scan: measurement authority;
+- source uncertainty remains source uncertainty;
+- candidate scanner gaps remain scanner-attributed;
+- reconstruction failures remain reconstruction-attributed.
+
+## Promotion gates
+
+Before this stage is admitted:
+
+1. all inherited tests remain green;
+2. public challenge tampering/leakage is rejected;
+3. worker receipt rejects declared-only network isolation;
+4. candidate tampering breaks worker lineage;
+5. separate-job CI worker has no checkout/evaluator/source access;
+6. network isolation is mechanically enforced during worker execution;
+7. fresh private scoring passes for the reference reconstruction;
+8. final independent proof verifies challenge → worker → candidate → trial lineage;
+9. no runtime/visual/timing or external-LLM benchmark claim is made.
+
+The next roadmap stage is authorized runtime validation.
 
 v0.28.0 remains the latest released version while stacked production-readiness candidates are evaluated.
