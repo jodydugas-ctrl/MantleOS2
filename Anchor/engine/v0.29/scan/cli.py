@@ -358,9 +358,13 @@ def main(argv=None):
             export_evidence_graph(store, specimen, args.out_dir / "evidence_graph.json")
             export_evidence_catalog(store, args.out_dir / "evidence_catalog.json")
             export_completeness(store, args.out_dir / "completeness_vector.json")
-            write_integrity_outputs(store, args.out_dir)
+            integrity_outputs = write_integrity_outputs(store, args.out_dir)
             write_nest_capability_map(store, args.out_dir / "nest_capability_map.json")
-            write_coverage_outputs(store, args.out_dir)
+            write_coverage_outputs(
+                store, args.out_dir,
+                surface=integrity_outputs["surface_closure"],
+                effect=integrity_outputs["effect_closure"],
+            )
             refresh_machine_body_map_projection(store, args.out_dir / "machine_body_map.json")
             write_projection_manifest(args.out_dir, [
                 "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
@@ -395,9 +399,13 @@ def main(argv=None):
                 export_evidence_graph(store, specimen, args.out_dir / "evidence_graph.json")
                 export_evidence_catalog(store, args.out_dir / "evidence_catalog.json")
                 export_completeness(store, args.out_dir / "completeness_vector.json")
-                write_integrity_outputs(store, args.out_dir)
+                integrity_outputs = write_integrity_outputs(store, args.out_dir)
                 write_nest_capability_map(store, args.out_dir / "nest_capability_map.json")
-                write_coverage_outputs(store, args.out_dir)
+                write_coverage_outputs(
+                    store, args.out_dir,
+                    surface=integrity_outputs["surface_closure"],
+                    effect=integrity_outputs["effect_closure"],
+                )
                 refresh_machine_body_map_projection(store, args.out_dir / "machine_body_map.json")
                 write_projection_manifest(args.out_dir, [
                     "machine_body_map.json", "evidence_graph.json", "evidence_catalog.json",
