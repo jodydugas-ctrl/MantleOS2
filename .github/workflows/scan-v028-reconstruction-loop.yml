@@ -41,6 +41,20 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify sealed v0.28 package manifest before installation
+        shell: bash
+        run: |
+          test -f Anchor/engine/v0.28/PACKAGE_MANIFEST.json
+          PYTHONPATH="$GITHUB_WORKSPACE/Anchor/engine/v0.28" python - <<'PY'
+          from pathlib import Path
+          from scan.release import verify_package
+
+          audit = verify_package(Path("Anchor/engine/v0.28"))
+          assert audit["state"] == "PASS", audit
+          assert audit["manifest_file_count"] == 90, audit
+          assert audit["verified_file_count"] == 90, audit
+          PY
+
       - name: Install v0.28 scanner and scanner-owned TypeScript parser
         shell: bash
         run: |
@@ -53,10 +67,6 @@ jobs:
           import scan
           assert scan.__version__ == "0.28.0", scan.__version__
           PY
-
-      - name: Verify candidate is not carrying a stale release manifest
-        shell: bash
-        run: test ! -f Anchor/engine/v0.28/PACKAGE_MANIFEST.json
 
       - name: Run full v0.28 regression suite
         shell: bash
