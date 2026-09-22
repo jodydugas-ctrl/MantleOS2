@@ -3,7 +3,8 @@
 ## Current release line
 
 SCAN v1.0.0 is the current production-readiness release line. Its source package
-lives under [`../engine/v1.0/`](../engine/v1.0/README.md).
+lives under [`../engine/v1.0/`](../engine/v1.0/README.md), and publication notes
+are tracked in [`v1.0/RELEASE_NOTES.md`](v1.0/RELEASE_NOTES.md).
 
 v1.0 release evidence is produced by the repository's final certification
 workflow rather than by checking generated wheels or large certification bundles
