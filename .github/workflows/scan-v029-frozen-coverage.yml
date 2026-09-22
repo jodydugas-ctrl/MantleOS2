@@ -1,0 +1,241 @@
+name: SCAN v0.29 frozen coverage calibration
+
+on:
+  push:
+    branches:
+      - anchor-v0.29-coverage-gaps
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-frozen-coverage.yml'
+  pull_request:
+    paths:
+      - 'Anchor/engine/v0.29/**'
+      - '.github/workflows/scan-v029-frozen-coverage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      NOTEPAD_COMMIT: f57db52d6760a2ce4149a37190c3adaa586845f5
+      NOTEPAD_TREE: f0995b128bf6dbc73e5d0f3ef4e4f302f8a3081b
+      MOJI_COMMIT: 7793dbabc880a950b5003dcfd57c1222b279b807
+      MOJI_TREE: b4e0e6a4d2010a6d584f40b01ab5ffad7bf18fea
+      OPENAI_API_KEY: ''
+      ANTHROPIC_API_KEY: ''
+      GOOGLE_API_KEY: ''
+      GEMINI_API_KEY: ''
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install isolated v0.28 and v0.29 scanners
+        shell: bash
+        run: |
+          python -m venv .venv28
+          python -m venv .venv29
+          .venv28/bin/python -m pip install --upgrade pip
+          .venv29/bin/python -m pip install --upgrade pip
+          .venv28/bin/python -m pip install -e Anchor/engine/v0.28
+          .venv29/bin/python -m pip install -e Anchor/engine/v0.29
+          mkdir -p .scan-tools
+          npm install --prefix .scan-tools --ignore-scripts --no-package-lock --no-save typescript@5.7.2
+          echo "SCAN_TYPESCRIPT_MODULE=$GITHUB_WORKSPACE/.scan-tools/node_modules/typescript" >> "$GITHUB_ENV"
+          .venv28/bin/python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.28.0", scan.__version__
+          PY
+          .venv29/bin/python - <<'PY'
+          import scan
+          assert scan.__version__ == "0.29.0", scan.__version__
+          PY
+          test ! -f Anchor/engine/v0.29/PACKAGE_MANIFEST.json
+
+      - name: Checkout frozen NotepadNext
+        uses: actions/checkout@v4
+        with:
+          repository: dail8859/NotepadNext
+          ref: f57db52d6760a2ce4149a37190c3adaa586845f5
+          path: specimen-notepad
+          fetch-depth: 1
+
+      - name: Checkout frozen Moji
+        uses: actions/checkout@v4
+        with:
+          repository: alexishida/Moji
+          ref: 7793dbabc880a950b5003dcfd57c1222b279b807
+          path: specimen-moji
+          fetch-depth: 1
+
+      - name: Verify specimen identities
+        shell: bash
+        run: |
+          test "$(git -C specimen-notepad rev-parse HEAD)" = "$NOTEPAD_COMMIT"
+          test "$(git -C specimen-notepad rev-parse HEAD^{tree})" = "$NOTEPAD_TREE"
+          test "$(git -C specimen-moji rev-parse HEAD)" = "$MOJI_COMMIT"
+          test "$(git -C specimen-moji rev-parse HEAD^{tree})" = "$MOJI_TREE"
+
+      - name: Run released v0.28 baselines
+        shell: bash
+        run: |
+          mkdir -p results
+          .venv28/bin/scan-body scan specimen-notepad --out results/v028-notepad --specimen-id "dail8859/NotepadNext@$NOTEPAD_COMMIT"
+          .venv28/bin/scan-body scan specimen-moji --out results/v028-moji --specimen-id "alexishida/Moji@$MOJI_COMMIT"
+
+      - name: Run duplicate v0.29 scans
+        shell: bash
+        run: |
+          .venv29/bin/scan-body scan specimen-notepad --out results/v029-notepad-a --specimen-id "dail8859/NotepadNext@$NOTEPAD_COMMIT"
+          .venv29/bin/scan-body scan specimen-notepad --out results/v029-notepad-b --specimen-id "dail8859/NotepadNext@$NOTEPAD_COMMIT"
+          .venv29/bin/scan-body scan specimen-moji --out results/v029-moji-a --specimen-id "alexishida/Moji@$MOJI_COMMIT"
+          .venv29/bin/scan-body scan specimen-moji --out results/v029-moji-b --specimen-id "alexishida/Moji@$MOJI_COMMIT"
+
+      - name: Prove v0.29 coverage projection determinism
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sqlite3
+
+          projection_names = ["coverage_report.json", "coverage_report.md", "gaps.md"]
+
+          def rows(db_path, table):
+              db = sqlite3.connect(db_path)
+              db.row_factory = sqlite3.Row
+              try:
+                  return [dict(r) for r in db.execute(f"SELECT * FROM {table} ORDER BY 1")]
+              finally:
+                  db.close()
+
+          tables = [
+              "files", "nodes", "edges", "evidence", "findings",
+              "semantic_objects", "semantic_relations", "completeness_dimensions",
+          ]
+          for specimen in ("notepad", "moji"):
+              a = Path(f"results/v029-{specimen}-a")
+              b = Path(f"results/v029-{specimen}-b")
+              for name in projection_names:
+                  assert (a / name).read_bytes() == (b / name).read_bytes(), (specimen, name)
+              for table in tables:
+                  assert rows(a / "scan_index.sqlite", table) == rows(b / "scan_index.sqlite", table), (specimen, table)
+          PY
+
+      - name: Prove v0.29 does not alter v0.28 canonical evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sqlite3
+
+          def rows(db_path, table):
+              db = sqlite3.connect(db_path)
+              db.row_factory = sqlite3.Row
+              try:
+                  return [dict(r) for r in db.execute(f"SELECT * FROM {table} ORDER BY 1")]
+              finally:
+                  db.close()
+
+          tables = [
+              "files", "nodes", "edges", "evidence", "findings",
+              "semantic_objects", "semantic_relations", "completeness_dimensions",
+          ]
+          unchanged_projections = [
+              "completeness_vector.json", "integrity_report.json",
+              "surface_closure.json", "effect_closure.json", "nest_capability_map.json",
+          ]
+          for specimen in ("notepad", "moji"):
+              old = Path(f"results/v028-{specimen}")
+              new = Path(f"results/v029-{specimen}-a")
+              for table in tables:
+                  assert rows(old / "scan_index.sqlite", table) == rows(new / "scan_index.sqlite", table), (specimen, table)
+              for name in unchanged_projections:
+                  assert (old / name).read_bytes() == (new / name).read_bytes(), (specimen, name)
+          PY
+
+      - name: Reconcile coverage reports and write calibration receipt
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, sqlite3
+          from collections import Counter
+          from pathlib import Path
+
+          receipt = {
+              "schema_version": "scan-v029-frozen-coverage-calibration/0.1",
+              "state": "PASS",
+              "baseline_engine": "0.28.0",
+              "candidate_engine": "0.29.0",
+              "canonical_evidence_preserved": True,
+              "coverage_projection_deterministic": True,
+              "specimens": {},
+          }
+
+          specs = {
+              "files": "SELECT coverage AS state FROM files",
+              "nodes": "SELECT coverage AS state FROM nodes",
+              "edges": "SELECT coverage AS state FROM edges",
+              "findings": "SELECT status AS state FROM findings",
+              "semantic_objects": "SELECT coverage AS state FROM semantic_objects",
+              "semantic_relations": "SELECT status AS state FROM semantic_relations",
+              "completeness_dimensions": "SELECT state FROM completeness_dimensions",
+          }
+
+          for specimen in ("notepad", "moji"):
+              root = Path(f"results/v029-{specimen}-a")
+              report = json.loads((root / "coverage_report.json").read_text())
+              db = sqlite3.connect(root / "scan_index.sqlite")
+              db.row_factory = sqlite3.Row
+              try:
+                  for layer, sql in specs.items():
+                      expected = Counter(str(r["state"] or "UNKNOWN").upper() for r in db.execute(sql))
+                      actual = Counter(report["coverage"][layer])
+                      assert actual == expected, (specimen, layer, actual, expected)
+              finally:
+                  db.close()
+
+              assert report["projection_state"] == "PASS"
+              assert report["authority"]["classification_mutation"] == "NONE"
+              assert report["authority"]["scalar_confidence_score"] == "NOT_USED"
+              receipt["specimens"][specimen] = {
+                  "gap_count": report["gaps"]["count"],
+                  "gap_state_counts": report["gaps"]["state_counts"],
+                  "gap_category_counts": report["gaps"]["category_counts"],
+                  "surface_closure": report["closure"]["surface"],
+                  "effect_closure": report["closure"]["effect"],
+                  "acquisition": report["acquisition"],
+              }
+
+          out = Path("results/V029_FROZEN_COVERAGE_CALIBRATION.json")
+          out.write_text(json.dumps(receipt, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          print(json.dumps(receipt, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Upload compact calibration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-v029-frozen-coverage
+          path: |
+            results/V029_FROZEN_COVERAGE_CALIBRATION.json
+            results/v029-notepad-a/coverage_report.json
+            results/v029-notepad-a/coverage_report.md
+            results/v029-notepad-a/gaps.md
+            results/v029-moji-a/coverage_report.json
+            results/v029-moji-a/coverage_report.md
+            results/v029-moji-a/gaps.md
+          if-no-files-found: error
+          retention-days: 14
