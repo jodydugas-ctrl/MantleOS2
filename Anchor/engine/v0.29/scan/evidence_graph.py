@@ -419,6 +419,15 @@ def refresh_machine_body_map_projection(store, output_path: Path) -> dict[str, A
     payload["integrity"] = {k: v for k, v in audit.items() if k != "issues"}
     payload["surface_closure"] = {k: v for k, v in closure.items() if k != "records"}
     payload["effect_closure"] = {k: v for k, v in deep.items() if k != "records"}
+    coverage_path = output_path.parent / "coverage_report.json"
+    if coverage_path.is_file():
+        coverage = json.loads(coverage_path.read_text(encoding="utf-8"))
+        payload["coverage_report"] = {
+            "projection_state": coverage.get("projection_state"),
+            "gap_count": (coverage.get("gaps") or {}).get("count", 0),
+            "gap_state_counts": (coverage.get("gaps") or {}).get("state_counts", {}),
+            "gap_category_counts": (coverage.get("gaps") or {}).get("category_counts", {}),
+        }
     payload["semantic_projection_refreshed"] = True
     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     return payload
